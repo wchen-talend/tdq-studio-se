@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Sampling Library
+Bundle-SymbolicName: org.talend.dataquality.sampling
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: .Talend SA.
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.apache.log4j,
+ org.apache.commons.lang,
+ org.talend.dataquality.standardization,
+ org.talend.libraries.apache.lucene,
+ org.talend.libraries.apache.common
+Export-Package: org.talend.dataquality.duplicating,
+ org.talend.dataquality.sampling
+Bundle-ClassPath: .
