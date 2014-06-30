@@ -15,11 +15,12 @@ package org.talend.dataquality.duplicating;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
+import org.talend.dataquality.sampling.ReservoirSamplerTest;
 
 @RunWith(Suite.class)
-@SuiteClasses({ DateChangerTest.class, FieldModifierTest.class, AbstractDuplicatorTest.class })
+@SuiteClasses({ DateChangerTest.class, FieldModifierTest.class, AbstractDuplicatorTest.class, ReservoirSamplerTest.class })
 public class AllDataqualitySamplingTests {
 
-    static final long RANDOM_SEED = 12345678;
+    public static final long RANDOM_SEED = 12345678;
 
 }
