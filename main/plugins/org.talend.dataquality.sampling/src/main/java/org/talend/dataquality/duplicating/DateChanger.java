@@ -37,36 +37,6 @@ class DateChanger {
         random.setSeed(seed);
     }
 
-    /**
-     * random choose one of the 3 methods to modify a date.
-     * 
-     * @param date
-     * @return
-     */
-    Date modify(Date date) {
-        if (date == null) {
-            return null;
-        }
-
-        Date newDate = new Date(date.getTime());
-        int choice = random.nextInt(3);
-        switch (choice) {
-        case 0:
-            newDate = modifyDateValue(newDate);
-            break;
-        case 1:
-            newDate = switchDayMonthValue(newDate);
-            break;
-        case 2:
-            newDate = replaceWithRandomDate(newDate);
-            break;
-        default:
-            break;
-        }
-
-        return newDate;
-    }
-
     @SuppressWarnings("deprecation")
     Date modifyDateValue(Date date) {
 

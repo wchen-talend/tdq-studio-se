@@ -42,7 +42,9 @@ public class FieldModifier {
         SYNONYM_REPLACE,
         SET_TO_BLANK,
         SET_TO_NULL,
-        MODIFY_DATE
+        MODIFY_DATE_VALUE,
+        SWITCH_DAY_MONTH_VALUE,
+        REPLACE_BY_RANDOM_DATE
     };
 
     private static final String LETTER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; //$NON-NLS-1$
@@ -91,11 +93,21 @@ public class FieldModifier {
     }
 
     public Date generateDuplicate(Date date, Function function, int modifCount, String extraParameter) {
+        Date newDate = (date == null) ? null : new Date(date.getTime());
         switch (function) {
-        case MODIFY_DATE:
-            Date newDate = (date == null) ? null : new Date(date.getTime());
+        case MODIFY_DATE_VALUE:
             for (int i = 0; i < modifCount; i++) {
-                dateChanger.modify(newDate);
+                dateChanger.modifyDateValue(newDate);
+            }
+            return newDate;
+        case SWITCH_DAY_MONTH_VALUE:
+            for (int i = 0; i < modifCount; i++) {
+                dateChanger.switchDayMonthValue(newDate);
+            }
+            return newDate;
+        case REPLACE_BY_RANDOM_DATE:
+            for (int i = 0; i < modifCount; i++) {
+                dateChanger.replaceWithRandomDate(newDate);
             }
             return newDate;
         default:
