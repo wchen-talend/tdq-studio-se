@@ -148,6 +148,9 @@ public class FieldModifier {
             for (int i = 0; i < modifCount; i++) {
                 int pos = sb.length() == 0 ? 0 : random.nextInt(sb.length());
                 int idx = random.nextInt(DIGIT.length());
+                if (pos == 0) {
+                    idx = random.nextInt(DIGIT.length() - 1) + 1;
+                }
                 sb.insert(pos, DIGIT.charAt(idx));
             }
             break;
@@ -254,7 +257,7 @@ public class FieldModifier {
         } else if (function == Function.SET_TO_NULL) {
             return null;
         }
-        
+
         String originalStr = (obj == null) ? EMPTY_STRING : String.valueOf(obj);
         return generateDuplicateString(originalStr, function, modifCount, extraParameter);
     }
