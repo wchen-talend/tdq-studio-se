@@ -43,18 +43,30 @@ public class FieldModifierTest {
     private static final int DEFAULT_MODIF_COUNT = 3;
 
     @Test
+    public void testSetToNull() {
+        Object dup = dataModifier.generateDuplicate(STRING_TO_TEST, Function.SET_TO_NULL, DEFAULT_MODIF_COUNT, EMPTY_STRING);
+        assertEquals(null, dup);
+    }
+
+    @Test
+    public void testSetToBlank() {
+        Object dup = dataModifier.generateDuplicate(STRING_TO_TEST, Function.SET_TO_BLANK, DEFAULT_MODIF_COUNT, EMPTY_STRING);
+        assertEquals(EMPTY_STRING, dup);
+    }
+
+    @Test
     public void testReplaceLetters() {
 
         String EXPECTED_WORD = "SuPesKeZ"; //$NON-NLS-1$
         Object dup = dataModifier.generateDuplicate(STRING_TO_TEST, Function.REPLACE_LETTER, DEFAULT_MODIF_COUNT, EMPTY_STRING);
-        assertEquals(dup.toString(), EXPECTED_WORD);
+        assertEquals(EXPECTED_WORD, dup);
     }
 
     @Test
     public void testAddLetters() {
         String EXPECTED_WORD = "SuresPKneZs"; //$NON-NLS-1$
         Object dup = dataModifier.generateDuplicate(STRING_TO_TEST, Function.ADD_LETTER, DEFAULT_MODIF_COUNT, EMPTY_STRING);
-        assertEquals(dup.toString(), EXPECTED_WORD);
+        assertEquals(EXPECTED_WORD, dup);
 
     }
 
@@ -62,42 +74,42 @@ public class FieldModifierTest {
     public void testRemoveLetters() {
         String EXPECTED_WORD = "Suese"; //$NON-NLS-1$
         Object dup = dataModifier.generateDuplicate(STRING_TO_TEST, Function.REMOVE_LETTER, DEFAULT_MODIF_COUNT, EMPTY_STRING);
-        assertEquals(dup.toString(), EXPECTED_WORD);
+        assertEquals(EXPECTED_WORD, dup);
     }
 
     @Test
     public void testReplaceDigits() {
         String EXPECTED_NUMBER = "12120"; //$NON-NLS-1$
         Object dup = dataModifier.generateDuplicate(NUMBER_TO_TEST, Function.REPLACE_DIGIT, DEFAULT_MODIF_COUNT, EMPTY_STRING);
-        assertEquals(dup.toString(), EXPECTED_NUMBER);
+        assertEquals(EXPECTED_NUMBER, dup);
     }
 
     @Test
     public void testAddDigits() {
         String EXPECTED_NUMBER = "92121510"; //$NON-NLS-1$
         Object dup = dataModifier.generateDuplicate(NUMBER_TO_TEST, Function.ADD_DIGIT, DEFAULT_MODIF_COUNT, EMPTY_STRING);
-        assertEquals(dup.toString(), EXPECTED_NUMBER);
+        assertEquals(EXPECTED_NUMBER, dup);
     }
 
     @Test
     public void testRemoveDigits() {
         String EXPECTED_NUMBER = "92"; //$NON-NLS-1$
         Object dup = dataModifier.generateDuplicate(NUMBER_TO_TEST, Function.REMOVE_DIGIT, DEFAULT_MODIF_COUNT, EMPTY_STRING);
-        assertEquals(dup.toString(), EXPECTED_NUMBER);
+        assertEquals(EXPECTED_NUMBER, dup);
     }
 
     @Test
     public void testExchageChars() {
         String EXPECTED_WORD = "Susernes"; //$NON-NLS-1$
         Object dup = dataModifier.generateDuplicate(STRING_TO_TEST, Function.EXCHANGE_CHAR, DEFAULT_MODIF_COUNT, EMPTY_STRING);
-        assertEquals(dup.toString(), EXPECTED_WORD);
+        assertEquals(EXPECTED_WORD, dup);
     }
 
     @Test
     public void testSoundexReplace() {
         String EXPECTED_WORD = "Suresnec"; //$NON-NLS-1$
         Object dup = dataModifier.generateDuplicate(STRING_TO_TEST, Function.SOUNDEX_REPLACE, DEFAULT_MODIF_COUNT, EMPTY_STRING);
-        assertEquals(dup.toString(), EXPECTED_WORD);
+        assertEquals(EXPECTED_WORD, dup);
     }
 
     @AfterClass

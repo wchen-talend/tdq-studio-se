@@ -116,7 +116,7 @@ public class FieldModifier {
         return date;
     }
 
-    public String generateDuplicate(String str, Function function, int modifCount, String extraParameter) {
+    public String generateDuplicateString(String str, Function function, int modifCount, String extraParameter) {
         StringBuilder sb = new StringBuilder(str);
         switch (function) {
         case REPLACE_LETTER:
@@ -254,9 +254,9 @@ public class FieldModifier {
         } else if (function == Function.SET_TO_NULL) {
             return null;
         }
-
+        
         String originalStr = (obj == null) ? EMPTY_STRING : String.valueOf(obj);
-        return generateDuplicate(originalStr, function, modifCount, extraParameter);
+        return generateDuplicateString(originalStr, function, modifCount, extraParameter);
     }
 
     @Override
