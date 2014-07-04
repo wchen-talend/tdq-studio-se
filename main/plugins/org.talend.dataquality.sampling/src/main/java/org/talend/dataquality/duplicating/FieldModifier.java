@@ -95,6 +95,8 @@ public class FieldModifier {
     public Date generateDuplicate(Date date, Function function, int modifCount, String extraParameter) {
         Date newDate = (date == null) ? null : new Date(date.getTime());
         switch (function) {
+        case SET_TO_NULL:
+            return null;
         case MODIFY_DATE_VALUE:
             for (int i = 0; i < modifCount; i++) {
                 dateChanger.modifyDateValue(newDate);
