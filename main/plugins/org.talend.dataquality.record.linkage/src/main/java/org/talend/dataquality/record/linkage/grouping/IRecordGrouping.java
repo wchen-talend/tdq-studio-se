@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.talend.dataquality.record.linkage.grouping.AbstractRecordGrouping.MatchAlgoithm;
+import org.talend.dataquality.record.linkage.grouping.swoosh.SurvivorShipAlgorithmParams;
+
 /**
  * <strike> feature TDQ-1707, record comparison algorithm with blocking key for component tMatchGroupHadoop.</strike>
  * The record grouping interface handles record grouping
@@ -140,5 +143,9 @@ public interface IRecordGrouping<T> {
      * @param matchRule the matcher to be added.
      */
     public void addMatchRule(List<Map<String, String>> matchRule);
+
+    public void setSurvivorShipAlgorithmParams(SurvivorShipAlgorithmParams survivorShipAlgorithmParams);
+
+    public void setRecordLinkAlgorithm(MatchAlgoithm algorithm);
 
 }

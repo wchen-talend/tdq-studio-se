@@ -23,9 +23,11 @@ import org.talend.dataquality.record.linkage.attribute.AttributeMatcherFactory;
 import org.talend.dataquality.record.linkage.attribute.IAttributeMatcher;
 import org.talend.dataquality.record.linkage.constant.AttributeMatcherType;
 import org.talend.dataquality.record.linkage.constant.RecordMatcherType;
+import org.talend.dataquality.record.linkage.grouping.swoosh.SurvivorShipAlgorithmParams;
 import org.talend.dataquality.record.linkage.record.CombinedRecordMatcher;
 import org.talend.dataquality.record.linkage.record.IRecordMatcher;
 import org.talend.dataquality.record.linkage.record.RecordMatcherFactory;
+import org.talend.dataquality.record.linkage.utils.AnalysisRecordGroupingUtils;
 import org.talend.dataquality.record.linkage.utils.CustomAttributeMatcherClassNameConvert;
 import org.talend.utils.classloader.TalendURLClassLoader;
 
@@ -34,9 +36,9 @@ import org.talend.utils.classloader.TalendURLClassLoader;
  * Abstract record grouping implementation without hadoop API included.
  * 
  */
-public abstract class AbstractRecordGrouping<TYPE> implements IRecordGrouping<TYPE> {
+public abstract class AbstractRecordGrouping implements IRecordGrouping {
 
-    private List<TYPE[]> masterRecords = new ArrayList<TYPE[]>();
+    private List<String[]> masterRecords = new ArrayList<String[]>();
 
     public static final float DEFAULT_THRESHOLD = 0.95f;
 
@@ -58,9 +60,16 @@ public abstract class AbstractRecordGrouping<TYPE> implements IRecordGrouping<TY
 
     private List<List<Map<String, String>>> multiMatchRules = new ArrayList<List<Map<String, String>>>();
 
-    protected String columnDelimiter = null;
+    private SurvivorShipAlgorithmParams survivorShipAlgorithmParams = null;
+
+    private String columnDelimiter = null;
 
     private Boolean isLinkToPrevious = Boolean.FALSE;
+
+    // VSR algorithm by default.
+    private MatchAlgoithm matchAlgo = MatchAlgoithm.VSR;
+
+    private TSwooshGrouping swooshGrouping = new TSwooshGrouping(this);
 
     // The exthended column size.
     int extSize;
@@ -110,16 +119,28 @@ public abstract class AbstractRecordGrouping<TYPE> implements IRecordGrouping<TY
         this.isSeperateOutput = isSeperateOutput;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.talend.dataquality.record.linkage.grouping.IRecordGrouping#setMatchingAlgorithm(org.talend.dataquality.record
+     * .linkage.grouping.AbstractRecordGrouping.MatchAlgoithm)
+     */
     @Override
-    public void doGroup(TYPE[] inputRow) throws IOException, InterruptedException {
+    public void setRecordLinkAlgorithm(MatchAlgoithm algorithm) {
+        matchAlgo = algorithm;
+    }
+
+    @Override
+    public void doGroup(String[] inputRow) throws IOException, InterruptedException {
 
         extSize = isOutputDistDetails ? 5 : 4;
         // extSize + 1 when isSeperateOutput is enabled.
         extSize = isSeperateOutput ? extSize + 1 : extSize;
         // In case of current component is linked to previous, and the record is NOT master, just put it to the output
         // and continue;
-        if (isLinkToPrevious && !isMaster(inputRow[inputRow.length - extSize + 2])) {
-            outputRow(inputRow);
+        if (isLinkToPrevious && !inputRow[inputRow.length - extSize + 2].equalsIgnoreCase("true")) { //$NON-NLS-1$
+            outputRow(AnalysisRecordGroupingUtils.join(inputRow, columnDelimiter, AnalysisRecordGroupingUtils.ESCAPE_CHARACTER));
             return;
         }
 
@@ -132,14 +153,34 @@ public abstract class AbstractRecordGrouping<TYPE> implements IRecordGrouping<TY
         String[] lookupDataArray = new String[matchingRule.size()];
 
         for (int idx = 0; idx < lookupDataArray.length; idx++) {
-            lookupDataArray[idx] = String.valueOf(inputRow[Integer
-                    .parseInt(matchingRule.get(idx).get(IRecordGrouping.COLUMN_IDX))]);
+            lookupDataArray[idx] = inputRow[Integer.parseInt(matchingRule.get(idx).get(IRecordGrouping.COLUMN_IDX))];
         }
+        switch (matchAlgo) {
+        case VSR:
+            vsrMatch(inputRow, matchingRule, lookupDataArray);
+            break;
+        case TSWOOSH:
+            swooshGrouping.addToList(inputRow, matchingRule);
+
+        }
+    }
+
+    /**
+     * Record matching with VSR algorithm.
+     * 
+     * @param inputRow the input row.
+     * @param matchingRule mathcing rules.
+     * @param lookupDataArray the array data (record) to be matched with.
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    private void vsrMatch(String[] inputRow, List<Map<String, String>> matchingRule, String[] lookupDataArray)
+            throws IOException, InterruptedException {
         boolean isSimilar = false;
-        for (TYPE[] masterRecord : masterRecords) {
+        for (String[] masterRecord : masterRecords) {
             if (isLinkToPrevious) {
-                int masterGRPSize = Integer.valueOf(String.valueOf(masterRecord[inputRow.length - extSize + 1]));
-                int inputGRPSize = Integer.valueOf(String.valueOf(inputRow[inputRow.length - extSize + 1]));
+                int masterGRPSize = Integer.valueOf(masterRecord[inputRow.length - extSize + 1]);
+                int inputGRPSize = Integer.valueOf(inputRow[inputRow.length - extSize + 1]);
                 // Don't compare the records whose GRP_SIZE both > 1.
                 if (masterGRPSize > 1 && inputGRPSize > 1) {
                     continue;
@@ -149,8 +190,7 @@ public abstract class AbstractRecordGrouping<TYPE> implements IRecordGrouping<TY
             String[] masterMatchRecord = new String[lookupDataArray.length];
             // Find the match record from master record.
             for (int idx = 0; idx < lookupDataArray.length; idx++) {
-                masterMatchRecord[idx] = String.valueOf(masterRecord[Integer.parseInt(matchingRule.get(idx).get(
-                        IRecordGrouping.COLUMN_IDX))]);
+                masterMatchRecord[idx] = masterRecord[Integer.parseInt(matchingRule.get(idx).get(IRecordGrouping.COLUMN_IDX))];
             }
             double matchingProba = combinedRecordMatcher.getMatchingWeight(masterMatchRecord, lookupDataArray);
             // Similar
@@ -159,9 +199,10 @@ public abstract class AbstractRecordGrouping<TYPE> implements IRecordGrouping<TY
                 isSimilar = true;
                 // Master GRP_SIZE ++
                 if (isLinkToPrevious) {
-                    int masterGRPSize = Integer.valueOf(String.valueOf(masterRecord[masterRecord.length - extSize + 1]));
+                    int masterGRPSize = Integer.valueOf(masterRecord[masterRecord.length - extSize + 1]);
                     if (masterGRPSize == 1) {
-                        inputRow[inputRow.length - extSize + 1] = modifyGroupSize(inputRow[inputRow.length - extSize + 1]);
+                        inputRow[inputRow.length - extSize + 1] = String.valueOf(Integer.parseInt(inputRow[inputRow.length
+                                - extSize + 1]) + 1);
                         updateWithExtendedColumn(masterRecord, inputRow, matchingProba, distanceDetails, columnDelimiter);
                         // Update master record from the temporary master list.
                         masterRecords.remove(masterRecord);
@@ -169,7 +210,8 @@ public abstract class AbstractRecordGrouping<TYPE> implements IRecordGrouping<TY
                         break;
                     }
                 }
-                masterRecord[masterRecord.length - extSize + 1] = modifyGroupSize(masterRecord[masterRecord.length - extSize + 1]);
+                masterRecord[masterRecord.length - extSize + 1] = String.valueOf(Integer
+                        .parseInt(masterRecord[masterRecord.length - extSize + 1]) + 1);
                 // Duplicated record
                 updateWithExtendedColumn(inputRow, masterRecord, matchingProba, distanceDetails, columnDelimiter);
                 break;
@@ -181,31 +223,31 @@ public abstract class AbstractRecordGrouping<TYPE> implements IRecordGrouping<TY
             // before.
 
             // Master record
-            TYPE[] masterRow = createTYPEArray(inputRow.length + (isLinkToPrevious ? 0 : extSize));
+            String[] masterRow = new String[inputRow.length + (isLinkToPrevious ? 0 : extSize)];
             for (int idx = 0; idx < inputRow.length; idx++) {
                 masterRow[idx] = inputRow[idx];
             }
             if (!isLinkToPrevious) {
                 // GID
-                masterRow[masterRow.length - extSize] = getTYPEFromObject(UUID.randomUUID().toString());
+                masterRow[masterRow.length - extSize] = String.valueOf(UUID.randomUUID());
                 // Group size
-                masterRow[masterRow.length - extSize + 1] = getTYPEFromObject(1);
+                masterRow[masterRow.length - extSize + 1] = String.valueOf(1);
                 // Master
-                masterRow[masterRow.length - extSize + 2] = getTYPEFromObject(true);
+                masterRow[masterRow.length - extSize + 2] = String.valueOf(true);
                 // Score
-                masterRow[masterRow.length - extSize + 3] = getTYPEFromObject(1.0);
+                masterRow[masterRow.length - extSize + 3] = String.valueOf(1.0);
 
                 int extIdx = 3;
                 if (isSeperateOutput) {
                     extIdx++;
                     // Group quality
-                    masterRow[masterRow.length - extSize + extIdx] = getTYPEFromObject(1.0);
+                    masterRow[masterRow.length - extSize + extIdx] = String.valueOf(1.0);
                 }
 
                 if (isOutputDistDetails) {
                     extIdx++;
                     // Match distance details in master record is null
-                    masterRow[masterRow.length - extSize + extIdx] = getTYPEFromObject("");; //$NON-NLS-1$
+                    masterRow[masterRow.length - extSize + extIdx] = ""; //$NON-NLS-1$
                 }
             }
 
@@ -219,8 +261,8 @@ public abstract class AbstractRecordGrouping<TYPE> implements IRecordGrouping<TY
      * @param matchingProba
      * @return
      */
-    private double computeGroupQuality(TYPE[] masterRecord, double matchingProba, int idx) {
-        double groupQuality = Double.valueOf(String.valueOf(masterRecord[masterRecord.length - extSize + idx]));
+    private double computeGroupQuality(String[] masterRecord, double matchingProba, int idx) {
+        double groupQuality = Double.valueOf(masterRecord[masterRecord.length - extSize + idx]);
         if (matchingProba < groupQuality) {
             // Use the minimal match distance as the group score.
             groupQuality = matchingProba;
@@ -245,42 +287,48 @@ public abstract class AbstractRecordGrouping<TYPE> implements IRecordGrouping<TY
 
     @Override
     public void end() throws IOException, InterruptedException {
-        // output the masters
-        for (TYPE[] mst : masterRecords) {
-            outputRow(mst);
+        switch (matchAlgo) {
+        case VSR:
+            // output the masters
+            for (String[] mst : masterRecords) {
+                outputRow(AnalysisRecordGroupingUtils.join(mst, columnDelimiter, AnalysisRecordGroupingUtils.ESCAPE_CHARACTER));
+            }
+            break;
+        case TSWOOSH:
+            swooshGrouping.swooshMatch(combinedRecordMatcher, survivorShipAlgorithmParams);
+
         }
     }
 
-    private void updateWithExtendedColumn(TYPE[] inputRow, TYPE[] masterRecord, double matchingProba, String distanceDetails,
+    private void updateWithExtendedColumn(String[] inputRow, String[] masterRecord, double matchingProba, String distanceDetails,
             String delimiter) throws IOException, InterruptedException {
-        // String[] duplicateRecord = new String[masterRecord.length];
-        TYPE[] duplicateRecord = createTYPEArray(masterRecord.length);
+        String[] duplicateRecord = new String[masterRecord.length];
         for (int idx = 0; idx < inputRow.length; idx++) {
             duplicateRecord[idx] = inputRow[idx];
         }
         // GID
         duplicateRecord[duplicateRecord.length - extSize] = masterRecord[masterRecord.length - extSize];
         // Group size
-        duplicateRecord[duplicateRecord.length - extSize + 1] = getTYPEFromObject(0);
+        duplicateRecord[duplicateRecord.length - extSize + 1] = String.valueOf(0);
         // Master
-        duplicateRecord[duplicateRecord.length - extSize + 2] = getTYPEFromObject(false);
+        duplicateRecord[duplicateRecord.length - extSize + 2] = String.valueOf(false);
         // Score
-        duplicateRecord[duplicateRecord.length - extSize + 3] = getTYPEFromObject(matchingProba);
+        duplicateRecord[duplicateRecord.length - extSize + 3] = String.valueOf(matchingProba);
 
         int extIdx = 3;
         // Group quality
         if (isSeperateOutput) {
             extIdx++;
             double groupQuality = computeGroupQuality(masterRecord, matchingProba, extIdx);
-            masterRecord[duplicateRecord.length - extSize + extIdx] = getTYPEFromObject(groupQuality);
+            masterRecord[duplicateRecord.length - extSize + extIdx] = String.valueOf(groupQuality);
         }
         if (isOutputDistDetails) {
             extIdx++;
             // Match distance details
-            duplicateRecord[duplicateRecord.length - extSize + extIdx] = getTYPEFromObject(distanceDetails);
+            duplicateRecord[duplicateRecord.length - extSize + extIdx] = distanceDetails;
         }
         // output the duplicate record
-        outputRow(duplicateRecord);
+        outputRow(AnalysisRecordGroupingUtils.join(duplicateRecord, delimiter, AnalysisRecordGroupingUtils.ESCAPE_CHARACTER));
     }
 
     /**
@@ -302,6 +350,18 @@ public abstract class AbstractRecordGrouping<TYPE> implements IRecordGrouping<TY
         multiMatchRules.add(matchRule);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.talend.dataquality.record.linkage.grouping.IRecordGrouping#setSurvivorShipAlgorithmParams(org.talend.dataquality
+     * .record.linkage.grouping.swoosh.SurvivorShipAlgorithmParams)
+     */
+    @Override
+    public void setSurvivorShipAlgorithmParams(SurvivorShipAlgorithmParams survivorShipAlgorithmParams) {
+        this.survivorShipAlgorithmParams = survivorShipAlgorithmParams;
+    }
+
     public List<List<Map<String, String>>> getMultiMatchRules() {
         return multiMatchRules;
     }
@@ -312,7 +372,7 @@ public abstract class AbstractRecordGrouping<TYPE> implements IRecordGrouping<TY
      * 
      * @param row
      */
-    protected abstract void outputRow(TYPE[] row);
+    protected abstract void outputRow(String row);
 
     /*
      * (non-Javadoc)
@@ -382,12 +442,8 @@ public abstract class AbstractRecordGrouping<TYPE> implements IRecordGrouping<TY
         combinedRecordMatcher.add(simpleRecordMatcher);
     }
 
-    protected abstract boolean isMaster(TYPE col);
-
-    protected abstract TYPE modifyGroupSize(TYPE oldGroupSize);
-
-    protected abstract TYPE[] createTYPEArray(int size);
-
-    protected abstract TYPE getTYPEFromObject(Object objectValue);
-
+    enum MatchAlgoithm {
+        VSR,
+        TSWOOSH
+    }
 }

@@ -16,7 +16,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.log4j.Logger;
+import org.talend.dataquality.matchmerge.Record;
 import org.talend.dataquality.record.linkage.Messages;
 import org.talend.dataquality.record.linkage.attribute.DummyMatcher;
 import org.talend.dataquality.record.linkage.attribute.IAttributeMatcher;
@@ -24,7 +26,7 @@ import org.talend.dataquality.record.linkage.attribute.IAttributeMatcher;
 /**
  * @author scorreia Abstract class for matching records.
  */
-abstract class AbstractRecordMatcher implements IRecordMatcher {
+public abstract class AbstractRecordMatcher implements IRecordMatcher {
 
     private static Logger log = Logger.getLogger(AbstractRecordMatcher.class);
 
@@ -78,6 +80,12 @@ abstract class AbstractRecordMatcher implements IRecordMatcher {
      * hide the label when there is only one matcher.
      */
     protected boolean displayLabels = false;
+
+    @Override
+    public org.talend.dataquality.matchmerge.mfb.MatchResult getMatchingWeight(Record record1, Record record2) {
+        // Sub classes may override this default implementation.
+        throw new NotImplementedException();
+    }
 
     /*
      * (non-Javadoc)
@@ -134,6 +142,16 @@ abstract class AbstractRecordMatcher implements IRecordMatcher {
         // else
         this.attributeMatchers = attrMatchers;
         return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataquality.record.linkage.record.IRecordMatcher#getAttributeMatchers()
+     */
+    @Override
+    public IAttributeMatcher[] getAttributeMatchers() {
+        return attributeMatchers;
     }
 
     /*

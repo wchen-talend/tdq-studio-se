@@ -12,6 +12,8 @@
 // ============================================================================
 package org.talend.dataquality.record.linkage.record;
 
+import org.talend.dataquality.matchmerge.Record;
+import org.talend.dataquality.matchmerge.mfb.MatchResult;
 import org.talend.dataquality.record.linkage.attribute.IAttributeMatcher;
 
 /**
@@ -61,6 +63,12 @@ public interface IRecordMatcher {
     boolean setAttributeMatchers(IAttributeMatcher[] attributeMatchers);
 
     /**
+     * 
+     * @return attribute matchers of this current record matcher.
+     */
+    IAttributeMatcher[] getAttributeMatchers();
+
+    /**
      * Method "setBlockingAttributeMatchers".
      * 
      * @param attrMatcherIndices the indices of the attribute matcher to be used as blocking variables
@@ -75,8 +83,25 @@ public interface IRecordMatcher {
      * @param record1 the first record (array of string attributes)
      * @param record2 the second record to be compared to the first record.
      * @return the matching weight of the given two records
+     * @see #getMatchingWeight(org.talend.dataquality.matchmerge.Record, org.talend.dataquality.matchmerge.Record)
      */
     double getMatchingWeight(String[] record1, String[] record2);
+
+    /**
+     * <p>
+     * Method "getMatchingWeight" compares the given records and returns the matching weight (between 0 - no match - and
+     * 1 - exact match).
+     * </p>
+     * <p>
+     * The difference with {@link #getMatchingWeight(String[], String[])} lies in the structure of
+     * {@link org.talend.dataquality.matchmerge.Record} since each column may have multiple values.
+     * </p>
+     * 
+     * @param record1 the first record (array of string attributes)
+     * @param record2 the second record to be compared to the first record.
+     * @return the matching weight of the given two records
+     */
+    MatchResult getMatchingWeight(Record record1, Record record2);
 
     /**
      * Method "getCurrentAttributeMatchingWeights".
@@ -121,7 +146,7 @@ public interface IRecordMatcher {
     /**
      * 
      * Set to display the distance details labels or not.
-     *
+     * 
      * @param displayLabels
      */
     public void setDisplayLabels(boolean displayLabels);

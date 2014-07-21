@@ -13,8 +13,14 @@
 package org.talend.dataquality.record.linkage.record;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.talend.dataquality.matchmerge.Attribute;
+import org.talend.dataquality.matchmerge.Record;
+import org.talend.dataquality.matchmerge.mfb.MFB;
+import org.talend.dataquality.matchmerge.mfb.MatchResult;
 import org.talend.dataquality.record.linkage.attribute.IAttributeMatcher;
 
 /**
@@ -25,6 +31,8 @@ import org.talend.dataquality.record.linkage.attribute.IAttributeMatcher;
  * must the same for all matchers.
  */
 public class CombinedRecordMatcher extends AbstractRecordMatcher {
+
+    private static Logger log = Logger.getLogger(CombinedRecordMatcher.class);
 
     private final List<IRecordMatcher> matchers = new ArrayList<IRecordMatcher>();
 
@@ -136,4 +144,60 @@ public class CombinedRecordMatcher extends AbstractRecordMatcher {
         return buf.toString();
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataquality.record.linkage.record.AbstractRecordMatcher#getMatchingWeight(org.talend.dataquality.
+     * matchmerge.Record, org.talend.dataquality.matchmerge.Record)
+     */
+    @Override
+    public MatchResult getMatchingWeight(Record record1, Record record2) {
+        Iterator<Attribute> mergedRecordAttributes = record1.getAttributes().iterator();
+        Iterator<Attribute> currentRecordAttributes = record2.getAttributes().iterator();
+        String[] record1Array = new String[record1.getAttributes().size()];
+        String[] record2Array = new String[record2.getAttributes().size()];
+        int attrIdx = 0;
+        while (mergedRecordAttributes.hasNext()) {
+            record1Array[attrIdx] = mergedRecordAttributes.next().getValue();
+            record2Array[attrIdx] = currentRecordAttributes.next().getValue();
+            attrIdx++;
+        }
+
+        double matchingWeight = 0;
+        for (IRecordMatcher matcher : matchers) {
+            double currentWeight = matcher.getMatchingWeight(record1Array, record2Array);
+            if (currentWeight < matchingWeight) {
+                continue; // a better match already exists
+            }
+            // store last matcher
+            lastPositiveMatcher = matcher;
+            matchingWeight = currentWeight;
+
+            if (matchingWeight >= matcher.getRecordMatchThreshold()) {
+                // when there is a match with one matcher, no need to loop on all matchers
+                break;
+            }
+        }
+
+        IAttributeMatcher[] attrMatchers = lastPositiveMatcher.getAttributeMatchers();
+        double[] currentAttrWeights = lastPositiveMatcher.getCurrentAttributeMatchingWeights();
+        int matchIndex = 0;
+        MatchResult result = new MatchResult(record1.getAttributes().size());
+        for (IAttributeMatcher attMatcher : attrMatchers) {
+            result.setScore(matchIndex, attMatcher.getMatchType(), currentAttrWeights[matchIndex], record1Array[matchIndex],
+                    record2Array[matchIndex]);
+            result.setThreshold(matchIndex, 0); // In combined matcher, DONT support threshold for attribute yet.
+            matchIndex++;
+        }
+        result.setConfidence(matchingWeight);
+        if (matchingWeight < lastPositiveMatcher.getRecordMatchThreshold()) {
+            if (log.isDebugEnabled()) {
+                log.debug("Cannot match record: merged record has a too low confidence value (" + matchingWeight + " < "
+                        + lastPositiveMatcher.getRecordMatchThreshold() + ")");
+            }
+            return MFB.NonMatchResult.wrap(result);
+        }
+        record2.setConfidence(matchingWeight);
+        return result;
+    }
 }

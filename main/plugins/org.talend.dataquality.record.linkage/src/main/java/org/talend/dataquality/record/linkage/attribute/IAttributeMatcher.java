@@ -80,4 +80,14 @@ public interface IAttributeMatcher {
      */
     void setAttributeName(String name);
 
+    /**
+     * @return The minimum score to consider a match between 2 string values.
+     */
+    float getThreshold();
+
+    /**
+     * @return The weight of the attribute matcher (high value means the attribute matcher matches will have more
+     * importance in the final score of a 2-record match).
+     */
+    double getWeight();
 }
