@@ -34,10 +34,12 @@ public class MFB implements MatchMergeAlgorithm {
 
     private final IRecordMerger merger;
 
+    private boolean matchDifferentGroups = false;
+
     /**
      * Builds a Swoosh implementation based on a {@link org.talend.dataquality.record.linkage.record.IRecordMatcher
      * matcher} and a {@link org.talend.dataquality.record.linkage.record.IRecordMerger merger}.
-     * 
+     *
      * @param matcher A matcher to be used to compare records together.
      * @param merger A merger to be used to create a merged (a.k.a "golden") record.
      * @see #execute(java.util.Iterator)
@@ -55,7 +57,7 @@ public class MFB implements MatchMergeAlgorithm {
 
     /**
      * Builds a Swoosh implementation based on provided parameters. This builder is
-     * 
+     *
      * @param algorithms Types of algorithm to use for match ordered by position of field.
      * @param algorithmParameters Parameter for nth match algorithm (or null if N/A).
      * @param thresholds Threshold for the nth match algorithm (consider the nth column as a match if match is greater
@@ -183,9 +185,17 @@ public class MFB implements MatchMergeAlgorithm {
      */
     protected boolean isMatchDiffGroups() {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Cannot match record: already different groups.");
+            if (!matchDifferentGroups) {
+                LOGGER.debug("Cannot match record: already different groups.");
+            } else {
+                LOGGER.debug("Record belong to different groups, but configuration allows group merges.");
+            }
         }
-        return false;
+        return matchDifferentGroups;
+    }
+
+    public void setMatchDifferentGroups(boolean matchDifferentGroups) {
+        this.matchDifferentGroups = matchDifferentGroups;
     }
 
     @Override

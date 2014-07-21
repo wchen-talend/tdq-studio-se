@@ -26,6 +26,7 @@ public class DefaultCallback implements MatchMergeAlgorithm.Callback {
 
     @Override
     public void onMatch(Record record1, Record record2, MatchResult matchResult) {
+        System.out.println("");
     }
 
     @Override
@@ -38,6 +39,7 @@ public class DefaultCallback implements MatchMergeAlgorithm.Callback {
 
     @Override
     public void onDifferent(Record record1, Record record2, MatchResult matchResult) {
+        System.out.println("");
     }
 
     @Override
