@@ -18,12 +18,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.talend.dataquality.record.linkage.utils.AnalysisRecordGroupingUtils;
 
 /**
  * created by zshen on Aug 7, 2013 Detailled comment
  * 
  */
-public class AnalysisMatchRecordGrouping extends AbstractRecordGrouping<String> {
+public class AnalysisMatchRecordGrouping extends AbstractRecordGrouping {
 
     private static Logger log = Logger.getLogger(AnalysisMatchRecordGrouping.class);
 
@@ -42,6 +43,16 @@ public class AnalysisMatchRecordGrouping extends AbstractRecordGrouping<String> 
         setSeperateOutput(Boolean.TRUE);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.talend.dataquality.record.linkage.grouping.AbstractRecordGrouping#outputRow(java.lang.String)
+     */
+    @Override
+    protected void outputRow(String row) {
+        matchResultConsumer.handle(AnalysisRecordGroupingUtils.split(row, columnDelimiter,
+                AnalysisRecordGroupingUtils.ESCAPE_CHARACTER));
+    }
 
     public void addRuleMatcher(List<Map<String, String>> ruleMatcherConvertResult) {
         addMatchRule(ruleMatcherConvertResult);
@@ -84,57 +95,6 @@ public class AnalysisMatchRecordGrouping extends AbstractRecordGrouping<String> 
      */
     public List<String[]> getResultStrList() {
         return this.resultStrList;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataquality.record.linkage.grouping.AbstractRecordGrouping#outputRow(COLUMN[])
-     */
-    @Override
-    protected void outputRow(String[] row) {
-        matchResultConsumer.handle(row);
-
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataquality.record.linkage.grouping.AbstractRecordGrouping#isMaster(java.lang.Object)
-     */
-    @Override
-    protected boolean isMaster(String col) {
-        return "true".equals(col);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataquality.record.linkage.grouping.AbstractRecordGrouping#modifyGroupSize(java.lang.Object)
-     */
-    @Override
-    protected String modifyGroupSize(String oldGroupSize) {
-        return String.valueOf(Integer.parseInt(String.valueOf(oldGroupSize)) + 1);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataquality.record.linkage.grouping.AbstractRecordGrouping#createCOLUMNArray(int)
-     */
-    @Override
-    protected String[] createTYPEArray(int size) {
-        return new String[size];
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataquality.record.linkage.grouping.AbstractRecordGrouping#getCOLUMNFromObject(java.lang.Object)
-     */
-    @Override
-    protected String getTYPEFromObject(Object objectValue) {
-        return String.valueOf(objectValue);
     }
 
 }

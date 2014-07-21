@@ -23,7 +23,7 @@ import org.talend.dataquality.record.linkage.grouping.swoosh.SurvivorShipAlgorit
  * <strike> feature TDQ-1707, record comparison algorithm with blocking key for component tMatchGroupHadoop.</strike>
  * The record grouping interface handles record grouping
  */
-public interface IRecordGrouping<T> {
+public interface IRecordGrouping {
 
     /**
      * Key for retrieving the matching type.
@@ -89,7 +89,7 @@ public interface IRecordGrouping<T> {
      * @param context the hadoop context
      * @param column delimiter
      */
-    public void doGroup(T[] inputRow) throws IOException, InterruptedException;
+    public void doGroup(String[] inputRow) throws IOException, InterruptedException;
 
     /**
      * 
