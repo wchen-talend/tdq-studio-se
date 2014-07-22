@@ -204,8 +204,7 @@ public final class AnalysisHelper {
             } else {
                 Expression expression = expressions.getExpression();
                 if (expression == null) {
-                    expression = BooleanExpressionHelper.createTdExpression(BooleanExpressionHelper.DEFAULT_LANGUAGE,
-                            datafilterString);
+                    expression = BooleanExpressionHelper.createTdExpression(BooleanExpressionHelper.DEFAULT_LANGUAGE, datafilterString);
                     expressions.setExpression(expression);
                 } else {
                     expression.setBody(datafilterString);
@@ -245,8 +244,7 @@ public final class AnalysisHelper {
                 } else {
                     Expression expression = expressions.getExpression();
                     if (expression == null) {
-                        expression = BooleanExpressionHelper.createTdExpression(BooleanExpressionHelper.DEFAULT_LANGUAGE,
-                                datafilterString);
+                        expression = BooleanExpressionHelper.createTdExpression(BooleanExpressionHelper.DEFAULT_LANGUAGE, datafilterString);
                         expressions.setExpression(expression);
                     } else {
                         expression.setBody(datafilterString);
@@ -461,8 +459,7 @@ public final class AnalysisHelper {
      * @return
      */
     public static String getLastRunContext(Analysis analysis) {
-        TaggedValue taggedValue = TaggedValueHelper.getTaggedValue(TaggedValueHelper.ANA_LAST_RUN_CONTEXT,
-                analysis.getTaggedValue());
+        TaggedValue taggedValue = TaggedValueHelper.getTaggedValue(TaggedValueHelper.ANA_LAST_RUN_CONTEXT, analysis.getTaggedValue());
         if (taggedValue == null) {
             return PluginConstant.EMPTY_STRING;
         }
@@ -494,6 +491,6 @@ public final class AnalysisHelper {
      * @return
      */
     public static boolean setLastRunContext(String lastRunContext, Analysis analysis) {
-        return TaggedValueHelper.setTaggedValue(analysis, TaggedValueHelper.REP_LAST_RUN_CONTEXT, lastRunContext);
+        return TaggedValueHelper.setTaggedValue(analysis, TaggedValueHelper.ANA_LAST_RUN_CONTEXT, lastRunContext);
     }
 }

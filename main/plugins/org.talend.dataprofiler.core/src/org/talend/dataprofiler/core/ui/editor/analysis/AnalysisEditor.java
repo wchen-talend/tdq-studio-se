@@ -98,8 +98,8 @@ public class AnalysisEditor extends SupportContextEditor {
     // Added TDQ-8787 2014-06-16 yyin
     private EventReceiver registerDynamicEvent = null;
 
-    private EventReceiver unRegisterDynamicEvent=null;
-    
+    private EventReceiver unRegisterDynamicEvent = null;
+
     private boolean isRefreshResultPage = false;
 
     /**
@@ -216,6 +216,11 @@ public class AnalysisEditor extends SupportContextEditor {
         if (masterPage != null && masterPage.isDirty()) {
             masterPage.doSave(monitor);
             setPartName(masterPage.getIntactElemenetName());
+            // reset the modified status of ContextManager according to the masterPage
+            if (contextManager instanceof JobContextManager) {
+                JobContextManager jobContextManager = (JobContextManager) contextManager;
+                jobContextManager.setModified(masterPage.isDirty());
+            }
         }
         setEditorObject(getMasterPage().getAnalysisRepNode());
         super.doSave(monitor);
@@ -388,9 +393,9 @@ public class AnalysisEditor extends SupportContextEditor {
     }
 
     /**
-     * currently will not open the editor of the analysis when running from menu, so, if the editor is opened and not
-     * the current active one, the page will not know that the result is changed. so we need to add the event/listener
-     * to them to handle this. Added 20130725 TDQ-7639
+     * currently will not open the editor of the analysis when running from menu, so, if the editor is opened and not the current active
+     * one, the page will not know that the result is changed. so we need to add the event/listener to them to handle this. Added 20130725
+     * TDQ-7639
      * 
      * @param analysis
      */
@@ -409,8 +414,7 @@ public class AnalysisEditor extends SupportContextEditor {
                         // commit. TDQ-7508
                         IRepositoryFactory localRepository = RepositoryFactoryProvider
                                 .getRepositoriyById(RepositoryConstants.REPOSITORY_LOCAL_ID);
-                        IRepositoryFactory oldRepository = ProxyRepositoryFactory.getInstance()
-                                .getRepositoryFactoryFromProvider();
+                        IRepositoryFactory oldRepository = ProxyRepositoryFactory.getInstance().getRepositoryFactoryFromProvider();
                         ProxyRepositoryFactory.getInstance().setRepositoryFactoryFromProvider(localRepository);
                         try {
                             doSave(null);
@@ -424,19 +428,16 @@ public class AnalysisEditor extends SupportContextEditor {
                         setDirty(false);
                     } else {
                         if (canSave.getMessage() != null && !canSave.getMessage().equals(StringUtils.EMPTY)) {
-                            MessageDialogWithToggle
-                                    .openError(
-                                            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                                            DefaultMessagesImpl.getString("AbstractAnalysisMetadataPage.SaveAnalysis"), canSave.getMessage()); //$NON-NLS-1$
+                            MessageDialogWithToggle.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                                    DefaultMessagesImpl.getString("AbstractAnalysisMetadataPage.SaveAnalysis"), canSave.getMessage()); //$NON-NLS-1$
                         }
                         return false;
                     }
                 }
                 ReturnCode canRun = canRun();
                 if (!canRun.isOk()) {
-                    MessageDialogWithToggle.openError(null,
-                            DefaultMessagesImpl.getString("RunAnalysisAction.runAnalysis"), canRun//$NON-NLS-1$
-                                    .getMessage());
+                    MessageDialogWithToggle.openError(null, DefaultMessagesImpl.getString("RunAnalysisAction.runAnalysis"), canRun//$NON-NLS-1$
+                            .getMessage());
                     return false;
                 }
                 // TDQ-8220 change the listener every time( master page or result page)
@@ -444,8 +445,7 @@ public class AnalysisEditor extends SupportContextEditor {
                 return true;
             }
         };
-        EventManager.getInstance().register(getMasterPage().getAnalysis(), EventEnum.DQ_ANALYSIS_CHECK_BEFORERUN,
-                checkBeforeRunReceiver);
+        EventManager.getInstance().register(getMasterPage().getAnalysis(), EventEnum.DQ_ANALYSIS_CHECK_BEFORERUN, checkBeforeRunReceiver);
 
         // register: refresh the result page after running it from menu
         refreshReceiver = new EventReceiver() {
@@ -494,8 +494,7 @@ public class AnalysisEditor extends SupportContextEditor {
                 return true;
             }
         };
-        EventManager.getInstance().register(getMasterPage().getAnalysis().getName(), EventEnum.DQ_ANALYSIS_REOPEN_EDITOR,
-                reopenEditor);
+        EventManager.getInstance().register(getMasterPage().getAnalysis().getName(), EventEnum.DQ_ANALYSIS_REOPEN_EDITOR, reopenEditor);
 
         // ADD msjian TDQ-8860 2014-4-30:only for column set analysis, when there have pattern(s) when java engine,show
         // all match indicator in the Indicators section.
@@ -560,14 +559,11 @@ public class AnalysisEditor extends SupportContextEditor {
      */
     @Override
     public void dispose() {
-        EventManager.getInstance().unRegister(getMasterPage().getAnalysis(), EventEnum.DQ_ANALYSIS_CHECK_BEFORERUN,
-                checkBeforeRunReceiver);
-        EventManager.getInstance()
-                .unRegister(getMasterPage().getAnalysis(), EventEnum.DQ_ANALYSIS_RUN_FROM_MENU, refreshReceiver);
+        EventManager.getInstance().unRegister(getMasterPage().getAnalysis(), EventEnum.DQ_ANALYSIS_CHECK_BEFORERUN, checkBeforeRunReceiver);
+        EventManager.getInstance().unRegister(getMasterPage().getAnalysis(), EventEnum.DQ_ANALYSIS_RUN_FROM_MENU, refreshReceiver);
         EventManager.getInstance().unRegister(getMasterPage().getAnalysis(), EventEnum.DQ_ANALYSIS_REFRESH_DATAPROVIDER_LIST,
                 refreshDataProvider);
-        EventManager.getInstance().unRegister(getMasterPage().getAnalysis().getName(), EventEnum.DQ_ANALYSIS_REOPEN_EDITOR,
-                reopenEditor);
+        EventManager.getInstance().unRegister(getMasterPage().getAnalysis().getName(), EventEnum.DQ_ANALYSIS_REOPEN_EDITOR, reopenEditor);
 
         // ADD msjian TDQ-8860 2014-4-30:only for column set analysis, when there have pattern(s) when java engine,show
         // all match indicator in the Indicators section.
