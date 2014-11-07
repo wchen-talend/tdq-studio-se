@@ -33,7 +33,11 @@ public abstract class AbstractDuplicator<TIn, TOut> {
 
     public AbstractDuplicator(double expectation, double duplicatesPercentage, String distributionName) {
         this.expectation = expectation;
-        uniquePercentageOfOriginal = expectation / (expectation - 1 + 1 / (1 - duplicatesPercentage));
+        if (duplicatesPercentage == 1) {
+            uniquePercentageOfOriginal = 0;
+        } else {
+            uniquePercentageOfOriginal = expectation / (expectation - 1 + 1 / (1 - duplicatesPercentage));
+        }
         distribution = DistributionFactory.createDistribution(distributionName, expectation);
     }
 

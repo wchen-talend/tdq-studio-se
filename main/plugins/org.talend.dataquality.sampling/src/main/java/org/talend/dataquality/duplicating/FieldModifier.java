@@ -157,13 +157,19 @@ public class FieldModifier {
             }
             break;
         case REMOVE_LETTER:
+            for (int i = 0; i < modifCount; i++) {
+                if (sb.length() > 0) {
+                    int pos = random.nextInt(sb.length());
+                    sb.deleteCharAt(pos);
+                }
+            }
+            break;
         case REMOVE_DIGIT:
             for (int i = 0; i < modifCount; i++) {
-                if (sb.length() == 0) {
-                    break;
+                if (sb.length() > 1) {
+                    int pos = random.nextInt(sb.length());
+                    sb.deleteCharAt(pos);
                 }
-                int pos = random.nextInt(sb.length());
-                sb.deleteCharAt(pos);
             }
             break;
         case EXCHANGE_CHAR:

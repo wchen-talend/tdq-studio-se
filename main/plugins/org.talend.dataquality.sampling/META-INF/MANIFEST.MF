@@ -12,4 +12,5 @@ Require-Bundle: org.apache.log4j,
  org.talend.libraries.apache.common
 Export-Package: org.talend.dataquality.duplicating,
  org.talend.dataquality.sampling
-Bundle-ClassPath: .
+Bundle-ClassPath: .,
+ dist/org.talend.dataquality.sampling.jar
