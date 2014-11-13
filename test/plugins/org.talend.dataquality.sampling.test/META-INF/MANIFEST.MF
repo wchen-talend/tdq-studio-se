@@ -5,7 +5,6 @@ Bundle-SymbolicName: org.talend.dataquality.sampling.test
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: .Talend SA.
 Fragment-Host: org.talend.dataquality.sampling
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: .
 Require-Bundle: org.junit,
  org.apache.commons.lang;bundle-version="2.4.0"
