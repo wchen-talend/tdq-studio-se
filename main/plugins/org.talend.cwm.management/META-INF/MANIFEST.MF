@@ -6,7 +6,6 @@ Bundle-Version: 6.0.0.qualifier
 Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.navigator,
  org.talend.dataquality;visibility:=reexport,
- org.talend.sqltools,
  org.talend.utils,
  org.apache.commons.collections,
  org.apache.commons.beanutils,
@@ -69,7 +68,6 @@ Export-Package: org.talend.commons.emf,
  org.talend.dq.nodes.indicator.impl,
  org.talend.dq.nodes.indicator.type,
  org.talend.dq.pattern,
- org.talend.dq.sql.converters,
  org.talend.dq.writer,
  org.talend.dq.writer.impl
 Import-Package: org.talend.dataprofiler.service

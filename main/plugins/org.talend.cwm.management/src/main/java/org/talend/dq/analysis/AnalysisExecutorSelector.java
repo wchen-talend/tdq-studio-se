@@ -80,7 +80,7 @@ public final class AnalysisExecutorSelector {
             exec = getColumnSetAnalysisExecutor(analysis, executionEngine);
             break;
         case TABLE:
-            exec = ExecutionLanguage.SQL.equals(executionEngine) ? new TableAnalysisSqlExecutor() : new TableAnalysisExecutor();
+            exec = new TableAnalysisSqlExecutor();
             break;
         case TABLE_FUNCTIONAL_DEPENDENCY:
             exec = new FunctionalDependencyExecutor();

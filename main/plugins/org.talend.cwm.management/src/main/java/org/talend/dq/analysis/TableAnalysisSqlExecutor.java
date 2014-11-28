@@ -19,7 +19,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -54,6 +56,7 @@ import org.talend.dq.dbms.DbmsLanguage;
 import org.talend.dq.helper.AnalysisExecutorHelper;
 import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.indicators.IndicatorCommonUtil;
+import org.talend.dq.indicators.IndicatorEvaluator;
 import org.talend.utils.sugars.ReturnCode;
 import org.talend.utils.sugars.TypedReturnCode;
 import orgomg.cwm.objectmodel.core.Expression;
@@ -64,18 +67,18 @@ import orgomg.cwm.resource.relational.NamedColumnSet;
 import orgomg.cwm.resource.relational.RelationalPackage;
 import orgomg.cwm.resource.relational.Schema;
 
-import Zql.ParseException;
-
 /**
  * DOC xqliu class global comment. Detailled comment
  */
-public class TableAnalysisSqlExecutor extends TableAnalysisExecutor {
+public class TableAnalysisSqlExecutor extends AnalysisExecutor {
 
     private static Logger log = Logger.getLogger(TableAnalysisSqlExecutor.class);
 
     private DbmsLanguage dbmsLanguage;
 
     private String stringDataFilter;
+
+    private Map<ModelElement, Package> schemata = new HashMap<ModelElement, Package>();
 
     @Override
     protected String createSqlStatement(Analysis analysis) {
@@ -94,9 +97,6 @@ public class TableAnalysisSqlExecutor extends TableAnalysisExecutor {
                     return null;
                 }
             }
-        } catch (ParseException e) {
-            log.error(e, e);
-            return null;
         } catch (AnalysisExecutionException e) {
             log.error(e, e);
             return null;
@@ -153,7 +153,7 @@ public class TableAnalysisSqlExecutor extends TableAnalysisExecutor {
     }
 
     private boolean createSqlQuery(String dataFilterAsString, Indicator indicator, boolean withWhereOfRule)
-            throws ParseException, AnalysisExecutionException {
+            throws AnalysisExecutionException {
         if (!isAnalyzedElementValid(indicator)) {
             return Boolean.FALSE;
         }
@@ -266,10 +266,9 @@ public class TableAnalysisSqlExecutor extends TableAnalysisExecutor {
      * @param completedSqlString a generic SQL expression in which the where clause variable will be replaced.
      * @param valid if false add ! before where clause
      * @return the SQL statement with the where clause
-     * @throws ParseException
      */
     private String addWhereToSqlStringStatement(List<String> whereExpressionsAnalysis, List<String> whereExpressionsDQRule,
-            String completedSqlString, boolean valid) throws ParseException {
+            String completedSqlString, boolean valid) {
         String query = completedSqlString;
 
         // add Analysis's where expression
@@ -460,7 +459,7 @@ public class TableAnalysisSqlExecutor extends TableAnalysisExecutor {
     }
 
     private String getCatalogOrSchemaName(ModelElement analyzedElement) {
-        Package schema = super.schemata.get(analyzedElement);
+        Package schema = schemata.get(analyzedElement);
         if (schema == null) {
             log.error(Messages.getString("TableAnalysisSqlExecutor.NOSCHEMAFOUNDFORTABLE", analyzedElement.getName()));//$NON-NLS-1$
             return null;
@@ -601,12 +600,8 @@ public class TableAnalysisSqlExecutor extends TableAnalysisExecutor {
 
         completedSqlString = dbms().fillGenericQueryWithJoin(genericSql, setName, joinclause);
         // ~
-        try {
-            completedSqlString = addWhereToSqlStringStatement(whereExpressionAnalysis, whereExpressionDQRule, completedSqlString,
-                    valid);
-        } catch (ParseException e) {
-            log.warn(e);
-        }
+        completedSqlString = addWhereToSqlStringStatement(whereExpressionAnalysis, whereExpressionDQRule, completedSqlString,
+                valid);
 
         return completedSqlString;
     }
@@ -618,5 +613,55 @@ public class TableAnalysisSqlExecutor extends TableAnalysisExecutor {
      */
     public void setCachedAnalysis(Analysis analysis) {
         this.cachedAnalysis = analysis;
+    }
+
+    @Override
+    protected ReturnCode evaluate(Analysis analysis, java.sql.Connection connection, String sqlStatement) {
+        IndicatorEvaluator eval = new IndicatorEvaluator(analysis);
+        eval.setMonitor(getMonitor());
+        // --- add indicators
+        EList<Indicator> indicators = analysis.getResults().getIndicators();
+        for (Indicator indicator : indicators) {
+            assert indicator != null;
+            NamedColumnSet set = SwitchHelpers.NAMED_COLUMN_SET_SWITCH.doSwitch(indicator.getAnalyzedElement());
+            if (set == null) {
+                continue;
+            }
+            // --- get the schema owner
+            if (!belongToSameSchemata(set)) {
+                setError(Messages.getString("TableAnalysisExecutor.GivenTable", set.getName()));//$NON-NLS-1$
+                return new ReturnCode(getErrorMessage(), Boolean.FALSE);
+            }
+            String setName = dbms().getQueryColumnSetWithPrefix(set);
+
+            eval.storeIndicator(setName, indicator);
+        }
+        // set it into the evaluator
+        eval.setConnection(connection);
+        // use pooled connection
+        eval.setPooledConnection(POOLED_CONNECTION);
+
+        // when to close connection
+        boolean closeAtTheEnd = true;
+        Package catalog = schemata.values().iterator().next();
+        if (!eval.selectCatalog(catalog.getName())) {
+            log.warn("Failed to select catalog " + catalog.getName() + " for connection.");//$NON-NLS-1$//$NON-NLS-2$
+        }
+        return eval.evaluateIndicators(sqlStatement, closeAtTheEnd);
+    }
+
+    protected boolean belongToSameSchemata(final NamedColumnSet set) {
+        assert set != null;
+        if (schemata.get(set) != null) {
+            return true;
+        }
+        // get catalog or schema
+        Package schema = ColumnSetHelper.getParentCatalogOrSchema(set);
+        if (schema == null) {
+            setError(Messages.getString("TableAnalysisExecutor.NoSchemaOrCatalogFound", set.getName())); //$NON-NLS-1$
+            return false;
+        }
+        schemata.put(set, schema);
+        return true;
     }
 }

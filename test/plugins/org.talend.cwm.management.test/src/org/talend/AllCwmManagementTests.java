@@ -71,7 +71,6 @@ import org.talend.dq.indicators.SqlIndicatorHandlerTest;
 import org.talend.dq.indicators.definitions.LowerUpperQuantileForDB2Test;
 import org.talend.dq.nodes.AnalysisFolderRepNodeTest;
 import org.talend.dq.nodes.ReportSubFolderRepNodeTest;
-import org.talend.dq.sql.converters.CwmZExpressionTest;
 import org.talend.dq.writer.AElementPersistanceRealTest;
 import org.talend.dq.writer.AElementPersistanceTest;
 
@@ -91,12 +90,11 @@ import org.talend.dq.writer.AElementPersistanceTest;
         RepositoryNodeHelperRealTest.class, DbmsLanguageFactoryTest.class, RepositoryNodeHelperTest.class, UDIHelperTest.class,
         AbstractSchemaEvaluatorTest.class, NetezzaDbmsLanguageTest.class, ColumnSetIndicatorEvaluatorTest.class,
         DelimitedFileIndicatorEvaluatorTest.class, SqlIndicatorHandlerTest.class, ReportSubFolderRepNodeTest.class,
-        CwmZExpressionTest.class, AElementPersistanceRealTest.class, AElementPersistanceTest.class, CWMPluginTest.class,
-        MessagesTest.class, SoftwareSystemManagerTest.class, DependenciesHandlerTest.class, StoreOnDiskHandlerTest.class,
-        MdmStatementTest.class, ConnectionUtilsTest.class, AnalysisFolderRepNodeTest.class, ColumnAnalysisSqlExecutorTest.class,
-        EObjectHelperTest.class, AnalysisRealExecutorForDB2Test.class, LowerUpperQuantileForDB2Test.class,
-        SQLPatternExplorerTest.class, TeradataDbmsLanguageTest.class, AnalysisRecordGroupingUtilsTest.class,
-        FunctionFrequencyStatExplorerTest.class })
+        AElementPersistanceRealTest.class, AElementPersistanceTest.class, CWMPluginTest.class, MessagesTest.class,
+        SoftwareSystemManagerTest.class, DependenciesHandlerTest.class, StoreOnDiskHandlerTest.class, MdmStatementTest.class,
+        ConnectionUtilsTest.class, AnalysisFolderRepNodeTest.class, ColumnAnalysisSqlExecutorTest.class, EObjectHelperTest.class,
+        AnalysisRealExecutorForDB2Test.class, LowerUpperQuantileForDB2Test.class, SQLPatternExplorerTest.class,
+        TeradataDbmsLanguageTest.class, AnalysisRecordGroupingUtilsTest.class, FunctionFrequencyStatExplorerTest.class })
 public class AllCwmManagementTests {
 
 }

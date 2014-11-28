@@ -44,8 +44,6 @@ import org.talend.dataquality.domain.RangeRestriction;
 import org.talend.dataquality.domain.pattern.Pattern;
 import org.talend.dataquality.domain.pattern.PatternFactory;
 import org.talend.dataquality.domain.pattern.RegularExpression;
-import org.talend.dataquality.domain.sql.SqlPredicate;
-import org.talend.dataquality.expressions.BooleanExpressionNode;
 import org.talend.dataquality.factories.PatternIndicatorFactory;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dataquality.indicators.IndicatorParameters;
@@ -56,7 +54,6 @@ import org.talend.dataquality.indicators.definition.IndicatorCategory;
 import org.talend.dataquality.indicators.definition.IndicatorDefinition;
 import org.talend.dq.analysis.parameters.DBConnectionParameter;
 import org.talend.dq.helper.ParameterUtil;
-import org.talend.dq.sql.converters.CwmZExpression;
 import org.talend.dq.writer.impl.ElementWriterFactory;
 import org.talend.repository.model.ProjectNodeHelper;
 import org.talend.resource.ResourceManager;
@@ -235,22 +232,9 @@ public class AnalysisCreationTest {
         Domain domain = DOMAIN.createDomain();
         RangeRestriction rangeRestriction = DOMAIN.createRangeRestriction();
         domain.getRanges().add(rangeRestriction);
-        BooleanExpressionNode expr = getExpression(column);
-        rangeRestriction.setExpressions(expr);
+        // BooleanExpressionNode expr = getExpression(column);
+        // rangeRestriction.setExpressions(expr);
         return domain;
-    }
-
-    /**
-     * DOC scorreia Comment method "getExpression".
-     * 
-     * @param column
-     * 
-     * @return
-     */
-    private BooleanExpressionNode getExpression(TdColumn column) {
-        CwmZExpression<String> expre = new CwmZExpression<String>(SqlPredicate.EQUAL);
-        expre.setOperands(column, "\"sunny\""); //$NON-NLS-1$
-        return expre.generateExpressions();
     }
 
     /**

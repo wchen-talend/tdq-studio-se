@@ -52,8 +52,6 @@ import org.talend.utils.sugars.TypedReturnCode;
 import orgomg.cwm.objectmodel.core.Expression;
 import orgomg.cwm.objectmodel.core.ModelElement;
 
-import Zql.ParseException;
-
 /**
  * DOC xqliu class global comment.
  */
@@ -82,9 +80,6 @@ public class MdmAnalysisSqlExecutor extends MdmAnalysisExecutor {
                     // return null;
                 }
             }
-        } catch (ParseException e) {
-            log.error(e, e);
-            return null;
         } catch (AnalysisExecutionException e) {
             log.error(e, e);
             return null;
@@ -99,11 +94,9 @@ public class MdmAnalysisSqlExecutor extends MdmAnalysisExecutor {
      * @param dataFilterAsString
      * @param indicator
      * @return
-     * @throws ParseException
      * @throws AnalysisExecutionException
      */
-    private boolean createSqlQuery(String dataFilterAsString, Indicator indicator) throws ParseException,
-            AnalysisExecutionException {
+    private boolean createSqlQuery(String dataFilterAsString, Indicator indicator) throws AnalysisExecutionException {
         ModelElement analyzedElement = indicator.getAnalyzedElement();
         if (analyzedElement == null) {
             traceError(Messages.getString("ColumnAnalysisSqlExecutor.ANALYSISELEMENTISNULL", indicator.getName()));//$NON-NLS-1$
@@ -391,9 +384,8 @@ public class MdmAnalysisSqlExecutor extends MdmAnalysisExecutor {
      * @param whereExpressions
      * @param completedSqlString
      * @return
-     * @throws ParseException
      */
-    private String addWhereToSqlStringStatement(List<String> whereExpressions, String completedSqlString) throws ParseException {
+    private String addWhereToSqlStringStatement(List<String> whereExpressions, String completedSqlString) {
         return dbms().addWhereToSqlStringStatement(completedSqlString, whereExpressions);
     }
 }

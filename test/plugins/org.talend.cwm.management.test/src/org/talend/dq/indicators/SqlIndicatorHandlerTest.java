@@ -12,20 +12,11 @@
 // ============================================================================
 package org.talend.dq.indicators;
 
-import java.io.ByteArrayInputStream;
-import java.text.MessageFormat;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
-
-import Zql.ParseException;
-import Zql.ZExp;
-import Zql.ZGroupBy;
-import Zql.ZQuery;
-import Zql.ZStatement;
-import Zql.ZqlParser;
 
 /**
  * DOC scorreia class global comment. Detailled comment
@@ -43,45 +34,6 @@ public class SqlIndicatorHandlerTest {
      * {@link org.talend.dq.indicators.SqlIndicatorHandler#getCompletedSqlString(java.lang.String, java.lang.String, java.lang.String)}
      * .
      */
-    @Test
-    public void testGetCompletedSqlString() {
-        String table = "MYTABLE";
-        String column = "MYCOLUMN";
-
-        for (String sqlGenericString : ALL_GENERIC_SQL) {
-            String completedSqlString = MessageFormat.format(sqlGenericString, new Object[] { column, table }) + ";";
-            System.out.println(completedSqlString);
-            if (completedSqlString.matches(LIMIT_REGEXP)) {
-                System.out.println("LIMIT REGEXPT match: " + completedSqlString);
-            }
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(completedSqlString.getBytes());
-            ZqlParser parser = new ZqlParser();
-            parser.initParser(byteArrayInputStream);
-            try {
-                ZStatement statement = parser.readStatement();
-                System.out.println("ZStatement= " + statement.toString());
-                ZQuery query = (ZQuery) statement;
-                Vector from = query.getFrom();
-                ZGroupBy groupBy = query.getGroupBy();
-                Vector orderBy = query.getOrderBy();
-                Vector select = query.getSelect();
-                ZExp where = query.getWhere();
-
-                printVector("ZSelect:", select);
-                printVector("Zfrom:", from);
-                print("Zwhere", where);
-                print("Zgroup by", groupBy);
-                printVector("Zorder by:", orderBy);
-
-            } catch (ParseException e) {
-                log.error(e, e);
-                Assert.fail(e.getLocalizedMessage());
-            }
-
-        }
-
-    }
-
     private static final String LIMIT_REGEXP = ".*(LIMIT){1}\\p{Blank}+\\p{Digit}+,?\\p{Digit}?.*";
 
     // private static final String LIMIT_REGEXP = ".*LIMIT\\p{Blank}+\.* ";
