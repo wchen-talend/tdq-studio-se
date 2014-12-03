@@ -10,28 +10,26 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.dataprofiler.core.ui.editor.preview.model.states.freq;
+package org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.table;
 
 import java.util.List;
 
 import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.category.CategoryDataset;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.model.entity.TableStructureEntity;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.ChartTableProviderClassSet.SoundexBaseChartTableLabelProvider;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.util.SoundexFrequencyStateUtil;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.table.FrequencyTableState;
 import org.talend.dataprofiler.core.ui.utils.ComparatorsFactory;
 import org.talend.dq.analysis.explore.DataExplorer;
-import org.talend.dq.analysis.explore.SoundexFrequencyExplorer;
 import org.talend.dq.indicators.ext.FrequencyExt;
 
 /**
+ * created by yyin on 2014-12-3 Detailled comment
  * 
- * DOC mzhao Low soundex frequency table.
  */
-public class SoundexLowFrequencyTableState extends FrequencyTypeStates {
+public class SoundexLowFrequencyTableState extends FrequencyTableState {
 
     public SoundexLowFrequencyTableState(List<IndicatorUnit> units) {
         super(units);
@@ -40,11 +38,7 @@ public class SoundexLowFrequencyTableState extends FrequencyTypeStates {
     @Override
     protected void sortIndicator(FrequencyExt[] frequencyExt) {
         ComparatorsFactory.sort(frequencyExt, ComparatorsFactory.SOUNDEX_LOW_FREQUENCY_COMPARATOR_ID);
-    }
 
-    @Override
-    protected String getTitle() {
-        return DefaultMessagesImpl.getString("FrequencyTypeStates.SoundexLowFreqyebctStatistics"); //$NON-NLS-1$
     }
 
     @Override
@@ -61,18 +55,9 @@ public class SoundexLowFrequencyTableState extends FrequencyTypeStates {
         return entity;
     }
 
+    @Override
     public DataExplorer getDataExplorer() {
-        return new SoundexFrequencyExplorer();
-    }
-
-    @Override
-    public JFreeChart getChart() {
-        return getChart(getDataset());
-    }
-
-    @Override
-    public JFreeChart getChart(CategoryDataset dataset) {
-        return TopChartFactory.createBarChart(DefaultMessagesImpl.getString("TopChartFactory.distinctCount"), dataset); //$NON-NLS-1$
+        return SoundexFrequencyStateUtil.getDataExplorer();
     }
 
 }

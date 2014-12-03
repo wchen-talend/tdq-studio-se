@@ -14,31 +14,28 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states.freq;
 
 import java.util.List;
 
-import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.CategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
-import org.talend.dataprofiler.core.ui.editor.preview.model.entity.TableStructureEntity;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.ChartTableProviderClassSet.SoundexBaseChartTableLabelProvider;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.util.SoundexFrequencyStateUtil;
 import org.talend.dataprofiler.core.ui.utils.ComparatorsFactory;
 import org.talend.dq.analysis.explore.DataExplorer;
-import org.talend.dq.analysis.explore.SoundexFrequencyExplorer;
 import org.talend.dq.indicators.ext.FrequencyExt;
 
 /**
  * 
  * DOC mzhao 2009-03-23 Soundex Fequency state.
  */
-public class SoundexFrequencyTableState extends FrequencyTypeStates {
+public class SoundexFrequencyChartState extends FrequencyTypeStates {
 
-    public SoundexFrequencyTableState(List<IndicatorUnit> units) {
+    public SoundexFrequencyChartState(List<IndicatorUnit> units) {
         super(units);
     }
 
     public DataExplorer getDataExplorer() {
-        return new SoundexFrequencyExplorer();
+        return SoundexFrequencyStateUtil.getDataExplorer();
     }
 
     @Override
@@ -49,20 +46,6 @@ public class SoundexFrequencyTableState extends FrequencyTypeStates {
     @Override
     protected String getTitle() {
         return DefaultMessagesImpl.getString("FrequencyTypeStates.SoundexFreqyebctStatistics"); //$NON-NLS-1$
-    }
-
-    @Override
-    protected ITableLabelProvider getLabelProvider() {
-        return new SoundexBaseChartTableLabelProvider();
-    }
-
-    @Override
-    protected TableStructureEntity getTableStructure() {
-        TableStructureEntity entity = new TableStructureEntity();
-        entity.setFieldNames(new String[] {
-                DefaultMessagesImpl.getString("FrequencyTypeStates.value"), DefaultMessagesImpl.getString("FrequencyTypeStates.distinctCount"), DefaultMessagesImpl.getString("FrequencyTypeStates.count"), "%" }); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-        entity.setFieldWidths(new Integer[] { 180, 120, 100, 100 });
-        return entity;
     }
 
     @Override

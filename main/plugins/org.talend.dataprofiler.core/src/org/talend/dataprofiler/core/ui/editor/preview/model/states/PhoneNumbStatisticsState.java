@@ -14,19 +14,15 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states;
 
 import java.util.List;
 
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.jfree.chart.JFreeChart;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
-import org.talend.dataprofiler.core.ui.editor.preview.model.entity.TableStructureEntity;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.ChartTableProviderClassSet.BaseChartTableLabelProvider;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.ChartTableProviderClassSet.CommonContenteProvider;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.CommonStateUtil;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.PhoneNumbStatisticsStateUtil;
 import org.talend.dq.analysis.explore.DataExplorer;
-import org.talend.dq.analysis.explore.PhoneNumbStatisticsExplorer;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 
 /**
@@ -53,17 +49,12 @@ public class PhoneNumbStatisticsState extends AbstractChartTypeStates {
 
         CustomerDefaultCategoryDataset customerdataset = new CustomerDefaultCategoryDataset();
         for (IndicatorUnit unit : units) {
-            final Object unitValue = unit.getValue();
-            double value = unitValue != null ? Double.parseDouble(unitValue.toString()) : Double.NaN;
+            double value = CommonStateUtil.getUnitValue(unit.getValue());
             String label = unit.getIndicatorName();
 
             customerdataset.addValue(value, label, label);
 
-            ChartDataEntity entity = new ChartDataEntity();
-            entity.setIndicator(unit.getIndicator());
-            entity.setLabel(label);
-            entity.setValue(String.valueOf(value));
-            entity.setPercent(value / unit.getIndicator().getCount());
+            ChartDataEntity entity = PhoneNumbStatisticsStateUtil.createDataEntity(unit.getIndicator(), value, label);
 
             customerdataset.addDataEntity(entity);
         }
@@ -97,7 +88,7 @@ public class PhoneNumbStatisticsState extends AbstractChartTypeStates {
      * @see org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates#getDataExplorer()
      */
     public DataExplorer getDataExplorer() {
-        return new PhoneNumbStatisticsExplorer();
+        return PhoneNumbStatisticsStateUtil.getDataExplorer();
     }
 
     /*
@@ -108,40 +99,6 @@ public class PhoneNumbStatisticsState extends AbstractChartTypeStates {
     public String getReferenceLink() {
         // TODO Auto-generated method stub
         return null;
-    }
-
-    /*
-     * (non-Jsdoc)
-     * 
-     * @see org.talend.dataprofiler.core.ui.editor.preview.model.states.AbstractChartTypeStates#getTableStructure()
-     */
-    @Override
-    protected TableStructureEntity getTableStructure() {
-        TableStructureEntity entity = new TableStructureEntity();
-        entity.setFieldNames(new String[] {
-                DefaultMessagesImpl.getString("PhoneNumbStatisticsState.Count"), DefaultMessagesImpl.getString("PhoneNumbStatisticsState.Count"), "%" }); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        entity.setFieldWidths(new Integer[] { 200, 150, 150 });
-        return entity;
-    }
-
-    /*
-     * (non-Jsdoc)
-     * 
-     * @see org.talend.dataprofiler.core.ui.editor.preview.model.states.AbstractChartTypeStates#getLabelProvider()
-     */
-    @Override
-    protected ITableLabelProvider getLabelProvider() {
-        return new BaseChartTableLabelProvider();
-    }
-
-    /*
-     * (non-Jsdoc)
-     * 
-     * @see org.talend.dataprofiler.core.ui.editor.preview.model.states.AbstractChartTypeStates#getContentProvider()
-     */
-    @Override
-    protected IStructuredContentProvider getContentProvider() {
-        return new CommonContenteProvider();
     }
 
 }

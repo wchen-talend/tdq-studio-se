@@ -31,12 +31,11 @@ public class PatternFrequencyStatisticsState extends FrequencyStatisticsState {
 
     @Override
     protected String getTitle() {
-        // MOD hcheng 2009-06-16,0007725: missed indicator name in pattern graphics.
         return DefaultMessagesImpl.getString("FrequencyTypeStates.PatternFreqyebctStatistics"); //$NON-NLS-1$
     }
-    
+
+    @Override
     public DataExplorer getDataExplorer() {
-        // TODO Auto-generated method stub
         return new FunctionFrequencyStatExplorer();
     }
 }

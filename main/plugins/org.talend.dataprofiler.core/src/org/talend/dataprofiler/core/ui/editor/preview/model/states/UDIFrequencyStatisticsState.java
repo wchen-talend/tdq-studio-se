@@ -16,7 +16,6 @@ import java.util.List;
 
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.FrequencyStatisticsState;
-import org.talend.dq.analysis.explore.DataExplorer;
 
 /**
  * DOC xqliu class global comment. Detailled comment
@@ -30,10 +29,5 @@ public class UDIFrequencyStatisticsState extends FrequencyStatisticsState {
      */
     public UDIFrequencyStatisticsState(List<IndicatorUnit> units) {
         super(units);
-    }
-
-    @Override
-    public DataExplorer getDataExplorer() {
-        return super.getDataExplorer();
     }
 }

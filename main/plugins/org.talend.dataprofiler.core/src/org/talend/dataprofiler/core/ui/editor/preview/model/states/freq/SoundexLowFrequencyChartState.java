@@ -14,33 +14,48 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states.freq;
 
 import java.util.List;
 
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.category.CategoryDataset;
+import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.FrequencyTypeStateUtil;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.util.SoundexFrequencyStateUtil;
 import org.talend.dataprofiler.core.ui.utils.ComparatorsFactory;
 import org.talend.dq.analysis.explore.DataExplorer;
 import org.talend.dq.indicators.ext.FrequencyExt;
 
 /**
- * DOC xwang class global comment. Detailled comment
+ * 
+ * DOC mzhao Low soundex frequency table.
  */
-public class BinLowFrequencyStatisticsState extends FrequencyTypeStates {
+public class SoundexLowFrequencyChartState extends FrequencyTypeStates {
 
-    public BinLowFrequencyStatisticsState(List<IndicatorUnit> units) {
+    public SoundexLowFrequencyChartState(List<IndicatorUnit> units) {
         super(units);
     }
 
     @Override
     protected void sortIndicator(FrequencyExt[] frequencyExt) {
-        ComparatorsFactory.sort(frequencyExt, ComparatorsFactory.FREQUENCY_COMPARATOR_ID);
+        ComparatorsFactory.sort(frequencyExt, ComparatorsFactory.SOUNDEX_LOW_FREQUENCY_COMPARATOR_ID);
     }
 
     @Override
     protected String getTitle() {
-        return DefaultMessagesImpl.getString("BinLowFrequencyStatisticsState.BinLowFrequencyStatistics"); //$NON-NLS-1$
+        return DefaultMessagesImpl.getString("FrequencyTypeStates.SoundexLowFreqyebctStatistics"); //$NON-NLS-1$
     }
 
     public DataExplorer getDataExplorer() {
-        return FrequencyTypeStateUtil.getDataExplorer();
+        return SoundexFrequencyStateUtil.getDataExplorer();
     }
+
+    @Override
+    public JFreeChart getChart() {
+        return getChart(getDataset());
+    }
+
+    @Override
+    public JFreeChart getChart(CategoryDataset dataset) {
+        return TopChartFactory.createBarChart(DefaultMessagesImpl.getString("TopChartFactory.distinctCount"), dataset); //$NON-NLS-1$
+    }
+
 }

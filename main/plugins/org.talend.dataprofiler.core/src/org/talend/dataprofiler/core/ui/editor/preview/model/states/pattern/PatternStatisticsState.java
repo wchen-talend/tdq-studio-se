@@ -14,8 +14,6 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states.pattern;
 
 import java.util.List;
 
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.CategoryDataset;
@@ -24,12 +22,8 @@ import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
-import org.talend.dataprofiler.core.ui.editor.preview.model.entity.TableStructureEntity;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.AbstractChartTypeStates;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.ChartTableProviderClassSet.CommonContenteProvider;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.ChartTableProviderClassSet.PatternLabelProvider;
 import org.talend.dq.analysis.explore.DataExplorer;
-import org.talend.dq.analysis.explore.PatternExplorer;
 import org.talend.dq.indicators.ext.PatternMatchingExt;
 import org.talend.dq.indicators.preview.table.PatternChartDataEntity;
 
@@ -57,17 +51,14 @@ public class PatternStatisticsState extends AbstractChartTypeStates {
         for (IndicatorUnit unit : units) {
             String label = unit.getIndicator().getName();
             PatternMatchingExt patternExt = (PatternMatchingExt) unit.getValue();
-            double notMathCount = patternExt == null ? Double.NaN : patternExt.getNotMatchingValueCount();
-            double machCount = patternExt == null ? Double.NaN : patternExt.getMatchingValueCount();
+            double notMathCount = PatternStatisticeStateUtil.getNotMatchCount(patternExt);
+            double machCount = PatternStatisticeStateUtil.getMatchCount(patternExt);
 
             customerdataset.addValue(notMathCount, DefaultMessagesImpl.getString("PatternStatisticsState.NotMatching"), label); //$NON-NLS-1$
             customerdataset.addValue(machCount, DefaultMessagesImpl.getString("PatternStatisticsState.Matching"), label); //$NON-NLS-1$
 
-            PatternChartDataEntity patternEntity = new PatternChartDataEntity();
-            patternEntity.setIndicator(unit.getIndicator());
-            patternEntity.setLabel(label);
-            patternEntity.setNumMatch(String.valueOf(machCount));
-            patternEntity.setNumNoMatch(String.valueOf(notMathCount));
+            PatternChartDataEntity patternEntity = PatternStatisticeStateUtil.createDataEntity(unit, label, notMathCount,
+                    machCount);
 
             customerdataset.addDataEntity(patternEntity);
         }
@@ -76,31 +67,12 @@ public class PatternStatisticsState extends AbstractChartTypeStates {
     }
 
     public DataExplorer getDataExplorer() {
-        return new PatternExplorer();
+        return PatternStatisticeStateUtil.getDataExplorer();
     }
 
     public JFreeChart getExampleChart() {
         // TODO Auto-generated method stub
         return null;
-    }
-
-    @Override
-    protected TableStructureEntity getTableStructure() {
-        TableStructureEntity entity = new TableStructureEntity();
-        entity.setFieldNames(new String[] {
-                DefaultMessagesImpl.getString("PatternStatisticsState.Label"), DefaultMessagesImpl.getString("PatternStatisticsState.Match"), DefaultMessagesImpl.getString("PatternStatisticsState.NoMatch"), DefaultMessagesImpl.getString("PatternStatisticsState.Match_"), DefaultMessagesImpl.getString("PatternStatisticsState.NoMatch_") }); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-        entity.setFieldWidths(new Integer[] { 200, 75, 75, 75, 75 });
-        return entity;
-    }
-
-    @Override
-    protected ITableLabelProvider getLabelProvider() {
-        return new PatternLabelProvider();
-    }
-
-    @Override
-    protected IStructuredContentProvider getContentProvider() {
-        return new CommonContenteProvider();
     }
 
     public String getReferenceLink() {

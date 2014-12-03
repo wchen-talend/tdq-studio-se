@@ -35,11 +35,11 @@ public class DatePatternFrequencyStatisticsState extends FrequencyStatisticsStat
 
     @Override
     protected String getTitle() {
-        // TODO Auto-generated method stub
         return DefaultMessagesImpl.getString("FrequencyTypeStates.DatePatternFreqyebctStatistics"); //$NON-NLS-1$
     }
+
+    @Override
     public DataExplorer getDataExplorer() {
-        // TODO Auto-generated method stub
         return new FunctionFrequencyStatExplorer();
     }
 

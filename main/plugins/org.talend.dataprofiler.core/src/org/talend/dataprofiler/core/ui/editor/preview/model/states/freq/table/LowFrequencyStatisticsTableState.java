@@ -10,36 +10,45 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.dataprofiler.core.ui.editor.preview.model.states.freq;
+package org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.table;
 
 import java.util.List;
 
-import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.table.FrequencyTableState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.FrequencyTypeStateUtil;
 import org.talend.dataprofiler.core.ui.utils.ComparatorsFactory;
 import org.talend.dq.analysis.explore.DataExplorer;
 import org.talend.dq.indicators.ext.FrequencyExt;
 
 /**
- * DOC xwang class global comment. Detailled comment
+ * created by yyin on 2014-12-3 Detailled comment
+ * 
  */
-public class BinLowFrequencyStatisticsState extends FrequencyTypeStates {
+public class LowFrequencyStatisticsTableState extends FrequencyTableState {
 
-    public BinLowFrequencyStatisticsState(List<IndicatorUnit> units) {
+    /**
+     * DOC yyin LowFrequencyStatisticsTableState constructor comment.
+     * 
+     * @param units
+     */
+    public LowFrequencyStatisticsTableState(List<IndicatorUnit> units) {
         super(units);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.talend.dataprofiler.core.ui.editor.preview.model.states.table.FrequencyTableState#sortIndicator(org.talend
+     * .dq.indicators.ext.FrequencyExt[])
+     */
     @Override
     protected void sortIndicator(FrequencyExt[] frequencyExt) {
-        ComparatorsFactory.sort(frequencyExt, ComparatorsFactory.FREQUENCY_COMPARATOR_ID);
+        ComparatorsFactory.sort(frequencyExt, ComparatorsFactory.LOW_FREQUENCY_COMPARATOR_ID);
     }
 
     @Override
-    protected String getTitle() {
-        return DefaultMessagesImpl.getString("BinLowFrequencyStatisticsState.BinLowFrequencyStatistics"); //$NON-NLS-1$
-    }
-
     public DataExplorer getDataExplorer() {
         return FrequencyTypeStateUtil.getDataExplorer();
     }

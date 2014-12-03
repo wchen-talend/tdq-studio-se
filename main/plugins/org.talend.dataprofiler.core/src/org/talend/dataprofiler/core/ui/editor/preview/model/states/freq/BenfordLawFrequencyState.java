@@ -24,10 +24,7 @@ import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryD
 import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDecorator;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
-import org.talend.dataprofiler.core.ui.editor.preview.model.entity.TableStructureEntity;
-import org.talend.dataprofiler.core.ui.utils.AnalysisUtils;
-import org.talend.dataprofiler.core.ui.utils.ComparatorsFactory;
-import org.talend.dq.analysis.explore.BenfordLawFrequencyExplorer;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.util.BenfordLawFrequencyStateUtil;
 import org.talend.dq.analysis.explore.DataExplorer;
 import org.talend.dq.indicators.ext.FrequencyExt;
 
@@ -58,7 +55,7 @@ public class BenfordLawFrequencyState extends FrequencyTypeStates {
      * @see org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates#getDataExplorer()
      */
     public DataExplorer getDataExplorer() {
-        return new BenfordLawFrequencyExplorer();
+        return BenfordLawFrequencyStateUtil.getDataExplorer();
     }
 
     /*
@@ -70,8 +67,7 @@ public class BenfordLawFrequencyState extends FrequencyTypeStates {
      */
     @Override
     protected void sortIndicator(FrequencyExt[] frequencyExt) {
-        ComparatorsFactory.sort(frequencyExt, ComparatorsFactory.BENFORDLAW_FREQUENCY_COMPARATOR_ID);
-        AnalysisUtils.recomputerForBenfordLaw(frequencyExt);
+        BenfordLawFrequencyStateUtil.sortIndicator(frequencyExt);
     }
 
     /**
@@ -81,15 +77,6 @@ public class BenfordLawFrequencyState extends FrequencyTypeStates {
     protected void setValueToDataset(CustomerDefaultCategoryDataset customerdataset, FrequencyExt freqExt, final String keyLabel) {
         customerdataset.addValue(freqExt.getFrequency(), "1", keyLabel); //$NON-NLS-1$
         dotChartLabels.add(keyLabel);
-    }
-
-    @Override
-    protected TableStructureEntity getTableStructure() {
-        TableStructureEntity entity = new TableStructureEntity();
-        entity.setFieldNames(new String[] {
-                DefaultMessagesImpl.getString("BenfordLawFrequencyState.value"), DefaultMessagesImpl.getString("FrequencyTypeStates.count"), "%" }); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        entity.setFieldWidths(new Integer[] { 200, 150, 150 });
-        return entity;
     }
 
     /**

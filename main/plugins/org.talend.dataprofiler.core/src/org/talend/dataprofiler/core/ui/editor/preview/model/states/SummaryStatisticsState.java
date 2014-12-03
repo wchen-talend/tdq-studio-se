@@ -13,14 +13,11 @@
 package org.talend.dataprofiler.core.ui.editor.preview.model.states;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
@@ -31,15 +28,10 @@ import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDatasetUtils;
 import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDecorator;
 import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
-import org.talend.dataprofiler.core.ui.editor.preview.ColumnIndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.model.dataset.CustomerDefaultBAWDataset;
-import org.talend.dataprofiler.core.ui.editor.preview.model.entity.TableStructureEntity;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.ChartTableProviderClassSet.CommonContenteProvider;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.ChartTableProviderClassSet.SummaryLabelProvider;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.SummaryStatisticsStateUtil;
 import org.talend.dq.analysis.explore.DataExplorer;
-import org.talend.dq.analysis.explore.SummaryStastictisExplorer;
-import org.talend.dq.indicators.IndicatorCommonUtil;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 import org.talend.dq.nodes.indicator.type.IndicatorEnum;
 import org.talend.utils.sql.Java2SqlType;
@@ -58,9 +50,6 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
 
     private int sqltype;
 
-    // TDQ-9140 , if any values = NaN, isMeaning = false, and will not use BAW chart.
-    private boolean isMeaning = true;
-
     /**
      * Sets the sqltype.
      * 
@@ -72,45 +61,10 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
 
     public SummaryStatisticsState(List<IndicatorUnit> units) {
         if (units != null) {
-            this.units.addAll(check(units));
+            this.units.addAll(SummaryStatisticsStateUtil.check(units));
         }
 
-        if (units != null && !units.isEmpty() && units.get(0) instanceof ColumnIndicatorUnit) {
-            if (((ColumnIndicatorUnit) units.get(0)).getModelElementIndicator() != null) {
-                sqltype = ((ColumnIndicatorUnit) units.get(0)).getModelElementIndicator().getJavaType();
-            }
-        }
-    }
-
-    /**
-     * DOC bZhou Comment method "check".
-     * 
-     * @param units2
-     * @return
-     */
-    private Collection<? extends IndicatorUnit> check(List<IndicatorUnit> parameterUnits) {
-        List<IndicatorUnit> validUnitList = new ArrayList<IndicatorUnit>();
-
-        for (IndicatorUnit unit : parameterUnits) {
-
-            IndicatorEnum type = unit.getType();
-            if (type != null && !unit.isExcuted()
-                    && (type == IndicatorEnum.IQRIndicatorEnum || type == IndicatorEnum.RangeIndicatorEnum)) {
-                IndicatorCommonUtil.getIndicatorValue(unit.getIndicator());
-            }
-
-            if (unit.getValue() == null) {
-                this.isMeaning = false;
-            }
-
-            if (unit.getIndicator().getRealValue() != null && "null".equals(unit.getIndicator().getRealValue())) {//$NON-NLS-1$
-                continue;
-            } else {
-                validUnitList.add(unit);
-            }
-        }
-
-        return validUnitList;
+        sqltype = SummaryStatisticsStateUtil.findSqlType(units);
     }
 
     public JFreeChart getChart() {
@@ -153,15 +107,8 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
         CustomerDefaultCategoryDataset customerdataset = new CustomerDefaultCategoryDataset();
         for (IndicatorUnit unit : units) {
             // MOD xqliu 2009-06-29 bug 7068
-            String value = null;
-            if (unit.getValue() == null) {
-                value = String.valueOf(Double.NaN);
-                this.isMeaning = false;
-            } else {
-                value = unit.getValue().toString();
-            }
+            String value = SummaryStatisticsStateUtil.getUnitValue(unit);
             if (Java2SqlType.isNumbericInSQL(sqltype)) {
-                // ~
                 try {
                     map.put(unit.getType(), Double.parseDouble(value));
                 } catch (Exception e) {
@@ -169,10 +116,7 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
                 }
             }
 
-            ChartDataEntity entity = new ChartDataEntity();
-            entity.setIndicator(unit.getIndicator());
-            entity.setLabel(unit.getIndicatorName());
-            entity.setValue(value);
+            ChartDataEntity entity = SummaryStatisticsStateUtil.createDataEntity(unit, value);
 
             customerdataset.addDataEntity(entity);
         }
@@ -210,10 +154,7 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
     }
 
     public DataExplorer getDataExplorer() {
-        if (Java2SqlType.isDateInSQL(sqltype)) {
-            return null;
-        }
-        return new SummaryStastictisExplorer();
+        return SummaryStatisticsStateUtil.getDataExplorer(sqltype);
     }
 
     public JFreeChart getExampleChart() {
@@ -221,27 +162,8 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
         return null;
     }
 
-    @Override
-    protected TableStructureEntity getTableStructure() {
-        TableStructureEntity entity = new TableStructureEntity();
-        entity.setFieldNames(new String[] {
-                DefaultMessagesImpl.getString("SummaryStatisticsState.Label"), DefaultMessagesImpl.getString("SummaryStatisticsState.Count") }); //$NON-NLS-1$ //$NON-NLS-2$
-        entity.setFieldWidths(new Integer[] { 200, 300 });
-        return entity;
-    }
-
-    @Override
-    protected ITableLabelProvider getLabelProvider() {
-        return new SummaryLabelProvider();
-    }
-
-    @Override
-    protected IStructuredContentProvider getContentProvider() {
-        return new CommonContenteProvider();
-    }
-
     private boolean isIntact() {
-        return units.size() == FULL_FLAG && isMeaning;
+        return units.size() == FULL_FLAG && SummaryStatisticsStateUtil.isMeaning();
     }
 
     public String getReferenceLink() {
@@ -263,7 +185,6 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
      * .common.ui.editor.preview.ICustomerDataset)
      */
     public JFreeChart getChart(ICustomerDataset dataset) {
-        // TODO Auto-generated method stub
         return null;
     }
 }

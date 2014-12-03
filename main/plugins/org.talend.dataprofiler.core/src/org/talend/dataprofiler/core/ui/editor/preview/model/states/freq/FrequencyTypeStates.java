@@ -14,8 +14,6 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states.freq;
 
 import java.util.List;
 
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.CategoryDataset;
 import org.talend.commons.utils.SpecialValueDisplay;
@@ -24,13 +22,8 @@ import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
-import org.talend.dataprofiler.core.ui.editor.preview.model.entity.TableStructureEntity;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.AbstractChartTypeStates;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.ChartTableProviderClassSet.CommonContenteProvider;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.ChartTableProviderClassSet.FrequencyLabelProvider;
-import org.talend.dataprofiler.core.ui.utils.AnalysisUtils;
-import org.talend.dataquality.indicators.Indicator;
-import org.talend.dataquality.indicators.IndicatorParameters;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.FrequencyTypeStateUtil;
 import org.talend.dq.indicators.ext.FrequencyExt;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 
@@ -62,41 +55,21 @@ public abstract class FrequencyTypeStates extends AbstractChartTypeStates {
 
                 sortIndicator(frequencyExt);
 
-                int numOfShown = frequencyExt.length;
-                IndicatorParameters parameters = unit.getIndicator().getParameters();
-                if (parameters != null) {
-                    if (parameters.getTopN() < numOfShown) {
-                        numOfShown = parameters.getTopN();
-                    }
-                }
+                int numOfShown = FrequencyTypeStateUtil.getNumberOfShown(unit, frequencyExt);
 
                 for (int i = 0; i < numOfShown; i++) {
                     FrequencyExt freqExt = frequencyExt[i];
-                    String keyLabel = String.valueOf(freqExt.getKey());
-                    if ("null".equals(keyLabel)) { //$NON-NLS-1$
-                        keyLabel = SpecialValueDisplay.NULL_FIELD;
-                    }
-                    if ("".equals(keyLabel)) { //$NON-NLS-1$
-                        keyLabel = SpecialValueDisplay.EMPTY_FIELD;
-                    }
+                    String keyLabel = FrequencyTypeStateUtil.getKeyLabel(freqExt);
 
                     setValueToDataset(customerdataset, freqExt, keyLabel);
 
-                    ChartDataEntity entity = new ChartDataEntity();
-                    entity.setIndicator(unit.getIndicator());
-                    // MOD mzhao feature:6307 display soundex distinct count and real count.
-                    entity.setKey(freqExt.getKey());
-                    entity.setLabelNull(freqExt.getKey() == null);
-                    entity.setLabel(keyLabel);
-                    entity.setValue(String.valueOf(freqExt.getValue()));
-
-                    Double percent = withRowCountIndicator ? freqExt.getFrequency() : Double.NaN;
-                    entity.setPercent(percent);
+                    ChartDataEntity entity = FrequencyTypeStateUtil.createChartEntity(unit.getIndicator(), freqExt, keyLabel,
+                            withRowCountIndicator);
 
                     customerdataset.addDataEntity(entity);
                 }
             } else {
-                ChartDataEntity entity = AnalysisUtils.createChartEntity(unit.getIndicator(), null,
+                ChartDataEntity entity = FrequencyTypeStateUtil.createChartEntity(unit.getIndicator(), null,
                         SpecialValueDisplay.EMPTY_FIELD, false);
                 FrequencyExt fre = new FrequencyExt();
                 fre.setFrequency(0.0);
@@ -127,38 +100,8 @@ public abstract class FrequencyTypeStates extends AbstractChartTypeStates {
         return null;
     }
 
-    @Override
-    protected TableStructureEntity getTableStructure() {
-        TableStructureEntity entity = new TableStructureEntity();
-        entity.setFieldNames(new String[] {
-                DefaultMessagesImpl.getString("FrequencyTypeStates.value"), DefaultMessagesImpl.getString("FrequencyTypeStates.count"), "%" }); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        entity.setFieldWidths(new Integer[] { 200, 150, 150 });
-        return entity;
-    }
-
-    @Override
-    protected ITableLabelProvider getLabelProvider() {
-        return new FrequencyLabelProvider();
-    }
-
-    @Override
-    protected IStructuredContentProvider getContentProvider() {
-        return new CommonContenteProvider();
-    }
-
-    /**
-     * DOC bZhou Comment method "isWithRowCountIndicator".
-     * 
-     * If have RowCountIndicator in the indicator list, return true, otherwise, return false.
-     * 
-     * @return
-     */
     protected boolean isWithRowCountIndicator() {
-        if (!units.isEmpty()) {
-            Indicator indicator = units.get(0).getIndicator();
-            return AnalysisUtils.isWithRowCountIndicator(indicator);
-        }
-        return false;
+        return FrequencyTypeStateUtil.isWithRowCountIndicator(units);
     }
 
     protected abstract void sortIndicator(FrequencyExt[] frequencyExt);

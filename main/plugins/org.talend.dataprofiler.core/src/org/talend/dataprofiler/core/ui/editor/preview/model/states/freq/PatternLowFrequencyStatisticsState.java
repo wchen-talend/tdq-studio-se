@@ -26,7 +26,6 @@ public class PatternLowFrequencyStatisticsState extends LowFrequencyStatisticsSt
 
     public PatternLowFrequencyStatisticsState(List<IndicatorUnit> units) {
         super(units);
-        // TODO Auto-generated constructor stub
     }
 
     @Override
@@ -34,8 +33,9 @@ public class PatternLowFrequencyStatisticsState extends LowFrequencyStatisticsSt
         // MOD hcheng 2009-06-16,0007725: missed indicator name in pattern graphics.
         return DefaultMessagesImpl.getString("FrequencyTypeStates.PatternLowFreqyebctStatistics"); //$NON-NLS-1$
     }
+
+    @Override
     public DataExplorer getDataExplorer() {
-        // TODO Auto-generated method stub
         return new FunctionFrequencyStatExplorer();
     }
 }
