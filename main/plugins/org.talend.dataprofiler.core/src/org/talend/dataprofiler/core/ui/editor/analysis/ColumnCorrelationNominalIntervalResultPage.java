@@ -60,9 +60,11 @@ import org.talend.dataprofiler.core.ui.chart.jung.JungGraphGenerator;
 import org.talend.dataprofiler.core.ui.editor.preview.ColumnSetIndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.HideSeriesChartComposite;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTypeStatesOperator;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartWithData;
+import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTypeStatesFactory;
+import org.talend.dataprofiler.core.ui.editor.preview.model.TableTypeStatesFactory;
+import org.talend.dataprofiler.core.ui.editor.preview.model.TableWithData;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.table.ITableTypeStates;
 import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
 import org.talend.dataprofiler.core.ui.utils.TableUtils;
 import org.talend.dataquality.indicators.columnset.ColumnSetMultiValueIndicator;
@@ -313,12 +315,16 @@ public class ColumnCorrelationNominalIntervalResultPage extends AbstractAnalysis
                 .getUniqueCountIndicator()));
 
         EIndicatorChartType simpleStatType = EIndicatorChartType.SIMPLE_STATISTICS;
-        IChartTypeStates chartTypeState = ChartTypeStatesOperator.getChartState(simpleStatType, units);
-        ChartWithData chartData = new ChartWithData(simpleStatType, chartTypeState.getChart(), chartTypeState.getDataEntity());
+        // create table viewer firstly
+        ITableTypeStates tableTypeState = TableTypeStatesFactory.getInstance().getTableState(simpleStatType, units);
+        TableWithData chartData = new TableWithData(simpleStatType, tableTypeState.getDataEntity());
 
-        TableViewer tableviewer = chartTypeState.getTableForm(composite);
+        TableViewer tableviewer = tableTypeState.getTableForm(composite);
         tableviewer.setInput(chartData);
         TableUtils.addTooltipOnTableItem(tableviewer.getTable());
+
+        // then create chart
+        IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartState(simpleStatType, units);
 
         // create chart
         if (!EditorPreferencePage.isHideGraphics()) {

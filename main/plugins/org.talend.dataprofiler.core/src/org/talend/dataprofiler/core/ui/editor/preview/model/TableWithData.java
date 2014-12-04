@@ -12,24 +12,20 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.editor.preview.model;
 
-import org.jfree.chart.JFreeChart;
 import org.talend.dq.indicators.preview.EIndicatorChartType;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 
 /**
- * DOC zqin class global comment. Detailled comment
+ * TODO: delete the chart. DOC zqin class global comment. Detailled comment
  */
-public class ChartWithData {
-
-    private JFreeChart chart;
+public class TableWithData {
 
     private ChartDataEntity[] entity;
 
     private EIndicatorChartType chartType;
 
-    public ChartWithData(EIndicatorChartType chartType, JFreeChart chart, ChartDataEntity[] entity) {
+    public TableWithData(EIndicatorChartType chartType, ChartDataEntity[] entity) {
         this.chartType = chartType;
-        this.chart = chart;
         this.entity = entity;
     }
 
@@ -39,10 +35,6 @@ public class ChartWithData {
 
     public EIndicatorChartType getChartType() {
         return chartType;
-    }
-
-    public JFreeChart getChart() {
-        return chart;
     }
 
     public void setEntities(ChartDataEntity[] entity) {

@@ -22,14 +22,14 @@ import org.talend.dq.analysis.explore.FunctionFrequencyStatExplorer;
  * created by yyin on 2014-12-3 Detailled comment
  * 
  */
-public class PatternLowFrequencyStatisticsState extends LowFrequencyStatisticsTableState {
+public class PatternLowFrequencyStatisticsTableState extends LowFrequencyStatisticsTableState {
 
     /**
      * DOC yyin PatternLowFrequencyStatisticsState constructor comment.
      * 
      * @param units
      */
-    public PatternLowFrequencyStatisticsState(List<IndicatorUnit> units) {
+    public PatternLowFrequencyStatisticsTableState(List<IndicatorUnit> units) {
         super(units);
     }
 

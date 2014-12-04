@@ -18,7 +18,7 @@ import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartWithData;
+import org.talend.dataprofiler.core.ui.editor.preview.model.TableWithData;
 import org.talend.dataquality.indicators.FrequencyIndicator;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dataquality.indicators.ModeIndicator;
@@ -159,7 +159,7 @@ public class DynamicChartEventReceiver extends EventReceiver {
     }
 
     public void refreshTable(String value) {
-        ChartWithData input = (ChartWithData) tableViewer.getInput();
+        TableWithData input = (TableWithData) tableViewer.getInput();
         if (input != null) {
             ChartDataEntity[] dataEntities = input.getEnity();
             if (dataEntities != null && dataEntities.length > entityIndex) {

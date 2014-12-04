@@ -71,9 +71,11 @@ import org.talend.dataprofiler.core.ui.ColumnSortListener;
 import org.talend.dataprofiler.core.ui.editor.preview.ColumnSetIndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableFactory;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTypeStatesOperator;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartWithData;
+import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTypeStatesFactory;
+import org.talend.dataprofiler.core.ui.editor.preview.model.TableTypeStatesFactory;
+import org.talend.dataprofiler.core.ui.editor.preview.model.TableWithData;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.table.ITableTypeStates;
 import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
 import org.talend.dataprofiler.core.ui.utils.TableUtils;
 import org.talend.dataprofiler.core.ui.wizard.patterns.DataFilterType;
@@ -214,18 +216,20 @@ public class ColumnSetResultPage extends AbstractAnalysisResultPage implements P
         units.add(new ColumnSetIndicatorUnit(IndicatorEnum.AllMatchIndicatorEnum, allMatchIndicator));
 
         EIndicatorChartType matchingType = EIndicatorChartType.PATTERN_MATCHING;
-        IChartTypeStates chartTypeState = ChartTypeStatesOperator.getChartState(matchingType, units);
-        ChartWithData chartData = new ChartWithData(matchingType, chartTypeState.getChart(), chartTypeState.getDataEntity());
+        ITableTypeStates tableTypeState = TableTypeStatesFactory.getInstance().getTableState(matchingType, units);
+        TableWithData chartData = new TableWithData(matchingType, tableTypeState.getDataEntity());
 
-        TableViewer tableviewer = chartTypeState.getTableForm(sectionClient);
+        TableViewer tableviewer = tableTypeState.getTableForm(sectionClient);
         tableviewer.setInput(chartData);
         TableUtils.addTooltipOnTableItem(tableviewer.getTable());
+
         // MOD qiongli feature 19192.
         if (masterPage.getAnalysis().getParameters().isStoreData()) {
-            ChartTableFactory.addMenuAndTip(tableviewer, chartTypeState.getDataExplorer(), masterPage.getAnalysis());
+            ChartTableFactory.addMenuAndTip(tableviewer, tableTypeState.getDataExplorer(), masterPage.getAnalysis());
         }
 
         if (!EditorPreferencePage.isHideGraphics()) {
+            IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartState(matchingType, units);
             JFreeChart chart = chartTypeState.getChart();
             ChartDecorator.decorate(chart, null);
             if (chart != null) {
@@ -271,20 +275,21 @@ public class ColumnSetResultPage extends AbstractAnalysisResultPage implements P
                 .getUniqueCountIndicator()));
 
         EIndicatorChartType simpleStatType = EIndicatorChartType.SIMPLE_STATISTICS;
-        IChartTypeStates chartTypeState = ChartTypeStatesOperator.getChartState(simpleStatType, units);
-        ChartWithData chartData = new ChartWithData(simpleStatType, chartTypeState.getChart(), chartTypeState.getDataEntity());
+        // create table firstly
+        ITableTypeStates tableTypeState = TableTypeStatesFactory.getInstance().getTableState(simpleStatType, units);
+        TableWithData chartData = new TableWithData(simpleStatType, tableTypeState.getDataEntity());
 
-        TableViewer tableviewer = chartTypeState.getTableForm(composite);
+        TableViewer tableviewer = tableTypeState.getTableForm(composite);
         tableviewer.setInput(chartData);
         TableUtils.addTooltipOnTableItem(tableviewer.getTable());
         // MOD qiongli feature 19192.
-        DataExplorer dataExplorer = chartTypeState.getDataExplorer();
+        DataExplorer dataExplorer = tableTypeState.getDataExplorer();
         Analysis analysis = this.getAnalysisHandler().getAnalysis();
         ChartTableFactory.addMenuAndTip(tableviewer, dataExplorer, analysis);
 
         // create chart
         if (!EditorPreferencePage.isHideGraphics()) {
-
+            IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartState(simpleStatType, units);
             JFreeChart chart = chartTypeState.getChart();
             ChartDecorator.decorate(chart, null);
             if (chart != null) {

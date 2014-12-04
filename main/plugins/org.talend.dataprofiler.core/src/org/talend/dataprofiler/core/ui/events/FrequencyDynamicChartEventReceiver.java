@@ -16,8 +16,8 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.talend.commons.utils.SpecialValueDisplay;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartWithData;
-import org.talend.dataprofiler.core.ui.utils.AnalysisUtils;
+import org.talend.dataprofiler.core.ui.editor.preview.model.TableWithData;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.FrequencyTypeStateUtil;
 import org.talend.dataquality.indicators.BenfordLawFrequencyIndicator;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dataquality.indicators.IndicatorParameters;
@@ -45,7 +45,7 @@ public class FrequencyDynamicChartEventReceiver extends DynamicChartEventReceive
             }
         }
         if (tableViewer != null) {
-            ChartWithData input = (ChartWithData) tableViewer.getInput();
+            TableWithData input = (TableWithData) tableViewer.getInput();
             if (input != null) {
                 if (this.indicator instanceof ModeIndicator) {
                     ChartDataEntity entity = new ChartDataEntity();
@@ -81,7 +81,7 @@ public class FrequencyDynamicChartEventReceiver extends DynamicChartEventReceive
         }
         FrequencyExt[] tempFreq = handleFrequency(frequencyExt);
 
-        boolean withRowCountIndicator = AnalysisUtils.isWithRowCountIndicator(indicator);
+        boolean withRowCountIndicator = FrequencyTypeStateUtil.isWithRowCountIndicator(indicator);
         for (int i = 0; i < numOfShown; i++) {
             FrequencyExt freqExt = tempFreq[i];
             String keyLabel = String.valueOf(freqExt.getKey());
@@ -94,7 +94,8 @@ public class FrequencyDynamicChartEventReceiver extends DynamicChartEventReceive
 
             addValueToDataset(customerdataset, freqExt, keyLabel);
 
-            ChartDataEntity entity = AnalysisUtils.createChartEntity(indicator, freqExt, keyLabel, withRowCountIndicator);
+            ChartDataEntity entity = FrequencyTypeStateUtil
+                    .createChartEntity(indicator, freqExt, keyLabel, withRowCountIndicator);
 
             ((CustomerDefaultCategoryDataset) customerdataset).addDataEntity(entity);
         }
@@ -110,7 +111,7 @@ public class FrequencyDynamicChartEventReceiver extends DynamicChartEventReceive
             }
         }
         if (tableViewer != null) {
-            ChartWithData input = (ChartWithData) tableViewer.getInput();
+            TableWithData input = (TableWithData) tableViewer.getInput();
             input.setEntities(null);
             tableViewer.getTable().clearAll();
         }

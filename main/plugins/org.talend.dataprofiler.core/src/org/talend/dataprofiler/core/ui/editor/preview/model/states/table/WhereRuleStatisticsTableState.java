@@ -237,4 +237,12 @@ public class WhereRuleStatisticsTableState extends AbstractRuleStatisticsTableSt
 
     }
 
+    public TableIndicatorUnit getRownCountUnit(List<TableIndicatorUnit> units1) {
+        return WhereRuleStatisticsStateUtil.getRownCountUnit(units1);
+    }
+
+    public List<TableIndicatorUnit> removeRowCountUnit(List<TableIndicatorUnit> units1) {
+        return WhereRuleStatisticsStateUtil.removeRowCountUnit(units1);
+    }
+
 }

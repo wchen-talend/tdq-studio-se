@@ -72,7 +72,7 @@ import org.talend.dataprofiler.core.ui.editor.composite.AbstractColumnDropTree;
 import org.talend.dataprofiler.core.ui.editor.composite.AnalysisTableTreeViewer;
 import org.talend.dataprofiler.core.ui.editor.preview.CompositeIndicator;
 import org.talend.dataprofiler.core.ui.editor.preview.TableIndicatorUnit;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTypeStatesOperator;
+import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTypeStatesFactory;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.WhereRuleStatisticsStateTable;
 import org.talend.dataprofiler.core.ui.events.DynamicChartEventReceiver;
@@ -361,7 +361,7 @@ public class TableMasterDetailsPage extends DynamicAnalysisMasterPage implements
                                 for (EIndicatorChartType chartType : indicatorComposite.keySet()) {
                                     List<TableIndicatorUnit> units = indicatorComposite.get(chartType);
                                     if (!units.isEmpty()) {
-                                        final IChartTypeStates chartTypeState = ChartTypeStatesOperator.getChartStateTable(
+                                        final IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartStateTable(
                                                 chartType, units, tableIndicator);
                                         // get all indicator lists separated by chart, and only
                                         // WhereRuleStatisticsStateTable can get not-null charts

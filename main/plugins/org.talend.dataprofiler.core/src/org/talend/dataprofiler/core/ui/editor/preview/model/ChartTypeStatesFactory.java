@@ -23,7 +23,7 @@ import org.talend.dataprofiler.core.ui.editor.preview.model.states.ModeStatistic
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.PhoneNumbStatisticsState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.PieStatisticsState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.SimpleStatisticsState;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.SimpleStatisticsStateTable;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.SimpleRuleStatisticsChartState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.SimpleTextStatisticsState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.SummaryStatisticsState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.TextStatisticsState;
@@ -41,8 +41,8 @@ import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.Frequenc
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.LowFrequencyStatisticsState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.PatternFrequencyStatisticsState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.PatternLowFrequencyStatisticsState;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.SoundexFrequencyTableState;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.SoundexLowFrequencyTableState;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.SoundexFrequencyChartState;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.SoundexLowFrequencyChartState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.pattern.REGEXPatternStatisticsState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.pattern.SQLPatternStatisticsState;
 import org.talend.dq.indicators.preview.EIndicatorChartType;
@@ -50,9 +50,9 @@ import org.talend.dq.indicators.preview.EIndicatorChartType;
 /**
  * DOC Zqin class global comment. Detailled comment
  */
-public final class ChartTypeStatesOperator {
+public final class ChartTypeStatesFactory {
 
-    private ChartTypeStatesOperator() {
+    private ChartTypeStatesFactory() {
 
     }
 
@@ -110,9 +110,9 @@ public final class ChartTypeStatesOperator {
             return new SummaryStatisticsState(units);
             // MOD mzhao 2009-03-23, Soundex frequency.
         case SOUNDEX_FREQUENCY_TABLE:
-            return new SoundexFrequencyTableState(units);
+            return new SoundexFrequencyChartState(units);
         case SOUNDEX_LOW_FREQUENCY_TABLE:
-            return new SoundexLowFrequencyTableState(units);
+            return new SoundexLowFrequencyChartState(units);
 
         case DATE_FREQUENCE_STATISTICS:
             return new DateFrequencyStatisticsState(units, EIndicatorChartType.DATE_FREQUENCE_STATISTICS);
@@ -153,7 +153,7 @@ public final class ChartTypeStatesOperator {
         case WHERERULE_INDICATOR:
             return new WhereRuleStatisticsStateTable(units, tableIndicator);
         case SIMPLE_STATISTICS:
-            return new SimpleStatisticsStateTable(units);
+            return new SimpleRuleStatisticsChartState(units);
 
         default:
             return null;

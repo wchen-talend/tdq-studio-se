@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.Display;
 import org.talend.commons.utils.SpecialValueDisplay;
 import org.talend.dataprofiler.core.ImageLib;
 import org.talend.dataprofiler.core.PluginConstant;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartWithData;
+import org.talend.dataprofiler.core.ui.editor.preview.model.TableWithData;
 import org.talend.dataquality.helpers.IndicatorHelper;
 import org.talend.dataquality.indicators.BenfordLawFrequencyIndicator;
 import org.talend.dataquality.indicators.FrequencyIndicator;
@@ -325,8 +325,8 @@ public class ChartTableProviderClassSet {
     public static class CommonContenteProvider implements IStructuredContentProvider {
 
         public Object[] getElements(Object inputElement) {
-            if (inputElement instanceof ChartWithData) {
-                return ((ChartWithData) inputElement).getEnity();
+            if (inputElement instanceof TableWithData) {
+                return ((TableWithData) inputElement).getEnity();
             } else {
                 return new Object[0];
             }

@@ -32,6 +32,10 @@ import org.talend.dq.indicators.preview.table.ChartDataEntity;
  */
 public class ModeStatisticsTableState extends AbstractTableTypeStates {
 
+    public ModeStatisticsTableState(List<IndicatorUnit> units) {
+        super(units);
+    }
+
     /*
      * (non-Javadoc)
      * 

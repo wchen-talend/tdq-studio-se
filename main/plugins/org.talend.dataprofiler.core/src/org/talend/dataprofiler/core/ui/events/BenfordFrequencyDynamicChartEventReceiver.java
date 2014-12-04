@@ -15,7 +15,7 @@ package org.talend.dataprofiler.core.ui.events;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.BenfordLawFrequencyState;
-import org.talend.dataprofiler.core.ui.utils.AnalysisUtils;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.util.BenfordLawFrequencyStateUtil;
 import org.talend.dataprofiler.core.ui.utils.ComparatorsFactory;
 import org.talend.dataquality.indicators.impl.BenfordLawFrequencyIndicatorImpl;
 import org.talend.dq.indicators.ext.FrequencyExt;
@@ -54,7 +54,7 @@ public class BenfordFrequencyDynamicChartEventReceiver extends FrequencyDynamicC
         FrequencyExt[] tempFreq = frequencyExt;
         ComparatorsFactory.sort(tempFreq, ComparatorsFactory.BENFORDLAW_FREQUENCY_COMPARATOR_ID);
 
-        return AnalysisUtils.recomputerForBenfordLaw(tempFreq);
+        return BenfordLawFrequencyStateUtil.recomputerForBenfordLaw(tempFreq);
     }
 
     /**

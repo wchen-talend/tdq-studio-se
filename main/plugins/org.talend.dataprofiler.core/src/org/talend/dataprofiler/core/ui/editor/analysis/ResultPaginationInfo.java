@@ -61,10 +61,12 @@ import org.talend.dataprofiler.core.ui.editor.preview.CompositeIndicator;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableFactory;
 import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableMenuGenerator;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTypeStatesOperator;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartWithData;
+import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTypeStatesFactory;
 import org.talend.dataprofiler.core.ui.editor.preview.model.MenuItemEntity;
+import org.talend.dataprofiler.core.ui.editor.preview.model.TableTypeStatesFactory;
+import org.talend.dataprofiler.core.ui.editor.preview.model.TableWithData;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.table.ITableTypeStates;
 import org.talend.dataprofiler.core.ui.events.DynamicChartEventReceiver;
 import org.talend.dataprofiler.core.ui.events.EventEnum;
 import org.talend.dataprofiler.core.ui.events.EventManager;
@@ -190,7 +192,7 @@ public class ResultPaginationInfo extends IndicatorPaginationInfo {
      * @param units
      */
     private void createChart(final Composite comp, EIndicatorChartType chartType, List<IndicatorUnit> units) {
-        IChartTypeStates chartTypeState = ChartTypeStatesOperator.getChartState(chartType, units);
+        IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartState(chartType, units);
         DynamicIndicatorModel dyModel = new DynamicIndicatorModel();
 
         // MOD TDQ-8787 20140618 yyin: to let the chart and table use the same dataset
@@ -245,12 +247,15 @@ public class ResultPaginationInfo extends IndicatorPaginationInfo {
         }
         dyModel.setIndicatorList(indicators);
 
-        ChartWithData chartData = new ChartWithData(chartType, chart, ((ICustomerDataset) dataset).getDataEntities());
+        if (EIndicatorChartType.SUMMARY_STATISTICS.equals(chartType)) {
+            // for the summary indicators, the table show 2 more than the bar chart
+            dyModel.setSummaryIndicators(getIndicatorsForTable(units, true));
+        }
 
         // create UI
         ExpandableComposite subComp = uiPagination.getToolkit().createExpandableComposite(comp,
                 ExpandableComposite.TWISTIE | ExpandableComposite.CLIENT_INDENT | ExpandableComposite.EXPANDED);
-        subComp.setText(chartData.getChartType().getLiteral());
+        subComp.setText(chartType.getLiteral());
         subComp.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // MOD xqliu 2009-06-23 bug 7481
@@ -263,18 +268,19 @@ public class ResultPaginationInfo extends IndicatorPaginationInfo {
 
         Analysis analysis = masterPage.getAnalysisHandler().getAnalysis();
 
-        // create table
-        TableViewer tableviewer = chartTypeState.getTableForm(composite);
+        // create table viewer firstly
+        ITableTypeStates tableTypeState = TableTypeStatesFactory.getInstance().getTableState(chartType, units);
+
+        TableWithData chartData = new TableWithData(chartType, tableTypeState.getDataEntity());
+        TableViewer tableviewer = tableTypeState.getTableForm(composite);
         tableviewer.setInput(chartData);
-        if (EIndicatorChartType.SUMMARY_STATISTICS.equals(chartType)) {
-            // for the summary indicators, the table show 2 more than the bar chart
-            dyModel.setSummaryIndicators(getIndicatorsForTable(units, true));
-        }
         dyModel.setTableViewer(tableviewer);
 
-        DataExplorer dataExplorer = chartTypeState.getDataExplorer();
+        DataExplorer dataExplorer = tableTypeState.getDataExplorer();
         ChartTableFactory.addMenuAndTip(tableviewer, dataExplorer, analysis);
+        // ~
 
+        // create chart
         if (chart != null) {
             ChartComposite cc = new TalendChartComposite(composite, SWT.NONE, chart, true);
             if (EIndicatorChartType.SUMMARY_STATISTICS.equals(chartType)) {

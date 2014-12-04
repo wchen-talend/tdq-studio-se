@@ -79,7 +79,7 @@ import org.talend.dataprofiler.core.ui.editor.composite.DataFilterComp;
 import org.talend.dataprofiler.core.ui.editor.composite.IndicatorsComp;
 import org.talend.dataprofiler.core.ui.editor.preview.ColumnSetIndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTypeStatesOperator;
+import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTypeStatesFactory;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates;
 import org.talend.dataprofiler.core.ui.events.EventEnum;
 import org.talend.dataprofiler.core.ui.events.EventManager;
@@ -502,7 +502,7 @@ public class ColumnSetMasterPage extends AbstractAnalysisMetadataPage implements
         units.add(new ColumnSetIndicatorUnit(IndicatorEnum.AllMatchIndicatorEnum, allMatchIndicator));
 
         EIndicatorChartType matchingType = EIndicatorChartType.PATTERN_MATCHING;
-        IChartTypeStates chartTypeState = ChartTypeStatesOperator.getChartState(matchingType, units);
+        IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartState(matchingType, units);
 
         JFreeChart chart = chartTypeState.getChart();
         ChartDecorator.decorate(chart, null);
@@ -525,7 +525,7 @@ public class ColumnSetMasterPage extends AbstractAnalysisMetadataPage implements
                 .getDuplicateCountIndicator()));
         units.add(new ColumnSetIndicatorUnit(IndicatorEnum.UniqueIndicatorEnum, simpleStatIndicator.getUniqueCountIndicator()));
 
-        IChartTypeStates chartTypeState = ChartTypeStatesOperator.getChartState(EIndicatorChartType.SIMPLE_STATISTICS, units);
+        IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartState(EIndicatorChartType.SIMPLE_STATISTICS, units);
 
         // create chart
         JFreeChart chart = chartTypeState.getChart();

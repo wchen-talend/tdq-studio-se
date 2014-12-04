@@ -63,11 +63,14 @@ import org.talend.dataprofiler.core.ui.editor.preview.CompositeIndicator;
 import org.talend.dataprofiler.core.ui.editor.preview.TableIndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableFactory;
 import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableMenuGenerator;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTypeStatesOperator;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartWithData;
+import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTypeStatesFactory;
 import org.talend.dataprofiler.core.ui.editor.preview.model.MenuItemEntity;
+import org.talend.dataprofiler.core.ui.editor.preview.model.TableTypeStatesFactory;
+import org.talend.dataprofiler.core.ui.editor.preview.model.TableWithData;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.WhereRuleStatisticsStateTable;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.table.ITableTypeStates;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.table.WhereRuleStatisticsTableState;
 import org.talend.dataprofiler.core.ui.events.DynamicChartEventReceiver;
 import org.talend.dataprofiler.core.ui.events.EventEnum;
 import org.talend.dataprofiler.core.ui.events.EventManager;
@@ -219,17 +222,12 @@ public class TableAnalysisResultPage extends AbstractAnalysisResultPage implemen
                             for (EIndicatorChartType chartType : indicatorComposite.keySet()) {
                                 List<TableIndicatorUnit> units = indicatorComposite.get(chartType);
                                 if (!units.isEmpty()) {
-                                    IChartTypeStates chartTypeState = ChartTypeStatesOperator.getChartStateTable(chartType,
-                                            units, tableIndicator);
-
-                                    ChartWithData chartData = new ChartWithData(chartType, chartTypeState.getChart(),
-                                            chartTypeState.getDataEntity());
 
                                     // create UI
                                     ExpandableComposite subComp = toolkit.createExpandableComposite(comp,
                                             ExpandableComposite.TWISTIE | ExpandableComposite.CLIENT_INDENT
                                                     | ExpandableComposite.EXPANDED);
-                                    subComp.setText(chartData.getChartType().getLiteral());
+                                    subComp.setText(chartType.getLiteral());
                                     subComp.setLayoutData(new GridData(GridData.FILL_BOTH));
 
                                     // MOD xqliu 2009-06-23 bug 7481
@@ -245,23 +243,24 @@ public class TableAnalysisResultPage extends AbstractAnalysisResultPage implemen
                                     tableTopComp.setLayoutData(new GridData(GridData.FILL_BOTH));
 
                                     Analysis analysis = masterPage.getAnalysisHandler().getAnalysis();
+                                    ITableTypeStates tableTypeState = TableTypeStatesFactory.getInstance().getTableStateForRule(
+                                            chartType, units, tableIndicator);
 
                                     // create table for RownCountIndicator
-                                    if (chartTypeState instanceof WhereRuleStatisticsStateTable) {
-                                        WhereRuleStatisticsStateTable chartTypeStateWhereRule = (WhereRuleStatisticsStateTable) chartTypeState;
-                                        ChartWithData chartDataRowCount = new ChartWithData(chartType, chartTypeStateWhereRule
-                                                .getChart(), chartTypeStateWhereRule.getDataEntityRowCount());
+                                    if (tableTypeState instanceof WhereRuleStatisticsTableState) {
+                                        WhereRuleStatisticsTableState tableWhereRule = (WhereRuleStatisticsTableState) tableTypeState;
+                                        TableWithData chartDataRowCount = new TableWithData(chartType, tableWhereRule
+                                                .getDataEntityOfRowCount());
 
-                                        TableViewer tableviewerRowCount = chartTypeStateWhereRule
-                                                .getTableFormRowCount(tableTopComp);
+                                        TableViewer tableviewerRowCount = tableWhereRule.getTableFormRowCount(tableTopComp);
                                         tableviewerRowCount.setInput(chartDataRowCount);
-                                        DataExplorer dataExplorerRownCount = chartTypeState.getDataExplorer();
+                                        DataExplorer dataExplorerRownCount = tableTypeState.getDataExplorer();
                                         ChartTableFactory.addMenuAndTip(tableviewerRowCount, dataExplorerRownCount, analysis);
 
                                         // Added TDQ-8787 20140707 yyin: create and store the dynamic model for row
                                         // count's table
                                         List<Indicator> rowCount = new ArrayList<Indicator>();
-                                        rowCount.add(chartTypeStateWhereRule.getRownCountUnit(units).getIndicator());
+                                        rowCount.add(tableWhereRule.getRownCountUnit(units).getIndicator());
                                         DynamicIndicatorModel dyModel = AnalysisUtils.createDynamicModel(chartType, rowCount,
                                                 null);
                                         dyModel.setTableViewer(tableviewerRowCount);
@@ -271,16 +270,17 @@ public class TableAnalysisResultPage extends AbstractAnalysisResultPage implemen
                                     }
 
                                     // create table for WhereRuleIndicator
-                                    TableViewer tableviewer = chartTypeState.getTableForm(tableTopComp);
+                                    TableWithData chartData = new TableWithData(chartType, tableTypeState.getDataEntity());
+                                    TableViewer tableviewer = tableTypeState.getTableForm(tableTopComp);
                                     tableviewer.setInput(chartData);
-                                    DataExplorer dataExplorer = chartTypeState.getDataExplorer();
+                                    DataExplorer dataExplorer = tableTypeState.getDataExplorer();
                                     ChartTableFactory.addMenuAndTip(tableviewer, dataExplorer, analysis);
 
                                     // Added TDQ-8787 20140707 yyin: create and store the dynamic model for all dq
                                     // rules's table
-                                    if (chartTypeState instanceof WhereRuleStatisticsStateTable) {
+                                    if (tableTypeState instanceof WhereRuleStatisticsTableState) {
                                         List<Indicator> allRules = new ArrayList<Indicator>();
-                                        List<TableIndicatorUnit> removeRowCountUnit = ((WhereRuleStatisticsStateTable) chartTypeState)
+                                        List<TableIndicatorUnit> removeRowCountUnit = ((WhereRuleStatisticsTableState) tableTypeState)
                                                 .removeRowCountUnit(units);
                                         for (TableIndicatorUnit indUnit : removeRowCountUnit) {
                                             allRules.add(indUnit.getIndicator());
@@ -298,6 +298,9 @@ public class TableAnalysisResultPage extends AbstractAnalysisResultPage implemen
                                     chartTopComp.setLayoutData(new GridData(GridData.FILL_BOTH));
 
                                     if (!EditorPreferencePage.isHideGraphics()) {
+                                        IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartStateTable(chartType,
+                                                units, tableIndicator);
+
                                         // get all indicator lists separated by chart, and only
                                         // WhereRuleStatisticsStateTable can get not-null charts
                                         List<List<Indicator>> pagedIndicators = ((WhereRuleStatisticsStateTable) chartTypeState)

@@ -35,7 +35,7 @@ import org.talend.dataprofiler.core.ui.chart.TalendChartComposite;
 import org.talend.dataprofiler.core.ui.editor.composite.AnalysisColumnTreeViewer;
 import org.talend.dataprofiler.core.ui.editor.preview.CompositeIndicator;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTypeStatesOperator;
+import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTypeStatesFactory;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.SummaryStatisticsState;
 import org.talend.dataprofiler.core.ui.events.DynamicChartEventReceiver;
@@ -150,7 +150,7 @@ public class MasterPaginationInfo extends IndicatorPaginationInfo {
      * @param units
      */
     private void createChart(Composite comp, EIndicatorChartType chartType, List<IndicatorUnit> units) {
-        final IChartTypeStates chartTypeState = ChartTypeStatesOperator.getChartState(chartType, units);
+        final IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartState(chartType, units);
         JFreeChart chart = null;
         // MOD TDQ-8787 20140722 yyin:(when first switch from master to result) if there is some dynamic event for the
         // current indicator, use its dataset directly (TDQ-9241)
