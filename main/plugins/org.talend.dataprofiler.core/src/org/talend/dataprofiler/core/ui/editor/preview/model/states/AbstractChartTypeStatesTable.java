@@ -16,14 +16,6 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.ValueAxis;
@@ -34,8 +26,6 @@ import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.xy.XYDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.core.ui.editor.preview.TableIndicatorUnit;
-import org.talend.dataprofiler.core.ui.editor.preview.model.entity.TableStructureEntity;
-import org.talend.dq.indicators.preview.table.ChartDataEntity;
 
 /**
  * DOC xqliu class global comment. Detailled comment
@@ -49,13 +39,6 @@ public abstract class AbstractChartTypeStatesTable implements IChartTypeStates {
         if (units != null) {
             this.units.addAll(units);
         }
-    }
-
-    public ChartDataEntity[] getDataEntity() {
-        if (getCustomerDataset() != null) {
-            return getCustomerDataset().getDataEntities();
-        }
-        return null;
     }
 
     public CategoryDataset getDataset() {
@@ -96,44 +79,6 @@ public abstract class AbstractChartTypeStatesTable implements IChartTypeStates {
         }
 
         return chart;
-    }
-
-    public TableViewer getTableForm(Composite parent) {
-        TableViewer tbViewer = new TableViewer(parent, SWT.BORDER | SWT.FULL_SELECTION);
-
-        Table table = tbViewer.getTable();
-
-        table.setHeaderVisible(true);
-        table.setLinesVisible(true);
-        GridData gd = new GridData();
-        gd.heightHint = 220;
-        gd.widthHint = 500;
-        gd.verticalAlignment = SWT.BEGINNING;
-        table.setLayoutData(gd);
-
-        createTableColumnStructure(getTableStructure(), table);
-
-        tbViewer.setLabelProvider(getLabelProvider());
-
-        tbViewer.setContentProvider(getContentProvider());
-
-        return tbViewer;
-    }
-
-    protected abstract TableStructureEntity getTableStructure();
-
-    protected abstract ITableLabelProvider getLabelProvider();
-
-    protected abstract IStructuredContentProvider getContentProvider();
-
-    protected void createTableColumnStructure(TableStructureEntity entity, Table table) {
-        if (entity.isValid()) {
-            for (int i = 0; i < entity.getColumnCount(); i++) {
-                TableColumn column = new TableColumn(table, SWT.NONE);
-                column.setText(entity.getFieldNames()[i]);
-                column.setWidth(entity.getFieldWidths()[i]);
-            }
-        }
     }
 
     public XYDataset getXYDataset() {

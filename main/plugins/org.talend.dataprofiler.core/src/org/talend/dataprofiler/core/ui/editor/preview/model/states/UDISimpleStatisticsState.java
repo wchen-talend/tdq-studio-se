@@ -19,7 +19,6 @@ import org.jfree.data.category.CategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
-import org.talend.dq.analysis.explore.DataExplorer;
 
 /**
  * DOC xqliu class global comment. Detailled comment
@@ -46,8 +45,4 @@ public class UDISimpleStatisticsState extends SimpleStatisticsState {
         super(units);
     }
 
-    @Override
-    public DataExplorer getDataExplorer() {
-        return super.getDataExplorer();
-    }
 }

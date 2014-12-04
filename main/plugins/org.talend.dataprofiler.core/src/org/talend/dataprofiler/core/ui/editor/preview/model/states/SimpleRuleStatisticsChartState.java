@@ -14,8 +14,6 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states;
 
 import java.util.List;
 
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -25,19 +23,17 @@ import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDecorator;
 import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.TableIndicatorUnit;
-import org.talend.dataprofiler.core.ui.editor.preview.model.entity.TableStructureEntity;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.ChartTableProviderClassSet.BaseChartTableLabelProvider;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.ChartTableProviderClassSet.CommonContenteProvider;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.CommonStateUtil;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.SimpleStatisticsStateUtil;
 import org.talend.dq.analysis.explore.DataExplorer;
-import org.talend.dq.analysis.explore.SimpleStatisticsExplorer;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 
 /**
  * DOC xqliu class global comment. Detailled comment
  */
-public class SimpleStatisticsStateTable extends AbstractChartTypeStatesTable {
+public class SimpleRuleStatisticsChartState extends AbstractChartTypeStatesTable {
 
-    public SimpleStatisticsStateTable(List<TableIndicatorUnit> units) {
+    public SimpleRuleStatisticsChartState(List<TableIndicatorUnit> units) {
         super(units);
     }
 
@@ -57,11 +53,7 @@ public class SimpleStatisticsStateTable extends AbstractChartTypeStatesTable {
 
             customerdataset.addValue(value, label, ""); //$NON-NLS-1$
 
-            ChartDataEntity entity = new ChartDataEntity();
-            entity.setIndicator(unit.getIndicator());
-            entity.setLabel(label);
-            entity.setValue(String.valueOf(value));
-            entity.setPercent(value / unit.getIndicator().getCount());
+            ChartDataEntity entity = CommonStateUtil.createDataEntity(unit, value, label);
 
             customerdataset.addDataEntity(entity);
         }
@@ -69,30 +61,11 @@ public class SimpleStatisticsStateTable extends AbstractChartTypeStatesTable {
     }
 
     public DataExplorer getDataExplorer() {
-        return new SimpleStatisticsExplorer();
+        return SimpleStatisticsStateUtil.getDataExplorer();
     }
 
     public JFreeChart getExampleChart() {
         return null;
-    }
-
-    @Override
-    protected TableStructureEntity getTableStructure() {
-        TableStructureEntity entity = new TableStructureEntity();
-        entity.setFieldNames(new String[] {
-                DefaultMessagesImpl.getString("SimpleStatisticsStateTable.Label"), DefaultMessagesImpl.getString("SimpleStatisticsStateTable.Count"), "%" }); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        entity.setFieldWidths(new Integer[] { 200, 150, 150 });
-        return entity;
-    }
-
-    @Override
-    protected ITableLabelProvider getLabelProvider() {
-        return new BaseChartTableLabelProvider();
-    }
-
-    @Override
-    protected IStructuredContentProvider getContentProvider() {
-        return new CommonContenteProvider();
     }
 
     public String getReferenceLink() {
