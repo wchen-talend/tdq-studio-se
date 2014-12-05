@@ -50,6 +50,8 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
 
     private int sqltype;
 
+    private SummaryStatisticsStateUtil summaryUtil;
+
     /**
      * Sets the sqltype.
      * 
@@ -60,11 +62,13 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
     }
 
     public SummaryStatisticsState(List<IndicatorUnit> units) {
+        summaryUtil = new SummaryStatisticsStateUtil();
         if (units != null) {
-            this.units.addAll(SummaryStatisticsStateUtil.check(units));
+            this.units.addAll(summaryUtil.check(units));
         }
 
-        sqltype = SummaryStatisticsStateUtil.findSqlType(units);
+        sqltype = summaryUtil.findSqlType(units);
+
     }
 
     public JFreeChart getChart() {
@@ -107,7 +111,7 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
         CustomerDefaultCategoryDataset customerdataset = new CustomerDefaultCategoryDataset();
         for (IndicatorUnit unit : units) {
             // MOD xqliu 2009-06-29 bug 7068
-            String value = SummaryStatisticsStateUtil.getUnitValue(unit);
+            String value = summaryUtil.getUnitValue(unit);
             if (Java2SqlType.isNumbericInSQL(sqltype)) {
                 try {
                     map.put(unit.getType(), Double.parseDouble(value));
@@ -116,7 +120,7 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
                 }
             }
 
-            ChartDataEntity entity = SummaryStatisticsStateUtil.createDataEntity(unit, value);
+            ChartDataEntity entity = summaryUtil.createDataEntity(unit, value);
 
             customerdataset.addDataEntity(entity);
         }
@@ -154,7 +158,7 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
     }
 
     public DataExplorer getDataExplorer() {
-        return SummaryStatisticsStateUtil.getDataExplorer(sqltype);
+        return summaryUtil.getDataExplorer(sqltype);
     }
 
     public JFreeChart getExampleChart() {
@@ -163,7 +167,7 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
     }
 
     private boolean isIntact() {
-        return units.size() == FULL_FLAG && SummaryStatisticsStateUtil.isMeaning();
+        return units.size() == FULL_FLAG && summaryUtil.isMeaning();
     }
 
     public String getReferenceLink() {

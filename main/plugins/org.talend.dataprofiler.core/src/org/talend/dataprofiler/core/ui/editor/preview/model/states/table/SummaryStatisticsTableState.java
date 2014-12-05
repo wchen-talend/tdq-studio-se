@@ -34,17 +34,20 @@ public class SummaryStatisticsTableState extends AbstractTableTypeStates {
 
     private int sqltype;
 
+    private SummaryStatisticsStateUtil summaryUtil;
+
     /**
      * DOC yyin SummaryStatisticsTableState constructor comment.
      * 
      * @param units
      */
     public SummaryStatisticsTableState(List<IndicatorUnit> units) {
+        summaryUtil = new SummaryStatisticsStateUtil();
         if (units != null) {
-            this.units.addAll(SummaryStatisticsStateUtil.check(units));
+            this.units.addAll(summaryUtil.check(units));
         }
 
-        sqltype = SummaryStatisticsStateUtil.findSqlType(units);
+        sqltype = summaryUtil.findSqlType(units);
     }
 
     /*
@@ -56,8 +59,8 @@ public class SummaryStatisticsTableState extends AbstractTableTypeStates {
     public ChartDataEntity[] getDataEntity() {
         List<ChartDataEntity> dataEnities = new ArrayList<ChartDataEntity>();
         for (IndicatorUnit unit : units) {
-            String value = SummaryStatisticsStateUtil.getUnitValue(unit);
-            ChartDataEntity entity = SummaryStatisticsStateUtil.createDataEntity(unit, value);
+            String value = summaryUtil.getUnitValue(unit);
+            ChartDataEntity entity = summaryUtil.createDataEntity(unit, value);
             dataEnities.add(entity);
         }
 
@@ -71,7 +74,7 @@ public class SummaryStatisticsTableState extends AbstractTableTypeStates {
      */
     @Override
     public DataExplorer getDataExplorer() {
-        return SummaryStatisticsStateUtil.getDataExplorer(sqltype);
+        return summaryUtil.getDataExplorer(sqltype);
     }
 
     @Override

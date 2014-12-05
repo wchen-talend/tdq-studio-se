@@ -31,7 +31,11 @@ import org.talend.utils.sql.Java2SqlType;
  */
 public class SummaryStatisticsStateUtil {
 
-    public static DataExplorer getDataExplorer(int sqltype) {
+    public SummaryStatisticsStateUtil() {
+
+    }
+
+    public DataExplorer getDataExplorer(int sqltype) {
         if (Java2SqlType.isDateInSQL(sqltype)) {
             return null;
         }
@@ -39,7 +43,7 @@ public class SummaryStatisticsStateUtil {
     }
 
     // TDQ-9140 , if any values = NaN, isMeaning = false, and will not use BAW chart.
-    private static boolean isMeaning = true;
+    private boolean isMeaning = true;
 
     /**
      * DOC bZhou Comment method "check".
@@ -47,7 +51,7 @@ public class SummaryStatisticsStateUtil {
      * @param units2
      * @return
      */
-    public static Collection<? extends IndicatorUnit> check(List<IndicatorUnit> parameterUnits) {
+    public Collection<? extends IndicatorUnit> check(List<IndicatorUnit> parameterUnits) {
         List<IndicatorUnit> validUnitList = new ArrayList<IndicatorUnit>();
 
         for (IndicatorUnit unit : parameterUnits) {
@@ -77,7 +81,7 @@ public class SummaryStatisticsStateUtil {
      * 
      * @param units
      */
-    public static int findSqlType(List<IndicatorUnit> units) {
+    public int findSqlType(List<IndicatorUnit> units) {
         if (units != null && !units.isEmpty() && units.get(0) instanceof ColumnIndicatorUnit) {
             if (((ColumnIndicatorUnit) units.get(0)).getModelElementIndicator() != null) {
                 return ((ColumnIndicatorUnit) units.get(0)).getModelElementIndicator().getJavaType();
@@ -86,11 +90,11 @@ public class SummaryStatisticsStateUtil {
         return Integer.MIN_VALUE;
     }
 
-    public static boolean isMeaning() {
+    public boolean isMeaning() {
         return isMeaning;
     }
 
-    public static void setMeaning(boolean meaning) {
+    public void setMeaning(boolean meaning) {
         isMeaning = meaning;
     }
 
@@ -100,7 +104,7 @@ public class SummaryStatisticsStateUtil {
      * @param unit
      * @return
      */
-    public static String getUnitValue(IndicatorUnit unit) {
+    public String getUnitValue(IndicatorUnit unit) {
         String value = null;
         if (unit.getValue() == null) {
             value = String.valueOf(Double.NaN);
@@ -118,7 +122,7 @@ public class SummaryStatisticsStateUtil {
      * @param value
      * @return
      */
-    public static ChartDataEntity createDataEntity(IndicatorUnit unit, String value) {
+    public ChartDataEntity createDataEntity(IndicatorUnit unit, String value) {
         ChartDataEntity entity = new ChartDataEntity();
         entity.setIndicator(unit.getIndicator());
         entity.setLabel(unit.getIndicatorName());
