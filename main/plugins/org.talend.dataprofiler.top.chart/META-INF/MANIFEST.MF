@@ -8,6 +8,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.talend.libraries.jfreechart,
  org.talend.dataprofiler.service,
- org.eclipse.osgi.services;bundle-version="3.2.100"
+ org.eclipse.osgi.services;bundle-version="3.2.100",
+ org.eclipse.ui.browser;bundle-version="3.3.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

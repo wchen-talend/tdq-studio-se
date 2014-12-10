@@ -19,8 +19,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.data.category.CategoryDataset;
 import org.talend.commons.emf.FactoriesUtil;
 import org.talend.dataprofiler.core.model.dynamic.DynamicIndicatorModel;
@@ -194,18 +192,16 @@ public class AnalysisUtils {
      * @param chart
      * @return
      */
-    public static DynamicIndicatorModel createDynamicModel(EIndicatorChartType chartType, List<Indicator> indicators,
-            JFreeChart chart) {
+    public static DynamicIndicatorModel createDynamicModel(EIndicatorChartType chartType, List<Indicator> indicators, Object chart) {
         DynamicIndicatorModel dyModel = new DynamicIndicatorModel();
 
         // one dataset <--> several indicators in same category
         if (chart != null) {
-            CategoryPlot plot = chart.getCategoryPlot();
-            CategoryDataset dataset = plot.getDataset();
+            Object dataset = TOPChartUtils.getInstance().getDatasetFromChart(chart, -1);
             // Added TDQ-8787 20140612 : store the dataset, and the index of the current indicator
             if (EIndicatorChartType.BENFORD_LAW_STATISTICS.equals(chartType)) {
-                dataset = plot.getDataset(1);
-                dyModel.setSecondDataset(plot.getDataset(0));
+                dataset = TOPChartUtils.getInstance().getDatasetFromChart(chart, 1);
+                dyModel.setSecondDataset(TOPChartUtils.getInstance().getDatasetFromChart(chart, 0));
             }
             dyModel.setDataset(dataset);
         }

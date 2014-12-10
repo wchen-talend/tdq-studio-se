@@ -14,9 +14,6 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states;
 
 import java.util.List;
 
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.category.DefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
@@ -88,7 +85,7 @@ public class SimpleRuleStatisticsChartState extends AbstractChartTypeStatesTable
      * 
      * @see org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates#getChartList(java.util.List)
      */
-    public List<Object> getChartList(List<DefaultCategoryDataset> datasets) {
+    public List<Object> getChartList(List<Object> datasets) {
         // TODO Auto-generated method stub
         return null;
     }

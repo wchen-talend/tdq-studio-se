@@ -74,7 +74,7 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
         } else {
             if (isIntact()) {
                 BoxAndWhiskerCategoryDataset dataset = (BoxAndWhiskerCategoryDataset) getDataset();
-                return TopChartFactory.createBoxAndWhiskerChart(
+                return TOPChartUtils.getInstance().createBoxAndWhiskerChart(
                         DefaultMessagesImpl.getString("SummaryStatisticsState.SummaryStatistics"), dataset); //$NON-NLS-1$
             } else {
                 Object barChart = TOPChartUtils.getInstance().createBarChart(
@@ -92,7 +92,7 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
         } else {
             if (isIntact()) {
                 BoxAndWhiskerCategoryDataset dataset2 = (BoxAndWhiskerCategoryDataset) getDataset();
-                return TopChartFactory.createBoxAndWhiskerChart(
+                return TOPChartUtils.getInstance().createBoxAndWhiskerChart(
                         DefaultMessagesImpl.getString("SummaryStatisticsState.SummaryStatistics"), dataset2); //$NON-NLS-1$
             } else {
                 Object barChart = TOPChartUtils.getInstance().createBarChart(

@@ -14,15 +14,12 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states.pattern;
 
 import java.util.List;
 
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.category.CategoryDataset;
-import org.talend.dataprofiler.chart.util.TopChartFactory;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.AbstractChartTypeStates;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dq.analysis.explore.DataExplorer;
 import org.talend.dq.indicators.ext.PatternMatchingExt;
 import org.talend.dq.indicators.preview.table.PatternChartDataEntity;
@@ -36,14 +33,14 @@ public class PatternStatisticsState extends AbstractChartTypeStates {
         super(units);
     }
 
-    public JFreeChart getChart() {
+    public Object getChart() {
         return getChart(getDataset());
     }
 
     @Override
-    public JFreeChart getChart(CategoryDataset dataset) {
-        return TopChartFactory.createStackedBarChart(
-                DefaultMessagesImpl.getString("PatternStatisticsState.PatternStatistics"), dataset, PlotOrientation.VERTICAL); //$NON-NLS-1$
+    public Object getChart(Object dataset) {
+        return TOPChartUtils.getInstance().createStackedBarChart(
+                DefaultMessagesImpl.getString("PatternStatisticsState.PatternStatistics"), dataset, false, true); //$NON-NLS-1$
     }
 
     public ICustomerDataset getCustomerDataset() {
@@ -70,7 +67,7 @@ public class PatternStatisticsState extends AbstractChartTypeStates {
         return PatternStatisticeStateUtil.getDataExplorer();
     }
 
-    public JFreeChart getExampleChart() {
+    public Object getExampleChart() {
         // TODO Auto-generated method stub
         return null;
     }

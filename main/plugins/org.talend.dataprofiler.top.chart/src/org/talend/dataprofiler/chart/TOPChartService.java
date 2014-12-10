@@ -16,11 +16,15 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
@@ -31,8 +35,10 @@ import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.general.PieDataset;
+import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
 import org.jfree.experimental.chart.swt.ChartComposite;
 import org.talend.dataprofiler.chart.util.ChartDecorator;
+import org.talend.dataprofiler.chart.util.ChartUtils;
 import org.talend.dataprofiler.chart.util.TalendChartComposite;
 import org.talend.dataprofiler.chart.util.TopChartFactory;
 import org.talend.dataprofiler.service.ITOPChartService;
@@ -247,5 +253,91 @@ public class TOPChartService implements ITOPChartService {
     @Override
     public Object createPieChart(String title, Object dataset, boolean showLegend, boolean toolTips, boolean urls) {
         return TopChartFactory.createPieChart(title, (PieDataset) dataset, showLegend, toolTips, urls);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createBoxAndWhiskerChart(java.lang.String,
+     * java.lang.Object)
+     */
+    @Override
+    public Object createBoxAndWhiskerChart(String title, Object dataset) {
+        return TopChartFactory.createBoxAndWhiskerChart(title, (BoxAndWhiskerCategoryDataset) dataset);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createStackedBarChart(java.lang.String, java.lang.Object,
+     * boolean)
+     */
+    @Override
+    public Object createStackedBarChart(String title, Object dataset, boolean showLegend) {
+        JFreeChart stackedBarChart = TopChartFactory.createStackedBarChart(title, (CategoryDataset) dataset, showLegend);
+        ChartDecorator.decorate(stackedBarChart, null);
+        return stackedBarChart;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createStackedBarChart(java.lang.String, java.lang.Object,
+     * boolean, boolean)
+     */
+    @Override
+    public Object createStackedBarChart(String title, Object dataset, boolean isHorizatal, boolean showLegend) {
+        if (isHorizatal) {
+            return TopChartFactory
+                    .createStackedBarChart(title, (CategoryDataset) dataset, PlotOrientation.HORIZONTAL, showLegend);
+        } else {
+            return TopChartFactory.createStackedBarChart(title, (CategoryDataset) dataset, PlotOrientation.VERTICAL, showLegend);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#addListenerToChartComp(java.lang.Object, java.lang.String)
+     */
+    @Override
+    public void addListenerToChartComp(Object chartComposite, final String referenceLink, final String menuText) {
+        final ChartComposite chartComp = (ChartComposite) chartComposite;
+        chartComp.addChartMouseListener(new ChartMouseListener() {
+
+            @Override
+            public void chartMouseClicked(ChartMouseEvent event) {
+                if (event.getTrigger().getButton() == 1 && referenceLink != null) {
+                    Menu menu = new Menu(chartComp.getShell(), SWT.POP_UP);
+                    chartComp.setMenu(menu);
+
+                    MenuItem item = new MenuItem(menu, SWT.PUSH);
+                    item.setText(menuText);
+                    item.addSelectionListener(new SelectionAdapter() {
+
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            ChartUtils.openReferenceLink(referenceLink);
+                        }
+                    });
+
+                    menu.setVisible(true);
+                }
+            }
+
+            @Override
+            public void chartMouseMoved(ChartMouseEvent event) {
+                // no need to implement
+            }
+
+        });
+        chartComp.addDisposeListener(new DisposeListener() {
+
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                chartComp.dispose();
+
+            }
+        });
     }
 }

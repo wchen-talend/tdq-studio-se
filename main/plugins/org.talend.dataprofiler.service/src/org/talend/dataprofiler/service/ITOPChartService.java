@@ -38,6 +38,12 @@ public interface ITOPChartService {
     Object createBenfordChart(String axisXLabel, String categoryAxisLabel, Object dataset, List<String> dotChartLabels,
             double[] formalValues, String title);
 
+    Object createStackedBarChart(String title, Object dataset, boolean showLegend);
+
+    Object createStackedBarChart(String title, Object dataset, boolean isHorizatal, boolean showLegend);
+
+    Object createBoxAndWhiskerChart(String title, Object dataset);
+
     void decorateChart(Object chart, boolean withPlot);
 
     void setOrientation(Object chart, boolean isHorizontal);
@@ -45,4 +51,6 @@ public interface ITOPChartService {
     void setDisplayDecimalFormatOfChart(Object chart);
 
     void addMouseListenerForChart(Object chartComposite, Map<String, Object> menuMap);
+
+    void addListenerToChartComp(Object chartComp, final String referenceLink, final String menuText);
 }

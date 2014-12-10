@@ -15,9 +15,6 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.XYSeries;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
@@ -63,8 +60,8 @@ public class WhereRuleStatisticsStateTable extends AbstractChartTypeStatesTable 
     }
 
     @Override
-    public JFreeChart getChart() {
-        List<JFreeChart> chartList = getChartList();
+    public Object getChart() {
+        List<Object> chartList = getChartList();
         if (chartList != null && chartList.size() > 0) {
             return chartList.get(0);
         }
@@ -113,7 +110,7 @@ public class WhereRuleStatisticsStateTable extends AbstractChartTypeStatesTable 
         return WhereRuleStatisticsStateUtil.getDataExplorer();
     }
 
-    public JFreeChart getExampleChart() {
+    public Object getExampleChart() {
         return null;
     }
 
@@ -124,7 +121,7 @@ public class WhereRuleStatisticsStateTable extends AbstractChartTypeStatesTable 
     @Override
     public List<Object> getChartList() {
         // MOD xqliu 2010-03-17 feature 10834
-        List<DefaultCategoryDataset> optimizeShowDataset = getOptimizeShowDataset();
+        List<Object> optimizeShowDataset = getOptimizeShowDataset();
         return getChartList(optimizeShowDataset);
     }
 
@@ -133,8 +130,8 @@ public class WhereRuleStatisticsStateTable extends AbstractChartTypeStatesTable 
      * 
      * @return
      */
-    private List<DefaultCategoryDataset> getOptimizeShowDataset() {
-        List<DefaultCategoryDataset> result = new ArrayList<DefaultCategoryDataset>();
+    private List<Object> getOptimizeShowDataset() {
+        List<Object> result = new ArrayList<Object>();
         // get the page size
         int size = getSizeOfDQRulePerChart();
 
@@ -260,7 +257,7 @@ public class WhereRuleStatisticsStateTable extends AbstractChartTypeStatesTable 
      * org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates#getChart(org.jfree.data.category
      * .CategoryDataset)
      */
-    public JFreeChart getChart(CategoryDataset dataset) {
+    public Object getChart(Object dataset) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -270,20 +267,20 @@ public class WhereRuleStatisticsStateTable extends AbstractChartTypeStatesTable 
      * 
      * @see org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates#getChartList(java.util.List)
      */
-    public List<Object> getChartList(List<DefaultCategoryDataset> datasets) {
+    public List<Object> getChartList(List<Object> datasets) {
         List<Object> ret = new ArrayList<Object>();
         // MOD xqliu 2012-04-23 TDQ-5057
         int i = 0;
-        for (CategoryDataset dataset : datasets) {
+        for (Object dataset : datasets) {
             if (i < 1) {
                 Object chart = TOPChartUtils.getInstance().createBarChart(
                         DefaultMessagesImpl.getString("SimpleStatisticsState.SimpleStatistics"), dataset, false); //$NON-NLS-1$
                 TOPChartUtils.getInstance().decorateChart(chart, false);
                 ret.add(chart);
             } else {
-                JFreeChart stackChart = TopChartFactory.createStackedBarChart(
+                Object stackChart = TOPChartUtils.getInstance().createStackedBarChart(
                         DefaultMessagesImpl.getString("WhereRuleStatisticsStateTable.WhereRuleStatistics"), dataset, true); //$NON-NLS-1$
-                ChartDecorator.decorate(stackChart, null);
+
                 ret.add(stackChart);
             }
             i++;

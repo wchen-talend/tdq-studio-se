@@ -17,6 +17,10 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
@@ -26,6 +30,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.internal.browser.WebBrowserEditor;
+import org.eclipse.ui.internal.browser.WebBrowserEditorInput;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -37,6 +43,8 @@ import org.jfree.chart.JFreeChart;
  * 
  */
 public final class ChartUtils {
+
+    private static Logger log = Logger.getLogger("ChartUtils");
 
     private ChartUtils() {
 
@@ -104,12 +112,17 @@ public final class ChartUtils {
      * DOC Administrator Comment method "openReferenceLink".
      * 
      * @param httpurl
-     * 
-     * public static void openReferenceLink(String httpurl) {
-     * 
-     * if (httpurl != null) { try { WebBrowserEditor.open(new WebBrowserEditorInput(new URL(httpurl))); } catch
-     * (MalformedURLException e1) { ExceptionHandler.process(e1); } } }
-     */
+     * */
+    public static void openReferenceLink(String httpurl) {
+
+        if (httpurl != null) {
+            try {
+                WebBrowserEditor.open(new WebBrowserEditorInput(new URL(httpurl)));
+            } catch (MalformedURLException e1) {
+                log.log(Level.WARNING, e1.getMessage());
+            }
+        }
+    }
 
     public static void showChartInFillScreen(JFreeChart chart) {
         new HideSeriesChartDialog(null, chart).open();

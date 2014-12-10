@@ -163,9 +163,6 @@ public class MasterPaginationInfo extends IndicatorPaginationInfo {
         }
         TOPChartUtils.getInstance().decorateChart(chart, false);
         Object chartComp = TOPChartUtils.getInstance().createChartComposite(comp, SWT.NONE, chart, true);
-        // call chart service to create related mouse listener
-        TOPChartUtils.getInstance().addMouseListenerForChart(chartComposite, chartTypeState);
-
         addListenerToChartComp(chartComp, chartTypeState);
 
         List<Indicator> indicators = getIndicators(units);

@@ -12,52 +12,27 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.editor.analysis;
 
-import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
-import org.jfree.chart.ChartMouseEvent;
-import org.jfree.chart.ChartMouseListener;
-import org.jfree.chart.entity.CategoryItemEntity;
-import org.jfree.chart.entity.ChartEntity;
-import org.jfree.experimental.chart.swt.ChartComposite;
-import org.talend.core.model.metadata.builder.connection.Connection;
-import org.talend.cwm.helper.SwitchHelpers;
-import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.core.CorePlugin;
 import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.IRuningStatusListener;
 import org.talend.dataprofiler.core.ui.editor.AbstractFormPage;
 import org.talend.dataprofiler.core.ui.editor.CommonFormEditor;
-import org.talend.dataprofiler.core.ui.editor.analysis.drilldown.DrillDownEditorInput;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableFactory;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableMenuGenerator;
-import org.talend.dataprofiler.core.ui.editor.preview.model.MenuItemEntity;
-import org.talend.dataprofiler.core.ui.utils.DrillDownUtils;
-import org.talend.dataquality.analysis.Analysis;
-import org.talend.dataquality.analysis.ExecutionLanguage;
-import org.talend.dataquality.indicators.Indicator;
 import org.talend.dq.analysis.AnalysisHandler;
-import org.talend.dq.analysis.explore.IDataExplorer;
-import org.talend.dq.helper.SqlExplorerUtils;
-import org.talend.dq.indicators.preview.table.ChartDataEntity;
 
 /**
  * DOC rli class global comment. Detailled comment
@@ -226,139 +201,6 @@ public abstract class AbstractAnalysisResultPage extends AbstractFormPage implem
         // }
         // data.widthHint = TABLE_WIDTH_HINT > tableWidth ? tableWidth : TABLE_WIDTH_HINT;
         table.setLayoutData(data);
-    }
-
-    /**
-     * 
-     * Add qiongli :Extract it and used by subClass(feature 19192).
-     * 
-     * @param chartComp
-     * @param explorer
-     * @param analysis
-     */
-    protected void addMouseListenerForChart(final ChartComposite chartComp, final IDataExplorer explorer, final Analysis analysis) {
-        chartComp.addChartMouseListener(new ChartMouseListener() {
-
-            @SuppressWarnings("unchecked")
-            public void chartMouseClicked(ChartMouseEvent event) {
-                boolean flag = event.getTrigger().getButton() != MouseEvent.BUTTON3;
-
-                chartComp.setDomainZoomable(flag);
-                chartComp.setRangeZoomable(flag);
-
-                final ExecutionLanguage currentEngine = analysis.getParameters().getExecutionLanguage();
-                if (flag) {
-                    return;
-                }
-
-                ChartEntity chartEntity = event.getEntity();
-                if (chartEntity != null && chartEntity instanceof CategoryItemEntity) {
-                    CategoryItemEntity cateEntity = (CategoryItemEntity) chartEntity;
-                    ICustomerDataset dataEntity = (ICustomerDataset) cateEntity.getDataset();
-
-                    final ChartDataEntity currentDataEntity = getCurrentChartDateEntity(cateEntity, dataEntity);
-
-                    if (currentDataEntity != null) {
-                        // MOD gdbu 2011-7-12 bug : 22524
-                        if (!analysis.getParameters().isStoreData()) {
-                            return;
-                        }
-                        // ~22524
-                        // create menu
-                        Menu menu = new Menu(chartComp.getShell(), SWT.POP_UP);
-                        chartComp.setMenu(menu);
-
-                        final Indicator currentIndicator = currentDataEntity.getIndicator();
-
-                        int createPatternFlag = 0;
-                        MenuItemEntity[] itemEntities = ChartTableMenuGenerator.generate(explorer, analysis, currentDataEntity);
-                        for (final MenuItemEntity itemEntity : itemEntities) {
-                            MenuItem item = new MenuItem(menu, SWT.PUSH);
-                            item.setText(itemEntity.getLabel());
-                            item.setImage(itemEntity.getIcon());
-                            item.setEnabled(DrillDownUtils.isMenuItemEnable(currentDataEntity, itemEntity, analysis));
-                            item.addSelectionListener(new SelectionAdapter() {
-
-                                @Override
-                                public void widgetSelected(SelectionEvent e) {
-                                    if (ExecutionLanguage.JAVA == currentEngine) {
-                                        try {
-                                            if (SqlExplorerUtils.getDefault().getSqlexplorerService() != null) {
-                                                CorePlugin
-                                                        .getDefault()
-                                                        .getWorkbench()
-                                                        .getActiveWorkbenchWindow()
-                                                        .getActivePage()
-                                                        .openEditor(
-                                                                new DrillDownEditorInput(analysis, currentDataEntity, itemEntity),
-                                                                "org.talend.dataprofiler.core.ui.editor.analysis.drilldown.drillDownResultEditor");//$NON-NLS-1$
-                                            }
-                                        } catch (PartInitException e1) {
-                                            e1.printStackTrace();
-                                        }
-                                    } else {
-                                        Display.getDefault().asyncExec(new Runnable() {
-
-                                            public void run() {
-                                                Connection tdDataProvider = SwitchHelpers.CONNECTION_SWITCH.doSwitch(analysis
-                                                        .getContext().getConnection());
-                                                String query = itemEntity.getQuery();
-                                                String editorName = currentIndicator.getName();
-                                                SqlExplorerUtils.getDefault().runInDQViewer(tdDataProvider, query, editorName);
-                                            }
-
-                                        });
-                                    }
-                                }
-                            });
-
-                            if (ChartTableFactory.isPatternFrequencyIndicator(currentIndicator) && createPatternFlag == 0) {
-                                ChartTableFactory.createMenuOfGenerateRegularPattern(analysis, menu, currentDataEntity);
-                            }
-
-                            createPatternFlag++;
-                        }
-
-                        ChartTableFactory.addJobGenerationMenu(menu, analysis, currentIndicator);
-
-                        menu.setVisible(true);
-                    }
-                }
-            }
-
-            /**
-             * DOC xqliu Comment method "getCurrentChartDateEntity". bug 15745.
-             * 
-             * @param cateEntity
-             * @param dataEntity
-             * @return
-             */
-            @SuppressWarnings("unchecked")
-            private ChartDataEntity getCurrentChartDateEntity(CategoryItemEntity cateEntity, ICustomerDataset dataEntity) {
-                ChartDataEntity currentDataEntity = null;
-                ChartDataEntity[] dataEntities = dataEntity.getDataEntities();
-                if (dataEntities.length == 1) {
-                    currentDataEntity = dataEntities[0];
-                } else {
-                    for (ChartDataEntity entity : dataEntities) {
-                        if (cateEntity.getColumnKey().compareTo(entity.getLabel()) == 0) {
-                            currentDataEntity = entity;
-                        } else {
-                            if (cateEntity.getRowKey().compareTo(entity.getLabel()) == 0) {
-                                currentDataEntity = entity;
-                            }
-                        }
-                    }
-                }
-                return currentDataEntity;
-            }
-
-            public void chartMouseMoved(ChartMouseEvent event) {
-                // TODO Auto-generated method stub
-
-            }
-
-        });
     }
 
 }

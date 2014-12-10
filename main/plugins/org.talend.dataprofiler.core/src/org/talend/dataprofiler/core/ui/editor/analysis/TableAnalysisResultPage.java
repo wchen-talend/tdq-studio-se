@@ -12,11 +12,11 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.editor.analysis;
 
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
@@ -42,14 +43,6 @@ import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.Section;
-import org.jfree.chart.ChartMouseEvent;
-import org.jfree.chart.ChartMouseListener;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.entity.CategoryItemEntity;
-import org.jfree.chart.entity.ChartEntity;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.experimental.chart.swt.ChartComposite;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
@@ -79,6 +72,7 @@ import org.talend.dataprofiler.core.ui.events.IEventReceiver;
 import org.talend.dataprofiler.core.ui.events.TableDynamicChartEventReceiver;
 import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
 import org.talend.dataprofiler.core.ui.utils.AnalysisUtils;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dq.analysis.AnalysisHandler;
@@ -307,14 +301,13 @@ public class TableAnalysisResultPage extends AbstractAnalysisResultPage implemen
                                                 .getPagedIndicators();
                                         // Added TDQ-9241: for each list(for each chart), check if the current
                                         // list has been registered dynamic event
-                                        List<DefaultCategoryDataset> datasets = new ArrayList<DefaultCategoryDataset>();
+                                        List<Object> datasets = new ArrayList<Object>();
                                         for (List<Indicator> oneChart : pagedIndicators) {
                                             IEventReceiver event = EventManager.getInstance().findRegisteredEvent(
                                                     oneChart.get(0), EventEnum.DQ_DYMANIC_CHART, 0);
                                             if (event != null) {
                                                 // get the dataset from the event
-                                                DefaultCategoryDataset dataset = ((TableDynamicChartEventReceiver) event)
-                                                        .getDataset();
+                                                Object dataset = ((TableDynamicChartEventReceiver) event).getDataset();
                                                 // if there has the dataset for the current rule, use it to replace,
                                                 // (only happen when first switch from master to result page, during
                                                 // one running)
@@ -325,7 +318,7 @@ public class TableAnalysisResultPage extends AbstractAnalysisResultPage implemen
                                             }// ~
                                         }
                                         // create chart
-                                        List<JFreeChart> charts = null;
+                                        List<Object> charts = null;
                                         if (datasets.size() > 0) {
                                             charts = chartTypeState.getChartList(datasets);
                                         } else {
@@ -334,22 +327,23 @@ public class TableAnalysisResultPage extends AbstractAnalysisResultPage implemen
                                         if (charts != null) {
 
                                             int index = 0;
-                                            for (JFreeChart chart2 : charts) {
-
-                                                ChartComposite chartComp = new ChartComposite(chartTopComp, SWT.NONE, chart2,
-                                                        true);
+                                            for (int i = 0; i < charts.size(); i++) {
+                                                Object chart2 = charts.get(i);
+                                                Object chartComp = TOPChartUtils.getInstance().createChartComposite(chartTopComp,
+                                                        SWT.NONE, chart2, true);
                                                 // Added TDQ-8787 20140707 yyin: create and store the dynamic model for
                                                 // each chart
                                                 DynamicIndicatorModel dyModel = AnalysisUtils.createDynamicModel(chartType,
                                                         pagedIndicators.get(index++), chart2);
                                                 dynamicList.add(dyModel);
                                                 // ~
-                                                GridData gd = new GridData();
-                                                gd.widthHint = 550;
-                                                gd.heightHint = 250;
-                                                chartComp.setLayoutData(gd);
 
-                                                addMouseListenerForChart(chartComp, dataExplorer, analysis);
+                                                // one dataset <--> one chart
+                                                Map<String, Object> menuMap = createMenuForAllDataEntity(
+                                                        ((Composite) chartComp).getShell(), dataExplorer, analysis,
+                                                        ((ICustomerDataset) datasets.get(i)).getDataEntities());
+                                                // call chart service to create related mouse listener
+                                                TOPChartUtils.getInstance().addMouseListenerForChart(chartComp, menuMap);
                                             }
                                         }
                                     }
@@ -424,82 +418,80 @@ public class TableAnalysisResultPage extends AbstractAnalysisResultPage implemen
         }
     }
 
-    @Override
-    protected void addMouseListenerForChart(final ChartComposite chartComp, final IDataExplorer explorer, final Analysis analysis) {
-        chartComp.addChartMouseListener(new ChartMouseListener() {
+    protected Map<String, Object> createMenuForAllDataEntity(Shell shell, DataExplorer dataExplorer, Analysis analysis,
+            ChartDataEntity[] chartDataEntities) {
+        Map<String, Object> menuMap = new HashMap<String, Object>();
 
-            public void chartMouseClicked(ChartMouseEvent event) {
-                boolean flag = event.getTrigger().getButton() != MouseEvent.BUTTON3;
+        if (!analysis.getParameters().isStoreData()) {
+            return menuMap;
+        }
 
-                chartComp.setDomainZoomable(flag);
-                chartComp.setRangeZoomable(flag);
+        for (ChartDataEntity oneDataEntity : chartDataEntities) {
+            Indicator indicator = oneDataEntity.getIndicator();
+            Menu menu = createMenu(shell, dataExplorer, analysis, oneDataEntity, indicator);
+            ChartTableFactory.addJobGenerationMenu(menu, analysis, indicator);
 
-                if (flag) {
-                    return;
-                }
+            menuMap.put(oneDataEntity.getLabel(), menu);
+        }
 
-                ChartEntity chartEntity = event.getEntity();
-                if (chartEntity != null && chartEntity instanceof CategoryItemEntity) {
-                    CategoryItemEntity cateEntity = (CategoryItemEntity) chartEntity;
-                    ICustomerDataset dataEntity = (ICustomerDataset) cateEntity.getDataset();
+        return menuMap;
+    }
 
-                    ChartDataEntity currentDataEntity = null;
-                    ChartDataEntity[] dataEntities = dataEntity.getDataEntities();
-                    if (dataEntities.length == 1) {
-                        currentDataEntity = dataEntities[0];
-                    } else {
-                        for (ChartDataEntity entity : dataEntities) {
-                            if (cateEntity.getColumnKey().compareTo(entity.getLabel()) == 0) {
-                                currentDataEntity = entity;
-                            } else {
-                                if (cateEntity.getRowKey().compareTo(entity.getLabel()) == 0) {
-                                    currentDataEntity = entity;
-                                }
-                            }
-                        }
+    /**
+     * DOC yyin Comment method "createMenu".
+     * 
+     * @param shell
+     * @param explorer
+     * @param analysis
+     * @param currentEngine
+     * @param currentDataEntity
+     * @param currentIndicator
+     * @return
+     */
+    protected Menu createMenu(final Shell shell, final IDataExplorer explorer, final Analysis analysis,
+            final ChartDataEntity currentDataEntity, final Indicator currentIndicator) {
+        Menu menu = new Menu(shell, SWT.POP_UP);
+
+        MenuItemEntity[] itemEntities = ChartTableMenuGenerator.generate(explorer, analysis, currentDataEntity);
+        for (final MenuItemEntity itemEntity : itemEntities) {
+            MenuItem item = new MenuItem(menu, SWT.PUSH);
+            item.setText(itemEntity.getLabel());
+            item.setImage(itemEntity.getIcon());
+            item.addSelectionListener(createSelectionAdapter(analysis, currentIndicator, itemEntity));
+
+        }
+        return menu;
+    }
+
+    /**
+     * DOC yyin Comment method "createSelectionAdapter".
+     * 
+     * @param analysis1
+     * @param currentEngine
+     * @param currentDataEntity
+     * @param currentIndicator
+     * @param itemEntity
+     * @return
+     */
+    protected SelectionAdapter createSelectionAdapter(final Analysis analysis1, final Indicator currentIndicator,
+            final MenuItemEntity itemEntity) {
+        return new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Display.getDefault().asyncExec(new Runnable() {
+
+                    public void run() {
+                        Connection tdDataProvider = SwitchHelpers.CONNECTION_SWITCH.doSwitch(analysis1.getContext()
+                                .getConnection());
+                        String query = itemEntity.getQuery();
+                        String editorName = currentIndicator.getName();
+                        SqlExplorerUtils.getDefault().runInDQViewer(tdDataProvider, query, editorName);
                     }
 
-                    if (currentDataEntity != null) {
-                        // create menu
-                        Menu menu = new Menu(chartComp.getShell(), SWT.POP_UP);
-                        chartComp.setMenu(menu);
-
-                        final Indicator currentIndicator = currentDataEntity.getIndicator();
-                        MenuItemEntity[] itemEntities = ChartTableMenuGenerator.generate(explorer, analysis, currentDataEntity);
-                        for (final MenuItemEntity itemEntity : itemEntities) {
-                            MenuItem item = new MenuItem(menu, SWT.PUSH);
-                            item.setText(itemEntity.getLabel());
-                            item.addSelectionListener(new SelectionAdapter() {
-
-                                @Override
-                                public void widgetSelected(SelectionEvent e) {
-                                    Display.getDefault().asyncExec(new Runnable() {
-
-                                        public void run() {
-                                            Connection tdDataProvider = SwitchHelpers.CONNECTION_SWITCH.doSwitch(analysis
-                                                    .getContext().getConnection());
-                                            String query = itemEntity.getQuery();
-                                            String editorName = currentIndicator.getName();
-                                            SqlExplorerUtils.getDefault().runInDQViewer(tdDataProvider, query, editorName);
-                                        }
-
-                                    });
-                                }
-                            });
-                        }
-
-                        ChartTableFactory.addJobGenerationMenu(menu, analysis, currentIndicator);
-
-                        menu.setVisible(true);
-                    }
-                }
+                });
             }
-
-            public void chartMouseMoved(ChartMouseEvent event) {
-                // no implementation
-            }
-
-        });
+        };
     }
 
     /**
@@ -510,7 +502,7 @@ public class TableAnalysisResultPage extends AbstractAnalysisResultPage implemen
         createFormContent(getManagedForm());
         // register dynamic event,for the indicator (for each column)
         for (DynamicIndicatorModel oneCategoryIndicatorModel : dynamicList) {
-            CategoryDataset categoryDataset = oneCategoryIndicatorModel.getDataset();
+            Object categoryDataset = oneCategoryIndicatorModel.getDataset();
             TableViewer tableViewer = oneCategoryIndicatorModel.getTableViewer();
             int index = 0;
             for (Indicator oneIndicator : oneCategoryIndicatorModel.getIndicatorList()) {
