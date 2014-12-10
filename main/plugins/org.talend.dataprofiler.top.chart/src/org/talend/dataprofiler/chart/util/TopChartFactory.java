@@ -10,7 +10,7 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.dataprofiler.common.ui.editor.preview.chart;
+package org.talend.dataprofiler.chart.util;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -59,15 +59,12 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYZDataset;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.TextAnchor;
-import org.talend.commons.utils.SpecialValueDisplay;
-import org.talend.dataprofiler.common.ui.editor.preview.DQRuleItemLabelGenerator;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDatasetUtils.DateValueAggregate;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDatasetUtils.ValueAggregator;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.renderer.CustomRenderer;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.utils.MatchRuleColorRegistry;
-import org.talend.dataprofiler.common.ui.i18n.Messages;
-import org.talend.dataquality.indicators.columnset.ColumnSetMultiValueIndicator;
-import orgomg.cwm.objectmodel.core.ModelElement;
+import org.talend.dataprofiler.chart.i18n.Messages;
+import org.talend.dataprofiler.chart.preview.CustomRenderer;
+import org.talend.dataprofiler.chart.preview.DQRuleItemLabelGenerator;
+import org.talend.dataprofiler.chart.preview.MatchRuleColorRegistry;
+import org.talend.dataprofiler.chart.util.ChartDatasetUtils.DateValueAggregate;
+import org.talend.dataprofiler.chart.util.ChartDatasetUtils.ValueAggregator;
 
 /**
  * @author scorreia
@@ -87,6 +84,10 @@ public final class TopChartFactory {
     private static final int BASE_LEGEND_LABEL_SIZE = 10;
 
     private static final int BASE_TITLE_LABEL_SIZE = 14;
+
+    public static final String NULL_FIELD = "Null field"; //$NON-NLS-1$
+
+    public static final String EMPTY_FIELD = "Empty field"; //$NON-NLS-1$
 
     private TopChartFactory() {
     }
@@ -396,8 +397,8 @@ public final class TopChartFactory {
         CategoryPlot plot = createBarChart.getCategoryPlot();
 
         CategoryAxis domainAxis = plot.getDomainAxis();
-        domainAxis.setTickLabelPaint(SpecialValueDisplay.NULL_FIELD, Color.RED);
-        domainAxis.setTickLabelPaint(SpecialValueDisplay.EMPTY_FIELD, Color.RED);
+        domainAxis.setTickLabelPaint(NULL_FIELD, Color.RED);
+        domainAxis.setTickLabelPaint(EMPTY_FIELD, Color.RED);
 
         // ADD TDQ-5251 msjian 2012-7-31: do not display the shadow
         BarRenderer renderer = (BarRenderer) plot.getRenderer();

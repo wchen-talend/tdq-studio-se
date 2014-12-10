@@ -10,7 +10,7 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.dataprofiler.common.ui.editor.preview.chart;
+package org.talend.dataprofiler.chart.util;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.eclipse.emf.common.util.EList;
+import org.eclipse.ui.internal.keys.model.ModelElement;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.gantt.Task;
@@ -30,13 +30,7 @@ import org.jfree.data.statistics.BoxAndWhiskerItem;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import org.jfree.data.time.SimpleTimePeriod;
 import org.jfree.data.xy.DefaultXYZDataset;
-import org.talend.dataprofiler.common.ui.i18n.Messages;
-import org.talend.dataquality.indicators.columnset.ColumnSetMultiValueIndicator;
-import org.talend.utils.collections.DoubleValueAggregate;
-import org.talend.utils.collections.MultiMapHelper;
-import org.talend.utils.collections.MultipleKey;
-import org.talend.utils.collections.ValueAggregate;
-import orgomg.cwm.objectmodel.core.ModelElement;
+import org.talend.dataprofiler.chart.i18n.Messages;
 
 /**
  * DOC Zqin class global comment. Detailled comment

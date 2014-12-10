@@ -19,18 +19,15 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.jfree.chart.JFreeChart;
-import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
 import org.jfree.data.statistics.BoxAndWhiskerItem;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDatasetUtils;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDecorator;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.model.dataset.CustomerDefaultBAWDataset;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.SummaryStatisticsStateUtil;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dq.analysis.explore.DataExplorer;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 import org.talend.dq.nodes.indicator.type.IndicatorEnum;
@@ -71,7 +68,7 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
 
     }
 
-    public JFreeChart getChart() {
+    public Object getChart() {
         if (Java2SqlType.isDateInSQL(sqltype)) {
             return null;
         } else {
@@ -80,16 +77,16 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
                 return TopChartFactory.createBoxAndWhiskerChart(
                         DefaultMessagesImpl.getString("SummaryStatisticsState.SummaryStatistics"), dataset); //$NON-NLS-1$
             } else {
-                JFreeChart barChart = TopChartFactory.createBarChart(
+                Object barChart = TOPChartUtils.getInstance().createBarChart(
                         DefaultMessagesImpl.getString("SummaryStatisticsState.Summary_Statistics"), getDataset(), false); //$NON-NLS-1$
-                ChartDecorator.setDisplayDecimalFormat(barChart);
+                TOPChartUtils.getInstance().setDisplayDecimalFormatOfChart(barChart);
                 return barChart;
             }
         }
     }
 
     @Override
-    public JFreeChart getChart(CategoryDataset dataset) {
+    public Object getChart(Object dataset) {
         if (Java2SqlType.isDateInSQL(sqltype)) {
             return null;
         } else {
@@ -98,9 +95,9 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
                 return TopChartFactory.createBoxAndWhiskerChart(
                         DefaultMessagesImpl.getString("SummaryStatisticsState.SummaryStatistics"), dataset2); //$NON-NLS-1$
             } else {
-                JFreeChart barChart = TopChartFactory.createBarChart(
+                Object barChart = TOPChartUtils.getInstance().createBarChart(
                         DefaultMessagesImpl.getString("SummaryStatisticsState.Summary_Statistics"), dataset, false); //$NON-NLS-1$
-                ChartDecorator.setDisplayDecimalFormat(barChart);
+                TOPChartUtils.getInstance().setDisplayDecimalFormatOfChart(barChart);
                 return barChart;
             }
         }

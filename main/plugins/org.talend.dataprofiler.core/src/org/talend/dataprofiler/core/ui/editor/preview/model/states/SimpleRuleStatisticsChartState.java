@@ -19,12 +19,11 @@ import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDecorator;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.TableIndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.CommonStateUtil;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.SimpleStatisticsStateUtil;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dq.analysis.explore.DataExplorer;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 
@@ -38,10 +37,10 @@ public class SimpleRuleStatisticsChartState extends AbstractChartTypeStatesTable
     }
 
     @Override
-    public JFreeChart getChart() {
-        JFreeChart chart = TopChartFactory.createBarChart(
+    public Object getChart() {
+        Object chart = TOPChartUtils.getInstance().createBarChart(
                 DefaultMessagesImpl.getString("SimpleStatisticsStateTable.SimpleStatistics"), getDataset(), true); //$NON-NLS-1$
-        ChartDecorator.decorate(chart, null);
+        TOPChartUtils.getInstance().decorateChart(chart, false);
         return chart;
     }
 
@@ -64,7 +63,7 @@ public class SimpleRuleStatisticsChartState extends AbstractChartTypeStatesTable
         return SimpleStatisticsStateUtil.getDataExplorer();
     }
 
-    public JFreeChart getExampleChart() {
+    public Object getExampleChart() {
         return null;
     }
 
@@ -79,7 +78,7 @@ public class SimpleRuleStatisticsChartState extends AbstractChartTypeStatesTable
      * org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates#getChart(org.jfree.data.category
      * .CategoryDataset)
      */
-    public JFreeChart getChart(CategoryDataset dataset) {
+    public Object getChart(Object dataset) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -89,7 +88,7 @@ public class SimpleRuleStatisticsChartState extends AbstractChartTypeStatesTable
      * 
      * @see org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates#getChartList(java.util.List)
      */
-    public List<JFreeChart> getChartList(List<DefaultCategoryDataset> datasets) {
+    public List<Object> getChartList(List<DefaultCategoryDataset> datasets) {
         // TODO Auto-generated method stub
         return null;
     }

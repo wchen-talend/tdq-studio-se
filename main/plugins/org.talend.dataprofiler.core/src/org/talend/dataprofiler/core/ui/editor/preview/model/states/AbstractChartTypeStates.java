@@ -16,14 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.general.PieDataset;
 import org.jfree.data.xy.XYDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 
 /**
@@ -44,14 +40,14 @@ public abstract class AbstractChartTypeStates implements IChartTypeStates {
         }
     }
 
-    public List<JFreeChart> getChartList() {
+    public List<Object> getChartList() {
         return null;
     }
 
-    public CategoryDataset getDataset() {
+    public Object getDataset() {
         ICustomerDataset customerDataset = getCustomerDataset();
         if (customerDataset != null) {
-            return (CategoryDataset) customerDataset;
+            return customerDataset;
         }
 
         return null;
@@ -66,6 +62,10 @@ public abstract class AbstractChartTypeStates implements IChartTypeStates {
         return null;
     }
 
+    /**
+     * @deprecated
+     */
+    @Deprecated
     public XYDataset getXYDataset() {
         if (getCustomerXYDataset() != null) {
             return (XYDataset) getCustomerXYDataset();
@@ -74,19 +74,23 @@ public abstract class AbstractChartTypeStates implements IChartTypeStates {
         return null;
     }
 
+    /**
+     * @deprecated
+     */
+    @Deprecated
     public ICustomerDataset getCustomerXYDataset() {
         return null;
     }
 
-    public PieDataset getPieDataset() {
+    public Object getPieDataset() {
         return null;
     }
 
-    public JFreeChart getChart(CategoryDataset dataset) {
-        return TopChartFactory.createBarChart(StringUtils.EMPTY, dataset, false);
+    public Object getChart(Object dataset) {
+        return TOPChartUtils.getInstance().createBarChart(StringUtils.EMPTY, dataset, false);
     }
 
-    public List<JFreeChart> getChartList(List<DefaultCategoryDataset> datasets) {
+    public List<Object> getChartList(List<Object> datasets) {
         return null;
     }
 }

@@ -14,8 +14,6 @@ package org.talend.dataprofiler.core.ui.events;
 
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.widgets.Composite;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.category.DefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.model.TableWithData;
@@ -35,7 +33,7 @@ public class DynamicChartEventReceiver extends EventReceiver {
 
     protected static final String NAN_STRING = String.valueOf(Double.NaN);
 
-    protected DefaultCategoryDataset dataset;
+    protected Object dataset;
 
     protected Indicator indicator;
 
@@ -49,10 +47,6 @@ public class DynamicChartEventReceiver extends EventReceiver {
     protected TableViewer tableViewer = null;
 
     protected Composite chartComposite;
-
-    public void setDataset(CategoryDataset categoryDataset) {
-        this.dataset = (DefaultCategoryDataset) categoryDataset;
-    }
 
     public int getIndexInDataset() {
         return this.entityIndex;
@@ -74,7 +68,7 @@ public class DynamicChartEventReceiver extends EventReceiver {
      * 
      * @return the dataset
      */
-    public DefaultCategoryDataset getDataset() {
+    public Object getDataset() {
         return this.dataset;
     }
 
@@ -83,7 +77,7 @@ public class DynamicChartEventReceiver extends EventReceiver {
      * 
      * @param dataset the dataset to set
      */
-    public void setDataset(DefaultCategoryDataset dataset) {
+    public void setDataset(Object dataset) {
         this.dataset = dataset;
     }
 

@@ -66,7 +66,6 @@ import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.model.TableIndicator;
 import org.talend.dataprofiler.core.model.dynamic.DynamicIndicatorModel;
-import org.talend.dataprofiler.core.ui.chart.ChartUtils;
 import org.talend.dataprofiler.core.ui.editor.analysis.TablesSelectionDialog.TableSelectionType;
 import org.talend.dataprofiler.core.ui.editor.composite.AbstractColumnDropTree;
 import org.talend.dataprofiler.core.ui.editor.composite.AnalysisTableTreeViewer;

@@ -49,21 +49,19 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.experimental.chart.swt.ChartComposite;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.cwm.helper.ColumnHelper;
 import org.talend.cwm.helper.ConnectionHelper;
 import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.cwm.relational.TdColumn;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDecorator;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.ImageLib;
 import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableMenuGenerator;
 import org.talend.dataprofiler.core.ui.editor.preview.model.MenuItemEntity;
 import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dataquality.indicators.columnset.RowMatchingIndicator;
@@ -470,14 +468,9 @@ public class ColumnsComparisonAnalysisResultPage extends AbstractAnalysisResultP
         JFreeChart chart = TopChartFactory.createStackedBarChart(
                 DefaultMessagesImpl.getString("ColumnsComparisonAnalysisResultPage.ColumnsComparison"), dataset, //$NON-NLS-1$
                 PlotOrientation.HORIZONTAL);
-        ChartDecorator.decorate(chart, PlotOrientation.HORIZONTAL);
+        TOPChartUtils.getInstance().decorateChart(chart, true);
 
-        GridData gd = new GridData();
-        gd.heightHint = 180;
-        gd.widthHint = 450;
-
-        final ChartComposite chartComp = new ChartComposite(parent, SWT.NONE, chart);
-        chartComp.setLayoutData(gd);
+        final Object chartComp = TOPChartUtils.getInstance().createChartComposite(parent, SWT.NONE, chart, true);
 
         // add by hcheng for 6530(add menu to "View query result" for chart )
         chartComp.addChartMouseListener(new ChartMouseListener() {

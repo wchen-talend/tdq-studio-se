@@ -14,16 +14,14 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states.freq;
 
 import java.util.List;
 
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.category.CategoryDataset;
 import org.talend.commons.utils.SpecialValueDisplay;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.AbstractChartTypeStates;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.FrequencyTypeStateUtil;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dq.indicators.ext.FrequencyExt;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 
@@ -36,13 +34,13 @@ public abstract class FrequencyTypeStates extends AbstractChartTypeStates {
         super(units);
     }
 
-    public JFreeChart getChart() {
+    public Object getChart() {
         return getChart(getDataset());
     }
 
     @Override
-    public JFreeChart getChart(CategoryDataset dataset) {
-        return TopChartFactory.createBarChart(DefaultMessagesImpl.getString("TopChartFactory.count"), dataset); //$NON-NLS-1$
+    public Object getChart(Object dataset) {
+        return TOPChartUtils.getInstance().createBarChart(DefaultMessagesImpl.getString("TopChartFactory.count"), dataset); //$NON-NLS-1$
     }
 
     public ICustomerDataset getCustomerDataset() {
@@ -90,10 +88,6 @@ public abstract class FrequencyTypeStates extends AbstractChartTypeStates {
      */
     protected void setValueToDataset(CustomerDefaultCategoryDataset customerdataset, FrequencyExt freqExt, String keyLabel) {
         customerdataset.addValue(freqExt.getValue(), "1", keyLabel); //$NON-NLS-1$
-    }
-
-    public JFreeChart getExampleChart() {
-        return null;
     }
 
     public String getReferenceLink() {

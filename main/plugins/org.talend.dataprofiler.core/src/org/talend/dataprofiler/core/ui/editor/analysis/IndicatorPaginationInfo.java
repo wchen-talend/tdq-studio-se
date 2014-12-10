@@ -13,31 +13,52 @@
 package org.talend.dataprofiler.core.ui.editor.analysis;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
 import org.jfree.experimental.chart.swt.ChartComposite;
 import org.talend.commons.exception.ExceptionHandler;
+import org.talend.core.model.metadata.builder.connection.Connection;
+import org.talend.cwm.helper.SwitchHelpers;
+import org.talend.cwm.management.i18n.Messages;
+import org.talend.dataprofiler.core.CorePlugin;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.model.ModelElementIndicator;
 import org.talend.dataprofiler.core.model.dynamic.DynamicIndicatorModel;
-import org.talend.dataprofiler.core.ui.chart.ChartUtils;
+import org.talend.dataprofiler.core.ui.editor.analysis.drilldown.DrillDownEditorInput;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
+import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableFactory;
+import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableMenuGenerator;
+import org.talend.dataprofiler.core.ui.editor.preview.model.MenuItemEntity;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates;
 import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
+import org.talend.dataprofiler.core.ui.utils.DrillDownUtils;
 import org.talend.dataprofiler.core.ui.utils.pagination.PaginationInfo;
 import org.talend.dataprofiler.core.ui.utils.pagination.UIPagination;
+import org.talend.dataquality.analysis.Analysis;
+import org.talend.dataquality.analysis.ExecutionLanguage;
 import org.talend.dataquality.indicators.Indicator;
+import org.talend.dq.analysis.explore.DataExplorer;
+import org.talend.dq.analysis.explore.IDataExplorer;
+import org.talend.dq.helper.SqlExplorerUtils;
+import org.talend.dq.indicators.preview.table.ChartDataEntity;
 import org.talend.dq.nodes.indicator.type.IndicatorEnum;
 
 /**
@@ -45,6 +66,8 @@ import org.talend.dq.nodes.indicator.type.IndicatorEnum;
  * DOC mzhao UIPagination class global comment. Detailled comment
  */
 public abstract class IndicatorPaginationInfo extends PaginationInfo {
+
+    private static Logger log = Logger.getLogger(IndicatorPaginationInfo.class);
 
     private static final int PAGE_SIZE = 5;
 
@@ -165,5 +188,125 @@ public abstract class IndicatorPaginationInfo extends PaginationInfo {
             dyModel.clear();
         }
         dynamicList.clear();
+    }
+
+    /**
+     * DOC yyin Comment method "createMenuForAllDataEntity".
+     * 
+     * @param shell
+     * @param dataExplorer
+     * @param analysis
+     * @param chartDataEntities
+     * @return
+     */
+    protected Map<String, Object> createMenuForAllDataEntity(Shell shell, DataExplorer dataExplorer, Analysis analysis,
+            ChartDataEntity[] chartDataEntities) {
+        Map<String, Object> menuMap = new HashMap<String, Object>();
+        final ExecutionLanguage currentEngine = analysis.getParameters().getExecutionLanguage();
+
+        // ADD msjian TDQ-7275 2013-5-21: when allow drill down is not checked, no menu display
+        if (ExecutionLanguage.JAVA == currentEngine && !analysis.getParameters().isStoreData()) {
+            return menuMap;
+        }
+        // TDQ-7275~
+        for (ChartDataEntity oneDataEntity : chartDataEntities) {
+            Indicator indicator = oneDataEntity.getIndicator();
+            Menu menu = createMenu(shell, dataExplorer, analysis, currentEngine, oneDataEntity, indicator);
+            ChartTableFactory.addJobGenerationMenu(menu, analysis, indicator);
+
+            menuMap.put(oneDataEntity.getLabel(), menu);
+        }
+
+        return menuMap;
+    }
+
+    /**
+     * DOC yyin Comment method "createMenu".
+     * 
+     * @param shell
+     * @param explorer
+     * @param analysis
+     * @param currentEngine
+     * @param currentDataEntity
+     * @param currentIndicator
+     * @return
+     */
+    protected Menu createMenu(final Shell shell, final IDataExplorer explorer, final Analysis analysis,
+            final ExecutionLanguage currentEngine, final ChartDataEntity currentDataEntity, final Indicator currentIndicator) {
+        Menu menu = new Menu(shell, SWT.POP_UP);
+
+        int createPatternFlag = 0;
+        MenuItemEntity[] itemEntities = ChartTableMenuGenerator.generate(explorer, analysis, currentDataEntity);
+        for (final MenuItemEntity itemEntity : itemEntities) {
+            MenuItem item = new MenuItem(menu, SWT.PUSH);
+            item.setText(itemEntity.getLabel());
+            item.setImage(itemEntity.getIcon());
+            item.setEnabled(DrillDownUtils.isMenuItemEnable(currentDataEntity, itemEntity, analysis));
+            item.addSelectionListener(createSelectionAdapter(analysis, currentEngine, currentDataEntity, currentIndicator,
+                    itemEntity));
+
+            if (ChartTableFactory.isPatternFrequencyIndicator(currentIndicator) && createPatternFlag == 0) {
+                ChartTableFactory.createMenuOfGenerateRegularPattern(analysis, menu, currentDataEntity);
+            }
+
+            createPatternFlag++;
+        }
+        return menu;
+    }
+
+    /**
+     * DOC yyin Comment method "createSelectionAdapter".
+     * 
+     * @param analysis1
+     * @param currentEngine
+     * @param currentDataEntity
+     * @param currentIndicator
+     * @param itemEntity
+     * @return
+     */
+    protected SelectionAdapter createSelectionAdapter(final Analysis analysis1, final ExecutionLanguage currentEngine,
+            final ChartDataEntity currentDataEntity, final Indicator currentIndicator, final MenuItemEntity itemEntity) {
+        return new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                // MOD xqliu 2010-09-26 bug 15745
+                if (ExecutionLanguage.JAVA == currentEngine) {
+                    try {
+                        DrillDownEditorInput input = new DrillDownEditorInput(analysis1, currentDataEntity, itemEntity);
+
+                        if (input.computeColumnValueLength(input.filterAdaptDataList())) {
+                            CorePlugin
+                                    .getDefault()
+                                    .getWorkbench()
+                                    .getActiveWorkbenchWindow()
+                                    .getActivePage()
+                                    .openEditor(input,
+                                            "org.talend.dataprofiler.core.ui.editor.analysis.drilldown.drillDownResultEditor");//$NON-NLS-1$
+                        } else {
+                            MessageDialog.openWarning(null,
+                                    Messages.getString("DelimitedFileIndicatorEvaluator.badlyForm.Title"),//$NON-NLS-1$
+                                    Messages.getString("DelimitedFileIndicatorEvaluator.badlyForm.Message"));//$NON-NLS-1$
+                        }
+
+                    } catch (PartInitException e1) {
+                        log.error(e1, e1);
+                    }
+                } else {
+                    Display.getDefault().asyncExec(new Runnable() {
+
+                        public void run() {
+                            Connection tdDataProvider = SwitchHelpers.CONNECTION_SWITCH.doSwitch(analysis1.getContext()
+                                    .getConnection());
+                            String query = itemEntity.getQuery();
+                            String editorName = currentIndicator.getName();
+                            SqlExplorerUtils.getDefault().runInDQViewer(tdDataProvider, query, editorName);
+                        }
+
+                    });
+                }
+                // ~ 15745
+            }
+        };
     }
 }

@@ -18,9 +18,6 @@ Require-Bundle: org.eclipse.jface,
  org.talend.libraries.mapdb
 Export-Package: org.talend.dataprofiler.common.ui.dialog,
  org.talend.dataprofiler.common.ui.editor.preview,
- org.talend.dataprofiler.common.ui.editor.preview.chart,
- org.talend.dataprofiler.common.ui.editor.preview.chart.renderer,
- org.talend.dataprofiler.common.ui.editor.preview.chart.utils,
  org.talend.dataprofiler.common.ui.pagination.pageloder
 Import-Package: org.eclipse.ui.actions,
  org.talend.core,

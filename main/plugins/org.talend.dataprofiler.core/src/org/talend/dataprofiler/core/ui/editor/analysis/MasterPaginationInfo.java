@@ -24,14 +24,9 @@ import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
-import org.jfree.chart.JFreeChart;
-import org.jfree.experimental.chart.swt.ChartComposite;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDecorator;
-import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.model.ModelElementIndicator;
 import org.talend.dataprofiler.core.model.dynamic.DynamicIndicatorModel;
-import org.talend.dataprofiler.core.ui.chart.TalendChartComposite;
 import org.talend.dataprofiler.core.ui.editor.composite.AnalysisColumnTreeViewer;
 import org.talend.dataprofiler.core.ui.editor.preview.CompositeIndicator;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
@@ -44,6 +39,7 @@ import org.talend.dataprofiler.core.ui.events.EventManager;
 import org.talend.dataprofiler.core.ui.events.IEventReceiver;
 import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
 import org.talend.dataprofiler.core.ui.utils.AnalysisUtils;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataprofiler.core.ui.utils.pagination.UIPagination;
 import org.talend.dataquality.analysis.ExecutionLanguage;
 import org.talend.dataquality.indicators.Indicator;
@@ -151,7 +147,7 @@ public class MasterPaginationInfo extends IndicatorPaginationInfo {
      */
     private void createChart(Composite comp, EIndicatorChartType chartType, List<IndicatorUnit> units) {
         final IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartState(chartType, units);
-        JFreeChart chart = null;
+        Object chart = null;
         // MOD TDQ-8787 20140722 yyin:(when first switch from master to result) if there is some dynamic event for the
         // current indicator, use its dataset directly (TDQ-9241)
         IEventReceiver event = EventManager.getInstance().findRegisteredEvent(units.get(0).getIndicator(),
@@ -165,9 +161,12 @@ public class MasterPaginationInfo extends IndicatorPaginationInfo {
         if (chart == null) {
             return;
         }
-        ChartDecorator.decorate(chart, null);
+        TOPChartUtils.getInstance().decorateChart(chart, false);
+        Object chartComp = TOPChartUtils.getInstance().createChartComposite(comp, SWT.NONE, chart, true);
+        // call chart service to create related mouse listener
+        TOPChartUtils.getInstance().addMouseListenerForChart(chartComposite, chartTypeState);
 
-        final ChartComposite chartComp = new TalendChartComposite(comp, SWT.NONE, chart, true);
+        addListenerToChartComp(chartComp, chartTypeState);
 
         List<Indicator> indicators = getIndicators(units);
         if (isSQLMode) {// use the dynamic model for SQL mode only.
@@ -181,14 +180,9 @@ public class MasterPaginationInfo extends IndicatorPaginationInfo {
             this.dynamicList.add(dyModel);
             if (EIndicatorChartType.SUMMARY_STATISTICS.equals(chartType)) {
                 // for summary indicators: need to record the chart composite, which is used for create BAW chart
-                dyModel.setBawParentChartComp((TalendChartComposite) chartComp);
+                dyModel.setBawParentChartComp(chartComp);
             }
         }
-        GridData gd = new GridData();
-        gd.widthHint = PluginConstant.CHART_STANDARD_WIDHT;
-        gd.heightHint = PluginConstant.CHART_STANDARD_HEIGHT;
-        chartComp.setLayoutData(gd);
-        addListenerToChartComp(chartComp, chartTypeState);
 
     }
 

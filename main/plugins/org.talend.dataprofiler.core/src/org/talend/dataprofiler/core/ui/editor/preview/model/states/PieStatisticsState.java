@@ -14,15 +14,13 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states;
 
 import java.util.List;
 
-import org.jfree.chart.JFreeChart;
 import org.jfree.data.general.DefaultPieDataset;
-import org.jfree.data.general.PieDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.PieStatisticsStateUtil;
 import org.talend.dataprofiler.core.ui.utils.ComparatorsFactory;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.PluginConstant;
 import org.talend.dq.analysis.explore.DataExplorer;
 import org.talend.dq.indicators.ext.FrequencyExt;
@@ -56,8 +54,8 @@ public class PieStatisticsState extends AbstractChartTypeStates {
      * 
      * @see org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates#getChart()
      */
-    public JFreeChart getChart() {
-        return TopChartFactory.createPieChart(getTitle(), getPieDataset(), true, true, false);
+    public Object getChart() {
+        return TOPChartUtils.getInstance().createPieChart(getTitle(), getPieDataset(), true, true, false);
     }
 
     /*
@@ -65,7 +63,7 @@ public class PieStatisticsState extends AbstractChartTypeStates {
      * 
      * @see org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates#getExampleChart()
      */
-    public JFreeChart getExampleChart() {
+    public Object getExampleChart() {
         // TODO Auto-generated method stub
         return null;
     }
@@ -90,7 +88,7 @@ public class PieStatisticsState extends AbstractChartTypeStates {
     }
 
     @Override
-    public PieDataset getPieDataset() {
+    public Object getPieDataset() {
         DefaultPieDataset dataset = new DefaultPieDataset();
         for (IndicatorUnit unit : units) {
             if (unit.isExcuted()) {

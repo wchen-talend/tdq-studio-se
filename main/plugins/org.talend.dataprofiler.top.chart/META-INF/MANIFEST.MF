@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: TOP Chart plugin
+Bundle-SymbolicName: org.talend.dataprofiler.top.chart
+Bundle-Version: 6.0.0.qualifier
+Bundle-Activator: org.talend.dataprofiler.chart.TOPChartService
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.talend.libraries.jfreechart,
+ org.talend.dataprofiler.service,
+ org.eclipse.osgi.services;bundle-version="3.2.100"
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

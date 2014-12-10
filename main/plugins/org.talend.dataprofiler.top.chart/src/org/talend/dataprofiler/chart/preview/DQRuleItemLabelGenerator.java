@@ -10,15 +10,17 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.dataprofiler.common.ui.editor.preview;
+package org.talend.dataprofiler.chart.preview;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.Locale;
 
 import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
 import org.jfree.data.DataUtilities;
 import org.jfree.data.category.CategoryDataset;
-import org.talend.utils.format.StringFormatUtil;
 
 /**
  * DOC Administrator class global comment. Detailled comment
@@ -64,11 +66,39 @@ public class DQRuleItemLabelGenerator extends StandardCategoryItemLabelGenerator
             double percent = value.doubleValue() / total;
             // MOD qiongli bug 21589,override for just changeing this line.avoid 99.99% to show 100%
             // result[3] = this.percentFormat.format(percent);
-            result[3] = StringFormatUtil.format(percent, StringFormatUtil.PERCENT).toString();
+            result[3] = stringformat(percent, 0).toString();
         }
 
         return result;
 
     }
 
+    /**
+     * DOC yyin Comment method "stringformat".
+     * 
+     * @param percent
+     * @param i
+     * @return
+     */
+    private Object stringformat(Object percent, int i) {
+        DecimalFormat format = null;
+
+        BigDecimal zero = new BigDecimal(0);
+        BigDecimal temp = new BigDecimal(percent.toString());
+        BigDecimal min = new BigDecimal(10E-5);
+        BigDecimal max = new BigDecimal(9999 * 10E-5);
+        boolean isUseScientific = false;
+        if (temp.compareTo(min) == -1 && temp.compareTo(zero) == 1) {
+            isUseScientific = true;
+        } else if (temp.compareTo(max) == 1 && temp.compareTo(new BigDecimal(1)) == -1) {
+            percent = max.toString();
+        }
+        format = (DecimalFormat) DecimalFormat.getPercentInstance(Locale.ENGLISH);
+        format.applyPattern("0.00%"); //$NON-NLS-1$
+
+        if (isUseScientific) {
+            format.applyPattern("0.###E0%"); //$NON-NLS-1$
+        }
+        return format.format(new Double(percent.toString()));
+    }
 }

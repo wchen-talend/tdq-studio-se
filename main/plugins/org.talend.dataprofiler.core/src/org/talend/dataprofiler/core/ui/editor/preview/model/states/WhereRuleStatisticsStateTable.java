@@ -21,8 +21,6 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.XYSeries;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDecorator;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.model.TableIndicator;
 import org.talend.dataprofiler.core.ui.editor.preview.TableIndicatorUnit;
@@ -30,6 +28,7 @@ import org.talend.dataprofiler.core.ui.editor.preview.model.dataset.CustomerXYSe
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.CommonStateUtil;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.WhereRuleStatisticsStateUtil;
 import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dq.analysis.explore.DataExplorer;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
@@ -123,7 +122,7 @@ public class WhereRuleStatisticsStateTable extends AbstractChartTypeStatesTable 
     }
 
     @Override
-    public List<JFreeChart> getChartList() {
+    public List<Object> getChartList() {
         // MOD xqliu 2010-03-17 feature 10834
         List<DefaultCategoryDataset> optimizeShowDataset = getOptimizeShowDataset();
         return getChartList(optimizeShowDataset);
@@ -271,16 +270,16 @@ public class WhereRuleStatisticsStateTable extends AbstractChartTypeStatesTable 
      * 
      * @see org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates#getChartList(java.util.List)
      */
-    public List<JFreeChart> getChartList(List<DefaultCategoryDataset> datasets) {
-        List<JFreeChart> ret = new ArrayList<JFreeChart>();
+    public List<Object> getChartList(List<DefaultCategoryDataset> datasets) {
+        List<Object> ret = new ArrayList<Object>();
         // MOD xqliu 2012-04-23 TDQ-5057
         int i = 0;
         for (CategoryDataset dataset : datasets) {
             if (i < 1) {
-                JFreeChart barChart = TopChartFactory.createBarChart(
+                Object chart = TOPChartUtils.getInstance().createBarChart(
                         DefaultMessagesImpl.getString("SimpleStatisticsState.SimpleStatistics"), dataset, false); //$NON-NLS-1$
-                ChartDecorator.decorate(barChart, null);
-                ret.add(barChart);
+                TOPChartUtils.getInstance().decorateChart(chart, false);
+                ret.add(chart);
             } else {
                 JFreeChart stackChart = TopChartFactory.createStackedBarChart(
                         DefaultMessagesImpl.getString("WhereRuleStatisticsStateTable.WhereRuleStatistics"), dataset, true); //$NON-NLS-1$

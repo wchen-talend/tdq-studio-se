@@ -47,11 +47,8 @@ import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
-import org.jfree.chart.JFreeChart;
-import org.jfree.experimental.chart.swt.ChartComposite;
 import org.talend.core.model.metadata.builder.connection.MetadataColumn;
 import org.talend.cwm.relational.TdColumn;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDecorator;
 import org.talend.dataprofiler.core.ImageLib;
 import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
@@ -66,6 +63,7 @@ import org.talend.dataprofiler.core.ui.editor.preview.model.TableWithData;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.table.ITableTypeStates;
 import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataprofiler.core.ui.utils.TableUtils;
 import org.talend.dataquality.indicators.columnset.ColumnSetMultiValueIndicator;
 import org.talend.dataquality.indicators.columnset.ColumnsetPackage;
@@ -328,15 +326,10 @@ public class ColumnCorrelationNominalIntervalResultPage extends AbstractAnalysis
 
         // create chart
         if (!EditorPreferencePage.isHideGraphics()) {
-            JFreeChart chart = chartTypeState.getChart();
-            ChartDecorator.decorate(chart, null);
+            Object chart = chartTypeState.getChart();
+            TOPChartUtils.getInstance().decorateChart(chart, false);
             if (chart != null) {
-                ChartComposite cc = new ChartComposite(composite, SWT.NONE, chart, true);
-
-                GridData gd = new GridData();
-                gd.widthHint = PluginConstant.CHART_STANDARD_WIDHT;
-                gd.heightHint = PluginConstant.CHART_STANDARD_HEIGHT;
-                cc.setLayoutData(gd);
+                TOPChartUtils.getInstance().createChartComposite(composite, SWT.NONE, chart, true);
             }
         }
     }

@@ -53,8 +53,6 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
-import org.jfree.chart.JFreeChart;
-import org.jfree.experimental.chart.swt.ChartComposite;
 import org.talend.core.model.metadata.MetadataColumnRepositoryObject;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.MetadataColumn;
@@ -65,7 +63,6 @@ import org.talend.cwm.helper.ModelElementHelper;
 import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.cwm.relational.TdColumn;
 import org.talend.cwm.xml.TdXmlElementType;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDecorator;
 import org.talend.dataprofiler.core.ImageLib;
 import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.helper.ModelElementIndicatorHelper;
@@ -84,6 +81,7 @@ import org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeSta
 import org.talend.dataprofiler.core.ui.events.EventEnum;
 import org.talend.dataprofiler.core.ui.events.EventManager;
 import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.analysis.ExecutionLanguage;
 import org.talend.dataquality.domain.Domain;
@@ -504,15 +502,10 @@ public class ColumnSetMasterPage extends AbstractAnalysisMetadataPage implements
         EIndicatorChartType matchingType = EIndicatorChartType.PATTERN_MATCHING;
         IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartState(matchingType, units);
 
-        JFreeChart chart = chartTypeState.getChart();
-        ChartDecorator.decorate(chart, null);
+        Object chart = chartTypeState.getChart();
+        TOPChartUtils.getInstance().decorateChart(chart, false);
         if (chart != null) {
-            ChartComposite cc = new ChartComposite(composite, SWT.NONE, chart, true);
-
-            GridData gd = new GridData();
-            gd.widthHint = PluginConstant.CHART_STANDARD_WIDHT;
-            gd.heightHint = PluginConstant.CHART_STANDARD_HEIGHT;
-            cc.setLayoutData(gd);
+            TOPChartUtils.getInstance().createChartComposite(composite, SWT.NONE, chart, true);
         }
     }
 
@@ -528,15 +521,10 @@ public class ColumnSetMasterPage extends AbstractAnalysisMetadataPage implements
         IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartState(EIndicatorChartType.SIMPLE_STATISTICS, units);
 
         // create chart
-        JFreeChart chart = chartTypeState.getChart();
-        ChartDecorator.decorate(chart, null);
+        Object chart = chartTypeState.getChart();
+        TOPChartUtils.getInstance().decorateChart(chart, false);
         if (chart != null) {
-            ChartComposite cc = new ChartComposite(composite, SWT.NONE, chart, true);
-
-            GridData gd = new GridData();
-            gd.widthHint = PluginConstant.CHART_STANDARD_WIDHT;
-            gd.heightHint = PluginConstant.CHART_STANDARD_HEIGHT;
-            cc.setLayoutData(gd);
+            TOPChartUtils.getInstance().createChartComposite(composite, SWT.NONE, chart, true);
         }
     }
 

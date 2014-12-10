@@ -12,16 +12,9 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.editor.preview.model.states;
 
-import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.renderer.category.CategoryItemRenderer;
-import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.xy.XYDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
@@ -48,39 +41,6 @@ public abstract class AbstractChartTypeStatesTable implements IChartTypeStates {
         return null;
     }
 
-    public JFreeChart getFeatChart() {
-        JFreeChart chart = getChart();
-        if (chart != null) {
-            Font font = null;
-            CategoryPlot plot = chart.getCategoryPlot();
-            CategoryItemRenderer render = plot.getRenderer();
-            CategoryAxis domainAxis = plot.getDomainAxis();
-            ValueAxis valueAxis = plot.getRangeAxis();
-
-            font = new Font("Arail", Font.BOLD, 12); //$NON-NLS-1$
-
-            render.setBaseItemLabelFont(font);
-
-            font = new Font("Verdana", Font.BOLD, 12); //$NON-NLS-1$
-            domainAxis.setLabelFont(font);
-            valueAxis.setLabelFont(font);
-
-            font = new Font("Verdana", Font.PLAIN, 10); //$NON-NLS-1$
-            domainAxis.setTickLabelFont(font);
-            valueAxis.setTickLabelFont(font);
-
-            font = new Font("Verdana", Font.BOLD, 10); //$NON-NLS-1$
-            LegendTitle legend = chart.getLegend();
-            if (legend != null) {
-                legend.setItemFont(font);
-            }
-
-            font = null;
-        }
-
-        return chart;
-    }
-
     public XYDataset getXYDataset() {
         if (getCustomerXYDataset() != null) {
             return (XYDataset) getCustomerXYDataset();
@@ -93,11 +53,11 @@ public abstract class AbstractChartTypeStatesTable implements IChartTypeStates {
         return null;
     }
 
-    public List<JFreeChart> getChartList() {
+    public List<Object> getChartList() {
         return null;
     }
 
-    public JFreeChart getChart() {
+    public Object getChart() {
         return null;
     }
 }

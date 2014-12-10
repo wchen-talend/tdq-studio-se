@@ -61,7 +61,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.jfree.chart.JFreeChart;
 import org.jfree.experimental.chart.swt.ChartComposite;
 import org.talend.cwm.relational.TdColumn;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDecorator;
+import org.talend.dataprofiler.chart.util.ChartDecorator;
 import org.talend.dataprofiler.common.ui.pagination.pageloder.MapDBPageConstant;
 import org.talend.dataprofiler.common.ui.pagination.pageloder.MapDBPageLoader;
 import org.talend.dataprofiler.core.ImageLib;

@@ -14,15 +14,12 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states;
 
 import java.util.List;
 
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.category.CategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
 import org.talend.dataprofiler.core.ui.utils.ComparatorsFactory;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 
 /**
@@ -40,15 +37,15 @@ public class SimpleTextStatisticsState extends TextStatisticsState {
     }
 
     @Override
-    public JFreeChart getChart() {
+    public Object getChart() {
         return getChart(getDataset());
     }
 
     @Override
-    public JFreeChart getChart(CategoryDataset dataset) {
-        JFreeChart chart = TopChartFactory.createBarChart(
+    public Object getChart(Object dataset) {
+        Object chart = TOPChartUtils.getInstance().createBarChart(
                 DefaultMessagesImpl.getString("SimpleTextStatisticsState.SimpleTextStatistics"), dataset, false);//$NON-NLS-1$
-        chart.getCategoryPlot().setOrientation(PlotOrientation.HORIZONTAL);
+        TOPChartUtils.getInstance().setOrientation(chart, true);
         return chart;
     }
 

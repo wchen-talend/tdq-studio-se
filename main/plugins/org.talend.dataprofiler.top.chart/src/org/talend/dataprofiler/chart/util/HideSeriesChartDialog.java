@@ -10,7 +10,7 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.dataprofiler.core.ui.chart;
+package org.talend.dataprofiler.chart.util;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -28,22 +28,16 @@ import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.xy.XYDataset;
-import org.talend.dataquality.indicators.Indicator;
-import org.talend.dataquality.indicators.columnset.ColumnsetPackage;
 
 /**
  * DOC bzhou class global comment. Detailled comment
  */
 public class HideSeriesChartDialog extends FullScreenChartDialog {
 
-    private Indicator indicator;
-
     private static final String SERIES_KEY_ID = "SERIES_KEY"; //$NON-NLS-1$
 
-    public HideSeriesChartDialog(Shell shell, JFreeChart chart, Indicator indicator) {
+    public HideSeriesChartDialog(Shell shell, JFreeChart chart) {
         super(shell, chart);
-
-        this.indicator = indicator;
     }
 
     @Override

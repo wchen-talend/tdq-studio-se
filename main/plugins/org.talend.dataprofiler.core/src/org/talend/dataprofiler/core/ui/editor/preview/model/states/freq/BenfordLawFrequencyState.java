@@ -15,16 +15,11 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states.freq;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.StandardChartTheme;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.category.CategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDecorator;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.freq.util.BenfordLawFrequencyStateUtil;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dq.analysis.explore.DataExplorer;
 import org.talend.dq.indicators.ext.FrequencyExt;
 
@@ -83,11 +78,10 @@ public class BenfordLawFrequencyState extends FrequencyTypeStates {
      * create a bar chart with points(formalValues) on each bar.
      */
     @Override
-    public JFreeChart getChart() {
+    public Object getChart() {
         // Clear the dot category label first, so that the new category label will be added into list.
         dotChartLabels.clear();
-        CategoryDataset dataset = getDataset();
-        return createChart(dataset);
+        return createChart(getDataset());
     }
 
     /**
@@ -96,20 +90,15 @@ public class BenfordLawFrequencyState extends FrequencyTypeStates {
      * @param dataset
      * @return
      */
-    private JFreeChart createChart(CategoryDataset dataset) {
-        ChartFactory.setChartTheme(StandardChartTheme.createLegacyTheme());
+    private Object createChart(Object dataset) {
         String categoryAxisLabel = DefaultMessagesImpl.getString("BenfordLawFrequencyState.AxisY"); //$NON-NLS-1$
         String axisXLabel = DefaultMessagesImpl.getString("BenfordLawFrequencyState.value"); //$NON-NLS-1$
-        JFreeChart barChart = ChartFactory.createBarChart(null, axisXLabel, categoryAxisLabel, dataset, PlotOrientation.VERTICAL,
-                false, true, false);
-
-        JFreeChart lineChart = ChartDecorator.decorateBenfordLawChart(dataset, barChart, getTitle(), categoryAxisLabel,
-                dotChartLabels, formalValues);
-        return lineChart;
+        return TOPChartUtils.getInstance().createBenfordChart(axisXLabel, categoryAxisLabel, dataset, dotChartLabels,
+                formalValues, axisXLabel);
     }
 
     @Override
-    public JFreeChart getChart(CategoryDataset dataset) {
+    public Object getChart(Object dataset) {
         // Clear the dot category label first, so that the new category label will be added into list.
         dotChartLabels.clear();
         return createChart(dataset);

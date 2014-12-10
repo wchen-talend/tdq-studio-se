@@ -17,11 +17,11 @@ import java.util.List;
 import org.jfree.chart.JFreeChart;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.CommonStateUtil;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.PhoneNumbStatisticsStateUtil;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dq.analysis.explore.DataExplorer;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 
@@ -37,7 +37,6 @@ public class PhoneNumbStatisticsState extends AbstractChartTypeStates {
      */
     public PhoneNumbStatisticsState(List<IndicatorUnit> units) {
         super(units);
-        // TODO Auto-generated constructor stub
     }
 
     /*
@@ -67,8 +66,8 @@ public class PhoneNumbStatisticsState extends AbstractChartTypeStates {
      * 
      * @see org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates#getChart()
      */
-    public JFreeChart getChart() {
-        return TopChartFactory.createBarChart(
+    public Object getChart() {
+        return TOPChartUtils.getInstance().createBarChart(
                 DefaultMessagesImpl.getString("PhoneNumbStatisticsState.PhoneNumbStatistics"), getDataset(), false); //$NON-NLS-1$
     }
 

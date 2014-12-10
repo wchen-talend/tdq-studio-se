@@ -57,12 +57,8 @@ import org.jfree.ui.TextAnchor;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.cwm.helper.ColumnHelper;
 import org.talend.cwm.helper.SwitchHelpers;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDatasetUtils;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDatasetUtils.ValueAggregator;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDecorator;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
-import org.talend.dataprofiler.core.ui.chart.ChartUtils;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.indicators.columnset.ColumnSetMultiValueIndicator;
 import org.talend.dataquality.indicators.columnset.ColumnsetPackage;
@@ -267,7 +263,7 @@ public class HideSeriesChartComposite extends ChartComposite {
 
         if (ColumnsetPackage.eINSTANCE.getCountAvgNullIndicator().equals(indicator.eClass())) {
             jchart = TopChartFactory.createBubbleChart(indicator, column);
-            ChartDecorator.decorate(jchart, null);
+            TOPChartUtils.getInstance().decorateChart(jchart, false);
         }
 
         if (ColumnsetPackage.eINSTANCE.getMinMaxDateIndicator().equals(indicator.eClass())) {
@@ -287,7 +283,7 @@ public class HideSeriesChartComposite extends ChartComposite {
             plot.setRenderer(renderer);
             plot.getDomainAxis().setMaximumCategoryLabelWidthRatio(10.0f);
 
-            ChartDecorator.decorate(jchart, null);
+            TOPChartUtils.getInstance().decorateChart(jchart, false);
         }
 
         if (ColumnsetPackage.eINSTANCE.getWeakCorrelationIndicator().equals(indicator.eClass())) {

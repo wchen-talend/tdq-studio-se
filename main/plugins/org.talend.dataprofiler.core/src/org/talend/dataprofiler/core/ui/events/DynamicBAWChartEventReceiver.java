@@ -18,13 +18,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jfree.chart.JFreeChart;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.ChartDecorator;
-import org.talend.dataprofiler.core.ui.chart.TalendChartComposite;
 import org.talend.dataprofiler.core.ui.editor.preview.ColumnIndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.model.dataset.CustomerDefaultBAWDataset;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.SummaryStatisticsState;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dq.indicators.IndicatorCommonUtil;
 import org.talend.dq.nodes.indicator.type.IndicatorEnum;
@@ -36,7 +34,7 @@ public class DynamicBAWChartEventReceiver extends DynamicChartEventReceiver {
 
     private CustomerDefaultBAWDataset bawDataset;
 
-    private TalendChartComposite BAWparentComposite = null;
+    private Object BAWparentComposite = null;
 
     private List<IndicatorUnit> indicators = new ArrayList<IndicatorUnit>();
 
@@ -110,8 +108,8 @@ public class DynamicBAWChartEventReceiver extends DynamicChartEventReceiver {
                 // The BAW chart doesnot support dynamic, so only can create a new one after all finished.
                 SummaryStatisticsState state = new SummaryStatisticsState(indicators);
                 state.setSqltype(Types.DOUBLE);
-                JFreeChart chart = state.getChart();
-                ChartDecorator.decorate(chart, null);
+                Object chart = state.getChart();
+                TOPChartUtils.getInstance().decorateChart(chart, false);
                 if (BAWparentComposite != null) {
                     BAWparentComposite.setChart(chart);
                     BAWparentComposite.forceRedraw();
@@ -190,7 +188,7 @@ public class DynamicBAWChartEventReceiver extends DynamicChartEventReceiver {
      * 
      * @param bAWparentComposite the bAWparentComposite to set
      */
-    public void setBAWparentComposite(TalendChartComposite bAWparentComposite) {
+    public void setBAWparentComposite(Object bAWparentComposite) {
         this.BAWparentComposite = bAWparentComposite;
     }
 }
