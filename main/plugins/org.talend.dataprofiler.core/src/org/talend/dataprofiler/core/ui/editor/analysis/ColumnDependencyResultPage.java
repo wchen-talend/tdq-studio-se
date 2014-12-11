@@ -12,8 +12,6 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.editor.analysis;
 
-import java.awt.event.MouseEvent;
-
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.TableViewer;
@@ -34,15 +32,10 @@ import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.Section;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
-import org.jfree.chart.JFreeChart;
 import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.entity.ChartEntity;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.experimental.chart.swt.ChartComposite;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.cwm.helper.SwitchHelpers;
-import org.talend.dataprofiler.chart.util.ChartDecorator;
-import org.talend.dataprofiler.chart.util.TopChartFactory;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.core.ImageLib;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
@@ -51,6 +44,7 @@ import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableMenuGenera
 import org.talend.dataprofiler.core.ui.editor.preview.model.MenuItemEntity;
 import org.talend.dataprofiler.core.ui.editor.preview.model.entity.TableStructureEntity;
 import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.PluginConstant;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.indicators.Indicator;
@@ -199,30 +193,15 @@ public class ColumnDependencyResultPage extends AbstractAnalysisResultPage {
     private void createChart(Composite sectionClient, Analysis analysis) {
         CustomerDefaultCategoryDataset dataset = initCustomerDataset();
 
-        JFreeChart createChart = TopChartFactory
-                .createStackedBarChart(
-                        DefaultMessagesImpl.getString("ColumnDependencyResultPage.dependencyStrength"), dataset, PlotOrientation.HORIZONTAL, true); //$NON-NLS-1$
+        Object createChart = TOPChartUtils.getInstance().createStackedBarChart(
+                DefaultMessagesImpl.getString("ColumnDependencyResultPage.dependencyStrength"), dataset, true, true);
         ChartDecorator.decorateColumnDependency(createChart);
 
-        GridData gd = new GridData();
-        gd.heightHint = 180;
-        gd.widthHint = 450;
-
-        final ChartComposite chartComp = new ChartComposite(sectionClient, SWT.NONE, createChart);
-        chartComp.setLayoutData(gd);
+        Object chartComp = TOPChartUtils.getInstance().createChartComposite(sectionClient, SWT.NONE, createChart, true);
         // ADD xqliu 2009-09-11
         chartComp.addChartMouseListener(new ChartMouseListener() {
 
             public void chartMouseClicked(ChartMouseEvent event) {
-
-                boolean flag = event.getTrigger().getButton() != MouseEvent.BUTTON3;
-
-                chartComp.setDomainZoomable(flag);
-                chartComp.setRangeZoomable(flag);
-
-                if (flag) {
-                    return;
-                }
 
                 ChartEntity chartEntity = event.getEntity();
                 if (chartEntity != null && chartEntity instanceof CategoryItemEntity) {
@@ -233,20 +212,6 @@ public class ColumnDependencyResultPage extends AbstractAnalysisResultPage {
                     chartComp.setMenu(menu);
 
                     ChartDataEntity currentDataEntity = null;
-                    ChartDataEntity[] dataEntities = dataEntity.getDataEntities();
-                    if (dataEntities.length == 1) {
-                        currentDataEntity = dataEntities[0];
-                    } else {
-                        for (ChartDataEntity entity : dataEntities) {
-                            if (cateEntity.getColumnKey().compareTo(entity.getLabel()) == 0) {
-                                currentDataEntity = entity;
-                            } else {
-                                if (cateEntity.getRowKey().compareTo(entity.getLabel()) == 0) {
-                                    currentDataEntity = entity;
-                                }
-                            }
-                        }
-                    }
 
                     if (currentDataEntity != null) {
                         ColumnDependencyExplorer explorer = new ColumnDependencyExplorer();

@@ -28,7 +28,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.Section;
-import org.jfree.data.category.CategoryDataset;
 import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.model.ModelElementIndicator;
@@ -208,7 +207,7 @@ public class ColumnAnalysisResultPage extends AbstractAnalysisResultPage impleme
 
         // register dynamic event,for the indicator (for each column)
         for (DynamicIndicatorModel oneCategoryIndicatorModel : indiAndDatasets) {
-            CategoryDataset categoryDataset = oneCategoryIndicatorModel.getDataset();
+            Object categoryDataset = oneCategoryIndicatorModel.getDataset();
             TableViewer tableViewer = oneCategoryIndicatorModel.getTableViewer();
             if (EIndicatorChartType.SUMMARY_STATISTICS.equals(oneCategoryIndicatorModel.getChartType())) {
                 // when all/not-all summary indicators are selected

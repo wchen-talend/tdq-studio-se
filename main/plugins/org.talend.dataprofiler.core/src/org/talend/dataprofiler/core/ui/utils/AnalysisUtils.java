@@ -19,7 +19,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.jfree.data.category.CategoryDataset;
 import org.talend.commons.emf.FactoriesUtil;
 import org.talend.dataprofiler.core.model.dynamic.DynamicIndicatorModel;
 import org.talend.dataprofiler.core.ui.editor.preview.model.dataset.CustomerDefaultBAWDataset;
@@ -154,8 +153,7 @@ public class AnalysisUtils {
      * @return
      */
     public static DynamicBAWChartEventReceiver createDynamicBAWChartEventReceiver(
-            DynamicIndicatorModel oneCategoryIndicatorModel, CategoryDataset categoryDataset,
-            Map<Indicator, EventReceiver> eventReceivers) {
+            DynamicIndicatorModel oneCategoryIndicatorModel, Object categoryDataset, Map<Indicator, EventReceiver> eventReceivers) {
         DynamicBAWChartEventReceiver bawReceiver = new DynamicBAWChartEventReceiver();
         if (categoryDataset instanceof CustomerDefaultBAWDataset) {
             // all summary selected
