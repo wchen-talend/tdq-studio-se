@@ -18,17 +18,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.experimental.chart.swt.ChartComposite;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
 import org.talend.dataquality.PluginConstant;
 import org.talend.dataquality.record.linkage.ui.i18n.internal.DefaultMessagesImpl;
 
@@ -41,7 +36,7 @@ public class MatchRuleDataChart extends Composite {
 
     public static final int CHART_STANDARD_HEIGHT = 275;
 
-    private ChartComposite jfreeChartComp;
+    private Object jfreeChartComp;
 
     // TDQ-9297: Set the default value of "hide groups less than" to 2 instead of 1
     private int times = PluginConstant.HIDDEN_GROUP_LESS_THAN_DEFAULT;
@@ -81,41 +76,19 @@ public class MatchRuleDataChart extends Composite {
     private void createChart() {
         Composite composite = new Composite(this, SWT.NONE);
         composite.setLayout(new GridLayout(1, true));
-        JFreeChart jfreechart = createChart(createDataset());
-        this.jfreeChartComp = new ChartComposite(composite, SWT.NONE, jfreechart, true);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = CHART_STANDARD_WIDHT;
-        gd.heightHint = CHART_STANDARD_HEIGHT;
-        this.jfreeChartComp.setLayoutData(gd);
+        Object jfreechart = createChart(createDataset());
+        this.jfreeChartComp = TOPChartUtil.getInstance().createChartComposite(composite, SWT.NONE, jfreechart, true);
 
     }
 
-    private JFreeChart createChart(CategoryDataset categorydataset) {
-        JFreeChart localJFreeChart = TopChartFactory.createMatchRuleBarChart(null, DefaultMessagesImpl.getString("DataChart.0"), //$NON-NLS-1$
-                "#group", categorydataset, PlotOrientation.VERTICAL, false, true, false); //$NON-NLS-1$
+    private Object createChart(Object categorydataset) {
+        Object localJFreeChart = TOPChartUtil.getInstance().createMatchRuleBarChart(DefaultMessagesImpl.getString("DataChart.0"), //$NON-NLS-1$
+                "#group", categorydataset); //$NON-NLS-1$
         return localJFreeChart;
     }
 
-    protected double sumItemCount(CategoryDataset categorydataset) {
-        double itemCount = 0;
-        for (int i = 0; i < categorydataset.getColumnCount(); i++) {
-            int columnKey = Integer.valueOf(categorydataset.getColumnKey(i).toString());
-            itemCount += categorydataset.getValue(0, i).intValue() * columnKey;
-        }
-        return itemCount;
-    }
-
-    protected double sumGroupCount(CategoryDataset categorydataset) {
-        double groupCount = 0.0;
-        for (int i = 0; i < categorydataset.getColumnCount(); i++) {
-            groupCount += categorydataset.getValue(0, i).doubleValue();
-        }
-        return groupCount;
-    }
-
-    private CategoryDataset createDataset() {
+    private Object createDataset() {
         String s = DefaultMessagesImpl.getString("DataChart.4"); //$NON-NLS-1$
-        DefaultCategoryDataset defaultcategorydataset = new DefaultCategoryDataset();
 
         // sort dataset
         String[] array = groupSize2GroupFrequency.keySet().toArray(new String[0]);
@@ -128,15 +101,11 @@ public class MatchRuleDataChart extends Composite {
                 return Integer.parseInt(o1) - Integer.parseInt(o2);
             }
         });
-        for (String count : groups) {
-            if (Integer.parseInt(count) > times - 1) {
-                defaultcategorydataset.addValue(groupSize2GroupFrequency.get(count), s, count);
-            }
-        }
-        return defaultcategorydataset;
+
+        return TOPChartUtil.getInstance().createDatasetForMatchRule(groupSize2GroupFrequency, groups, times, s);
     }
 
-    public ChartComposite getChartComp() {
+    public Object getChartComp() {
         return jfreeChartComp;
     }
 
@@ -151,8 +120,7 @@ public class MatchRuleDataChart extends Composite {
      */
     public void refresh() {
         initChartData();
-        jfreeChartComp.setChart(createChart(createDataset()));
-        jfreeChartComp.forceRedraw();
+        TOPChartUtil.getInstance().refrechChart(jfreeChartComp, createChart(createDataset()));
     }
 
     /**
@@ -177,7 +145,7 @@ public class MatchRuleDataChart extends Composite {
     public void dispose() {
         super.dispose();
         if (jfreeChartComp != null) {
-            jfreeChartComp.dispose();
+            ((Composite) jfreeChartComp).dispose();
         }
     }
 
@@ -195,8 +163,7 @@ public class MatchRuleDataChart extends Composite {
      * create a chart with empty dataset,so as to clear the blocking key chart.
      */
     public void clearChart() {
-        JFreeChart jfreechart = createChart(new DefaultCategoryDataset());
-        jfreeChartComp.setChart(jfreechart);
-        jfreeChartComp.forceRedraw();
+        Object chart = createChart(TOPChartUtil.getInstance().createDatasetForMatchRule(null, null, times, StringUtils.EMPTY));
+        TOPChartUtil.getInstance().refrechChart(jfreeChartComp, chart);
     }
 }

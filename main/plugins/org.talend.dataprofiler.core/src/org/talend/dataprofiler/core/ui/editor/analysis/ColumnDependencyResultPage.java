@@ -16,31 +16,21 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.Section;
-import org.jfree.chart.ChartMouseEvent;
-import org.jfree.chart.ChartMouseListener;
-import org.jfree.chart.entity.CategoryItemEntity;
-import org.jfree.chart.entity.ChartEntity;
-import org.talend.core.model.metadata.builder.connection.Connection;
-import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
+import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.core.ImageLib;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableFactory;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableMenuGenerator;
 import org.talend.dataprofiler.core.ui.editor.preview.model.MenuItemEntity;
 import org.talend.dataprofiler.core.ui.editor.preview.model.entity.TableStructureEntity;
 import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
@@ -52,7 +42,6 @@ import org.talend.dataquality.indicators.columnset.ColumnDependencyIndicator;
 import org.talend.dq.analysis.AnalysisHandler;
 import org.talend.dq.analysis.explore.ColumnDependencyExplorer;
 import org.talend.dq.helper.ColumnDependencyHelper;
-import org.talend.dq.helper.SqlExplorerUtils;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 import org.talend.dq.indicators.preview.table.PatternChartDataEntity;
 import org.talend.utils.format.StringFormatUtil;
@@ -60,7 +49,7 @@ import org.talend.utils.format.StringFormatUtil;
 /**
  * DOC jet class global comment. Detailled comment
  */
-public class ColumnDependencyResultPage extends AbstractAnalysisResultPage {
+public class ColumnDependencyResultPage extends AbstractAnalysisResultPageWithChart {
 
     private Composite analyzedColumnSetsComp;
 
@@ -112,9 +101,9 @@ public class ColumnDependencyResultPage extends AbstractAnalysisResultPage {
      * .ui.editor.analysis.AbstractAnalysisMetadataPage)
      */
     @Override
-    public void refresh(AbstractAnalysisMetadataPage masterPage) {
+    public void refresh(AbstractAnalysisMetadataPage masterPage1) {
 
-        this.masterPage = (ColumnDependencyMasterDetailsPage) masterPage;
+        this.masterPage = (ColumnDependencyMasterDetailsPage) masterPage1;
         if (summaryComp != null && !summaryComp.isDisposed()) {
             summaryComp.dispose();
         }
@@ -137,7 +126,7 @@ public class ColumnDependencyResultPage extends AbstractAnalysisResultPage {
      */
     @Override
     public void setDirty(boolean isDirty) {
-
+        // no need to implement
     }
 
     @Override
@@ -194,69 +183,24 @@ public class ColumnDependencyResultPage extends AbstractAnalysisResultPage {
         CustomerDefaultCategoryDataset dataset = initCustomerDataset();
 
         Object createChart = TOPChartUtils.getInstance().createStackedBarChart(
-                DefaultMessagesImpl.getString("ColumnDependencyResultPage.dependencyStrength"), dataset, true, true);
-        ChartDecorator.decorateColumnDependency(createChart);
+                DefaultMessagesImpl.getString("ColumnDependencyResultPage.dependencyStrength"), dataset, true, true); //$NON-NLS-1$
+        TOPChartUtils.getInstance().decorateColumnDependency(createChart);
 
         Object chartComp = TOPChartUtils.getInstance().createChartComposite(sectionClient, SWT.NONE, createChart, true);
-        // ADD xqliu 2009-09-11
-        chartComp.addChartMouseListener(new ChartMouseListener() {
 
-            public void chartMouseClicked(ChartMouseEvent event) {
+        addMenuToChartComp(chartComp, new ColumnDependencyExplorer(), getAnalysisHandler().getAnalysis(),
+                ((ICustomerDataset) dataset).getDataEntities());
 
-                ChartEntity chartEntity = event.getEntity();
-                if (chartEntity != null && chartEntity instanceof CategoryItemEntity) {
-                    CategoryItemEntity cateEntity = (CategoryItemEntity) chartEntity;
-                    CustomerDefaultCategoryDataset dataEntity = (CustomerDefaultCategoryDataset) cateEntity.getDataset();
+    }
 
-                    Menu menu = new Menu(chartComp.getShell(), SWT.POP_UP);
-                    chartComp.setMenu(menu);
+    @Override
+    protected String getEditorName(Indicator indicator) {
+        return ColumnDependencyHelper.getIndicatorName(indicator);
+    }
 
-                    ChartDataEntity currentDataEntity = null;
-
-                    if (currentDataEntity != null) {
-                        ColumnDependencyExplorer explorer = new ColumnDependencyExplorer();
-                        final Analysis analysis = getAnalysisHandler().getAnalysis();
-                        final Indicator indicator = currentDataEntity.getIndicator();
-
-                        MenuItemEntity[] itemEntities = ChartTableMenuGenerator.generate(explorer, analysis, currentDataEntity);
-                        for (final MenuItemEntity itemEntity : itemEntities) {
-                            MenuItem menuItem = new MenuItem(menu, SWT.NONE);
-                            menuItem.setText(itemEntity.getLabel());
-                            menuItem.setImage(ImageLib.getImage(ImageLib.EXPLORE_IMAGE));
-                            menuItem.addSelectionListener(new SelectionAdapter() {
-
-                                @Override
-                                public void widgetSelected(SelectionEvent e) {
-                                    Display.getDefault().asyncExec(new Runnable() {
-
-                                        public void run() {
-                                            Connection tdDataProvider = SwitchHelpers.CONNECTION_SWITCH.doSwitch(analysis
-                                                    .getContext().getConnection());
-                                            String query = itemEntity.getQuery();
-                                            String editorName = ColumnDependencyHelper.getIndicatorName(indicator);
-                                            SqlExplorerUtils.getDefault().runInDQViewer(tdDataProvider, query, editorName);
-                                        }
-
-                                    });
-                                }
-                            });
-                        }
-                    }
-
-                    menu.setVisible(true);
-                }
-            }
-
-            /*
-             * (non-Javadoc)
-             * 
-             * @see org.jfree.chart.ChartMouseListener#chartMouseMoved(org.jfree.chart.ChartMouseEvent)
-             */
-            public void chartMouseMoved(ChartMouseEvent event) {
-
-            }
-        });
-        // ~
+    @Override
+    protected Image getItemImage(MenuItemEntity menuItem) {
+        return ImageLib.getImage(ImageLib.EXPLORE_IMAGE);
     }
 
     /**

@@ -139,6 +139,12 @@ public class TOPChartUtils {
         }
     }
 
+    public void decorateColumnDependency(Object chart) {
+        if (chartService != null) {
+            chartService.decorateColumnDependency(chart);
+        }
+    }
+
     public void setOrientation(Object chart, boolean isHorizontal) {
         if (chartService != null) {
             chartService.setOrientation(chart, isHorizontal);

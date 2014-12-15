@@ -11,14 +11,14 @@ Require-Bundle: org.eclipse.swt,
  org.apache.commons.lang,
  org.talend.commons.runtime,
  org.talend.core.runtime,
- org.talend.libraries.jfreechart,
  org.talend.dataquality,
  org.eclipse.nebula.widgets.nattable.core,
  org.talend.dataquality.record.linkage;visibility:=reexport,
  org.eclipse.ui.forms,
  org.talend.cwm.management,
  org.talend.dataprofiler.common.ui,
- org.talend.libraries.mapdb
+ org.talend.libraries.mapdb,
+ org.talend.dataprofiler.service
 Import-Package: org.eclipse.ui.views.properties.tabbed
 Export-Package: org.talend.dataquality.record.linkage.ui.action,
  org.talend.dataquality.record.linkage.ui.composite.chart,

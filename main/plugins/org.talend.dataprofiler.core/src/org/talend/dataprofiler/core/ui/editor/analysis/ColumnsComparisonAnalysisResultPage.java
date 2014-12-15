@@ -12,7 +12,6 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.editor.analysis;
 
-import java.awt.event.MouseEvent;
 import java.util.List;
 
 import org.eclipse.emf.common.util.EList;
@@ -31,7 +30,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
@@ -43,22 +41,16 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
-import org.jfree.chart.ChartMouseEvent;
-import org.jfree.chart.ChartMouseListener;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.entity.CategoryItemEntity;
-import org.jfree.chart.entity.ChartEntity;
-import org.jfree.chart.plot.PlotOrientation;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.cwm.helper.ColumnHelper;
 import org.talend.cwm.helper.ConnectionHelper;
 import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.cwm.relational.TdColumn;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
+import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.core.ImageLib;
 import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableMenuGenerator;
 import org.talend.dataprofiler.core.ui.editor.preview.model.MenuItemEntity;
 import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
 import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
@@ -78,7 +70,7 @@ import orgomg.cwm.resource.relational.ColumnSet;
 /**
  * DOC rli class global comment. Detailled comment
  */
-public class ColumnsComparisonAnalysisResultPage extends AbstractAnalysisResultPage {
+public class ColumnsComparisonAnalysisResultPage extends AbstractAnalysisResultPageWithChart {
 
     private static final String NOT_MATCHING = DefaultMessagesImpl.getString("ColumnsComparisonAnalysisResultPage.Not_matching"); //$NON-NLS-1$
 
@@ -465,95 +457,26 @@ public class ColumnsComparisonAnalysisResultPage extends AbstractAnalysisResultP
 
             dataset.addDataEntity(dataEntityB);
         }
-        JFreeChart chart = TopChartFactory.createStackedBarChart(
+        Object chart = TOPChartUtils.getInstance().createStackedBarChart(
                 DefaultMessagesImpl.getString("ColumnsComparisonAnalysisResultPage.ColumnsComparison"), dataset, //$NON-NLS-1$
-                PlotOrientation.HORIZONTAL);
+                true, true);
         TOPChartUtils.getInstance().decorateChart(chart, true);
 
         final Object chartComp = TOPChartUtils.getInstance().createChartComposite(parent, SWT.NONE, chart, true);
 
         // add by hcheng for 6530(add menu to "View query result" for chart )
-        chartComp.addChartMouseListener(new ChartMouseListener() {
+        addMenuToChartComp(chartComp, new RowMatchExplorer(), getAnalysisHandler().getAnalysis(),
+                ((ICustomerDataset) dataset).getDataEntities());
+    }
 
-            public void chartMouseClicked(ChartMouseEvent event) {
+    @Override
+    protected String getEditorName(Indicator indicator) {
+        return indicator.getAnalyzedElement().getName();
+    }
 
-                boolean flag = event.getTrigger().getButton() != MouseEvent.BUTTON3;
-
-                chartComp.setDomainZoomable(flag);
-                chartComp.setRangeZoomable(flag);
-
-                if (flag) {
-                    return;
-                }
-
-                ChartEntity chartEntity = event.getEntity();
-                if (chartEntity != null && chartEntity instanceof CategoryItemEntity) {
-                    CategoryItemEntity cateEntity = (CategoryItemEntity) chartEntity;
-                    CustomerDefaultCategoryDataset dataEntity = (CustomerDefaultCategoryDataset) cateEntity.getDataset();
-
-                    Menu menu = new Menu(chartComp.getShell(), SWT.POP_UP);
-                    chartComp.setMenu(menu);
-
-                    ChartDataEntity currentDataEntity = null;
-                    ChartDataEntity[] dataEntities = dataEntity.getDataEntities();
-                    if (dataEntities.length == 1) {
-                        currentDataEntity = dataEntities[0];
-                    } else {
-                        for (ChartDataEntity entity : dataEntities) {
-                            if (cateEntity.getColumnKey().compareTo(entity.getLabel()) == 0) {
-                                currentDataEntity = entity;
-                            } else {
-                                if (cateEntity.getRowKey().compareTo(entity.getLabel()) == 0) {
-                                    currentDataEntity = entity;
-                                }
-                            }
-                        }
-                    }
-
-                    if (currentDataEntity != null) {
-                        RowMatchExplorer explorer = new RowMatchExplorer();
-                        final Analysis analysis = getAnalysisHandler().getAnalysis();
-                        final Indicator indicator = currentDataEntity.getIndicator();
-
-                        MenuItemEntity[] itemEntities = ChartTableMenuGenerator.generate(explorer, analysis, currentDataEntity);
-                        for (final MenuItemEntity itemEntity : itemEntities) {
-                            MenuItem menuItem = new MenuItem(menu, SWT.NONE);
-                            menuItem.setText(itemEntity.getLabel());
-                            menuItem.setImage(ImageLib.getImage(ImageLib.EXPLORE_IMAGE));
-                            menuItem.addSelectionListener(new SelectionAdapter() {
-
-                                @Override
-                                public void widgetSelected(SelectionEvent e) {
-                                    Display.getDefault().asyncExec(new Runnable() {
-
-                                        public void run() {
-                                            Connection tdDataProvider = SwitchHelpers.CONNECTION_SWITCH.doSwitch(analysis
-                                                    .getContext().getConnection());
-                                            String query = itemEntity.getQuery();
-                                            String editorName = indicator.getAnalyzedElement().getName();
-                                            SqlExplorerUtils.getDefault().runInDQViewer(tdDataProvider, query, editorName);
-                                        }
-
-                                    });
-                                }
-                            });
-                        }
-                    }
-
-                    menu.setVisible(true);
-                }
-            }
-
-            /*
-             * (non-Javadoc)
-             * 
-             * @see org.jfree.chart.ChartMouseListener#chartMouseMoved(org.jfree.chart.ChartMouseEvent)
-             */
-            public void chartMouseMoved(ChartMouseEvent event) {
-                // until now, no action here
-            }
-        });
-        // ~
+    @Override
+    protected Image getItemImage(MenuItemEntity menuItem) {
+        return ImageLib.getImage(ImageLib.EXPLORE_IMAGE);
     }
 
     /*

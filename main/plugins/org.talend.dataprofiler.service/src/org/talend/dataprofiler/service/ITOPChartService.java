@@ -44,7 +44,15 @@ public interface ITOPChartService {
 
     Object createBoxAndWhiskerChart(String title, Object dataset);
 
+    Object createMatchRuleBarChart(String categoryAxisLabel, String valueAxisLabel, Object dataset);
+
+    Object createBlockingBarChart(String title, Object dataset);
+
+    Object createDuplicateRecordPieChart(String title, Object dataset);
+
     void decorateChart(Object chart, boolean withPlot);
+
+    void decorateColumnDependency(Object chart);
 
     void setOrientation(Object chart, boolean isHorizontal);
 
@@ -53,4 +61,12 @@ public interface ITOPChartService {
     void addMouseListenerForChart(Object chartComposite, Map<String, Object> menuMap);
 
     void addListenerToChartComp(Object chartComp, final String referenceLink, final String menuText);
+
+    void refrechChart(Object chartComp, Object chart);
+
+    Object createDatasetForMatchRule(Map<Object, Long> groupSize2GroupFrequency, List<String> groups, int times, String items);
+
+    Object createDatasetForDuplicateRecord(Map<String, Long> dupStats);
+
+    Object createHistogramDataset(double[] valueArray, double maxValue, int bins);
 }

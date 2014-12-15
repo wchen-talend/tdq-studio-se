@@ -21,6 +21,7 @@ import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.eclipse.ui.internal.keys.model.ModelElement;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
@@ -416,11 +417,10 @@ public final class TopChartFactory {
      * @param dataset
      * @return
      */
-    public static JFreeChart createMatchRuleBarChart(String title, String categoryAxisLabel, String valueAxisLabel,
-            CategoryDataset dataset, PlotOrientation orientation, boolean legend, boolean tooltips, boolean urls) {
+    public static JFreeChart createMatchRuleBarChart(String categoryAxisLabel, String valueAxisLabel, CategoryDataset dataset) {
         ChartFactory.setChartTheme(StandardChartTheme.createLegacyTheme());
-        JFreeChart localJFreeChart = ChartFactory.createBarChart(title, categoryAxisLabel, valueAxisLabel, dataset, orientation,
-                legend, tooltips, urls);
+        JFreeChart localJFreeChart = ChartFactory.createBarChart(null, categoryAxisLabel, valueAxisLabel, dataset,
+                PlotOrientation.VERTICAL, false, true, false);
 
         localJFreeChart.addSubtitle(new TextTitle(Messages.getString(
                 "DataChart.title", sumItemCount(dataset), sumGroupCount(dataset)))); //$NON-NLS-1$
@@ -444,10 +444,9 @@ public final class TopChartFactory {
         return localJFreeChart;
     }
 
-    public static JFreeChart createBlockingBarChart(String title, String categoryAxisLabel, String valueAxisLabel,
-            HistogramDataset dataset, PlotOrientation orientation, boolean legend, boolean tooltips, boolean urls) {
+    public static JFreeChart createBlockingBarChart(String title, HistogramDataset dataset) {
         ChartFactory.setChartTheme(StandardChartTheme.createLegacyTheme());
-        JFreeChart chart = ChartFactory.createHistogram(null, title, "Key frequency", dataset, PlotOrientation.VERTICAL, legend, //$NON-NLS-1$
+        JFreeChart chart = ChartFactory.createHistogram(null, title, "Key frequency", dataset, PlotOrientation.VERTICAL, false, //$NON-NLS-1$
                 true, false);
 
         XYPlot plot = chart.getXYPlot();

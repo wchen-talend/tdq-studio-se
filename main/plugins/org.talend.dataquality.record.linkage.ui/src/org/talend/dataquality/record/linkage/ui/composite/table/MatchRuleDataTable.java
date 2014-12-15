@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -36,8 +37,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.jfree.util.Log;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.utils.MatchRuleColorRegistry;
+import org.talend.dataprofiler.common.ui.editor.preview.MatchRuleColorRegistry;
 import org.talend.dataquality.PluginConstant;
 import org.talend.dataquality.record.linkage.ui.composite.utils.ImageLib;
 import org.talend.dataquality.record.linkage.ui.i18n.internal.DefaultMessagesImpl;
@@ -46,6 +46,8 @@ import org.talend.dataquality.record.linkage.ui.i18n.internal.DefaultMessagesImp
  * DOC Administrator class global comment. Detailled comment
  */
 public class MatchRuleDataTable extends Composite {
+
+    protected static Logger log = Logger.getLogger(MatchRuleDataTable.class);
 
     private List<String[]> viewData = new ArrayList<String[]>();
 
@@ -187,7 +189,7 @@ public class MatchRuleDataTable extends Composite {
                 return true;
             }
         } catch (NumberFormatException e) {
-            Log.error(e, e);
+            log.error(e, e);
         }
         return false;
     }

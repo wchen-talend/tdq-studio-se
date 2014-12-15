@@ -16,7 +16,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,15 +26,10 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
@@ -43,8 +37,6 @@ import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.Section;
-import org.talend.core.model.metadata.builder.connection.Connection;
-import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
@@ -55,9 +47,7 @@ import org.talend.dataprofiler.core.ui.editor.composite.AnalysisTableTreeViewer;
 import org.talend.dataprofiler.core.ui.editor.preview.CompositeIndicator;
 import org.talend.dataprofiler.core.ui.editor.preview.TableIndicatorUnit;
 import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableFactory;
-import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableMenuGenerator;
 import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTypeStatesFactory;
-import org.talend.dataprofiler.core.ui.editor.preview.model.MenuItemEntity;
 import org.talend.dataprofiler.core.ui.editor.preview.model.TableTypeStatesFactory;
 import org.talend.dataprofiler.core.ui.editor.preview.model.TableWithData;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates;
@@ -77,17 +67,14 @@ import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dq.analysis.AnalysisHandler;
 import org.talend.dq.analysis.explore.DataExplorer;
-import org.talend.dq.analysis.explore.IDataExplorer;
-import org.talend.dq.helper.SqlExplorerUtils;
 import org.talend.dq.indicators.preview.EIndicatorChartType;
-import org.talend.dq.indicators.preview.table.ChartDataEntity;
 import org.talend.dq.nodes.indicator.type.IndicatorEnum;
 import orgomg.cwm.resource.relational.NamedColumnSet;
 
 /**
  * DOC xqliu class global comment. Detailled comment
  */
-public class TableAnalysisResultPage extends AbstractAnalysisResultPage implements PropertyChangeListener {
+public class TableAnalysisResultPage extends AbstractAnalysisResultPageWithChart implements PropertyChangeListener {
 
     protected static Logger log = Logger.getLogger(TableAnalysisResultPage.class);
 
@@ -339,11 +326,8 @@ public class TableAnalysisResultPage extends AbstractAnalysisResultPage implemen
                                                 // ~
 
                                                 // one dataset <--> one chart
-                                                Map<String, Object> menuMap = createMenuForAllDataEntity(
-                                                        ((Composite) chartComp).getShell(), dataExplorer, analysis,
+                                                addMenuToChartComp(chartComp, dataExplorer, analysis,
                                                         ((ICustomerDataset) datasets.get(i)).getDataEntities());
-                                                // call chart service to create related mouse listener
-                                                TOPChartUtils.getInstance().addMouseListenerForChart(chartComp, menuMap);
                                             }
                                         }
                                     }
@@ -416,82 +400,6 @@ public class TableAnalysisResultPage extends AbstractAnalysisResultPage implemen
         if (resultComp != null && !resultComp.isDisposed()) {
             resultComp.dispose();
         }
-    }
-
-    protected Map<String, Object> createMenuForAllDataEntity(Shell shell, DataExplorer dataExplorer, Analysis analysis,
-            ChartDataEntity[] chartDataEntities) {
-        Map<String, Object> menuMap = new HashMap<String, Object>();
-
-        if (!analysis.getParameters().isStoreData()) {
-            return menuMap;
-        }
-
-        for (ChartDataEntity oneDataEntity : chartDataEntities) {
-            Indicator indicator = oneDataEntity.getIndicator();
-            Menu menu = createMenu(shell, dataExplorer, analysis, oneDataEntity, indicator);
-            ChartTableFactory.addJobGenerationMenu(menu, analysis, indicator);
-
-            menuMap.put(oneDataEntity.getLabel(), menu);
-        }
-
-        return menuMap;
-    }
-
-    /**
-     * DOC yyin Comment method "createMenu".
-     * 
-     * @param shell
-     * @param explorer
-     * @param analysis
-     * @param currentEngine
-     * @param currentDataEntity
-     * @param currentIndicator
-     * @return
-     */
-    protected Menu createMenu(final Shell shell, final IDataExplorer explorer, final Analysis analysis,
-            final ChartDataEntity currentDataEntity, final Indicator currentIndicator) {
-        Menu menu = new Menu(shell, SWT.POP_UP);
-
-        MenuItemEntity[] itemEntities = ChartTableMenuGenerator.generate(explorer, analysis, currentDataEntity);
-        for (final MenuItemEntity itemEntity : itemEntities) {
-            MenuItem item = new MenuItem(menu, SWT.PUSH);
-            item.setText(itemEntity.getLabel());
-            item.setImage(itemEntity.getIcon());
-            item.addSelectionListener(createSelectionAdapter(analysis, currentIndicator, itemEntity));
-
-        }
-        return menu;
-    }
-
-    /**
-     * DOC yyin Comment method "createSelectionAdapter".
-     * 
-     * @param analysis1
-     * @param currentEngine
-     * @param currentDataEntity
-     * @param currentIndicator
-     * @param itemEntity
-     * @return
-     */
-    protected SelectionAdapter createSelectionAdapter(final Analysis analysis1, final Indicator currentIndicator,
-            final MenuItemEntity itemEntity) {
-        return new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                Display.getDefault().asyncExec(new Runnable() {
-
-                    public void run() {
-                        Connection tdDataProvider = SwitchHelpers.CONNECTION_SWITCH.doSwitch(analysis1.getContext()
-                                .getConnection());
-                        String query = itemEntity.getQuery();
-                        String editorName = currentIndicator.getName();
-                        SqlExplorerUtils.getDefault().runInDQViewer(tdDataProvider, query, editorName);
-                    }
-
-                });
-            }
-        };
     }
 
     /**

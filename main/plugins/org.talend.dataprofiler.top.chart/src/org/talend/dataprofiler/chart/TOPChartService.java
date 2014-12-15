@@ -13,6 +13,7 @@
 package org.talend.dataprofiler.chart;
 
 import java.awt.event.MouseEvent;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -34,8 +35,11 @@ import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
 import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
+import org.jfree.data.statistics.HistogramDataset;
 import org.jfree.experimental.chart.swt.ChartComposite;
 import org.talend.dataprofiler.chart.util.ChartDecorator;
 import org.talend.dataprofiler.chart.util.ChartUtils;
@@ -53,11 +57,6 @@ public class TOPChartService implements ITOPChartService {
 
     public static final int CHART_STANDARD_HEIGHT = 275;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.service.ITOPChartService#getDatasetFromChart(java.lang.Object, int)
-     */
     @Override
     public Object getDatasetFromChart(Object chart, int datasetIndex) {
         if (datasetIndex > -1) {
@@ -66,12 +65,6 @@ public class TOPChartService implements ITOPChartService {
         return ((JFreeChart) chart).getCategoryPlot().getDataset();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.service.ITOPChartService#createTalendChartComposite(java.lang.Object, int,
-     * java.lang.Object, boolean)
-     */
     @Override
     public Object createTalendChartComposite(Object parentComponent, int style, Object chart, boolean useBuffer) {
         ChartComposite cc = new TalendChartComposite((Composite) parentComponent, style, (JFreeChart) chart, useBuffer);
@@ -83,32 +76,17 @@ public class TOPChartService implements ITOPChartService {
         return cc;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.service.ITOPChartService#getChart()
-     */
     @Override
     public Object createBarChart(String title, Object dataset, boolean showLegend) {
         return TopChartFactory.createBarChart(title, (CategoryDataset) dataset, false);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.service.ITOPChartService#getChart(java.lang.Object)
-     */
     @Override
     public Object createBarChart(Object dataset) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.service.ITOPChartService#createBarChart(java.lang.String, java.lang.Object)
-     */
     @Override
     public Object createBarChart(String title, Object dataset) {
         return TopChartFactory.createBarChart(title, (CategoryDataset) dataset);
@@ -127,11 +105,6 @@ public class TOPChartService implements ITOPChartService {
 
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.service.ITOPChartService#decorateChart(java.lang.Object, boolean)
-     */
     @Override
     public void decorateChart(Object chart, boolean withPlot) {
         if (withPlot) {
@@ -142,12 +115,11 @@ public class TOPChartService implements ITOPChartService {
 
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.service.ITOPChartService#createChartComposite(java.lang.Object, int,
-     * java.lang.Object, boolean)
-     */
+    @Override
+    public void decorateColumnDependency(Object chart) {
+        ChartDecorator.decorateColumnDependency((JFreeChart) chart);
+    }
+
     @Override
     public Object createChartComposite(Object composite, int style, Object chart, boolean useBuffer) {
         ChartComposite cc = new ChartComposite((Composite) composite, style, (JFreeChart) chart, useBuffer);
@@ -159,11 +131,6 @@ public class TOPChartService implements ITOPChartService {
         return cc;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.service.ITOPChartService#setOrientation(boolean)
-     */
     @Override
     public void setOrientation(Object chart, boolean isHorizontal) {
         if (isHorizontal) {
@@ -173,21 +140,11 @@ public class TOPChartService implements ITOPChartService {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.service.ITOPChartService#setDisplayDecimalFormatOfChart(java.lang.Object)
-     */
     @Override
     public void setDisplayDecimalFormatOfChart(Object chart) {
         ChartDecorator.setDisplayDecimalFormat((JFreeChart) chart);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.service.ITOPChartService#addMouseListenerForChart(java.lang.Object, java.util.Map)
-     */
     @Override
     public void addMouseListenerForChart(Object chartComposite, final Map<String, Object> menuMap) {
         final ChartComposite chartComp = (ChartComposite) chartComposite;
@@ -244,34 +201,16 @@ public class TOPChartService implements ITOPChartService {
         });
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.service.ITOPChartService#createPieChart(java.lang.String, java.lang.Object, boolean,
-     * boolean, boolean)
-     */
     @Override
     public Object createPieChart(String title, Object dataset, boolean showLegend, boolean toolTips, boolean urls) {
         return TopChartFactory.createPieChart(title, (PieDataset) dataset, showLegend, toolTips, urls);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.service.ITOPChartService#createBoxAndWhiskerChart(java.lang.String,
-     * java.lang.Object)
-     */
     @Override
     public Object createBoxAndWhiskerChart(String title, Object dataset) {
         return TopChartFactory.createBoxAndWhiskerChart(title, (BoxAndWhiskerCategoryDataset) dataset);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.service.ITOPChartService#createStackedBarChart(java.lang.String, java.lang.Object,
-     * boolean)
-     */
     @Override
     public Object createStackedBarChart(String title, Object dataset, boolean showLegend) {
         JFreeChart stackedBarChart = TopChartFactory.createStackedBarChart(title, (CategoryDataset) dataset, showLegend);
@@ -279,12 +218,6 @@ public class TOPChartService implements ITOPChartService {
         return stackedBarChart;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.service.ITOPChartService#createStackedBarChart(java.lang.String, java.lang.Object,
-     * boolean, boolean)
-     */
     @Override
     public Object createStackedBarChart(String title, Object dataset, boolean isHorizatal, boolean showLegend) {
         if (isHorizatal) {
@@ -295,11 +228,6 @@ public class TOPChartService implements ITOPChartService {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.service.ITOPChartService#addListenerToChartComp(java.lang.Object, java.lang.String)
-     */
     @Override
     public void addListenerToChartComp(Object chartComposite, final String referenceLink, final String menuText) {
         final ChartComposite chartComp = (ChartComposite) chartComposite;
@@ -340,4 +268,72 @@ public class TOPChartService implements ITOPChartService {
             }
         });
     }
+
+    @Override
+    public Object createMatchRuleBarChart(String categoryAxisLabel, String valueAxisLabel, Object dataset) {
+        return TopChartFactory.createMatchRuleBarChart(categoryAxisLabel, valueAxisLabel, (CategoryDataset) dataset);
+    }
+
+    @Override
+    public void refrechChart(Object chartComp, Object chart) {
+        ((ChartComposite) chartComp).setChart((JFreeChart) chart);
+        ((ChartComposite) chartComp).forceRedraw();
+    }
+
+    @Override
+    public Object createDatasetForMatchRule(Map<Object, Long> groupSize2GroupFrequency, List<String> groups, int times,
+            String items) {
+        DefaultCategoryDataset defaultcategorydataset = new DefaultCategoryDataset();
+        if (groups == null) {
+            return defaultcategorydataset;
+        }
+        for (String count : groups) {
+            if (Integer.parseInt(count) > times - 1) {
+                defaultcategorydataset.addValue(groupSize2GroupFrequency.get(count), items, count);
+            }
+        }
+        return defaultcategorydataset;
+    }
+
+    @Override
+    public Object createBlockingBarChart(String title, Object dataset) {
+        Object chart = TopChartFactory.createBlockingBarChart(title, (HistogramDataset) dataset);
+        return chart;
+    }
+
+    @Override
+    public Object createHistogramDataset(double[] valueArray, double maxValue, int bins) {
+        HistogramDataset defaultcategorydataset = new HistogramDataset();
+        if (valueArray == null) {
+            return defaultcategorydataset;
+        }
+        defaultcategorydataset.addSeries("Key distribution", valueArray, bins, 0, maxValue); //$NON-NLS-1$
+        return defaultcategorydataset;
+    }
+
+    @Override
+    public Object createDatasetForDuplicateRecord(Map<String, Long> dupStats) {
+        if (dupStats != null) {
+            DefaultPieDataset dataset = new DefaultPieDataset();
+            Iterator<String> iterator = dupStats.keySet().iterator();
+            while (iterator.hasNext()) {
+                String label = iterator.next();
+                dataset.setValue(label, dupStats.get(label));
+            }
+            return dataset;
+        }
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createDuplicateRecordPieChart(java.lang.String,
+     * java.lang.Object)
+     */
+    @Override
+    public Object createDuplicateRecordPieChart(String title, Object dataset) {
+        return TopChartFactory.createDuplicateRecordPieChart(title, (PieDataset) dataset, true, true, false);
+    }
+
 }

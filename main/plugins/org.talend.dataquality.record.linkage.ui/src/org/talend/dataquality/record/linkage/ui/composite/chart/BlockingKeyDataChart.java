@@ -24,12 +24,6 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.statistics.HistogramDataset;
-import org.jfree.experimental.chart.swt.ChartComposite;
-import org.talend.dataprofiler.common.ui.editor.preview.chart.TopChartFactory;
-import org.talend.dataquality.record.linkage.ui.i18n.internal.DefaultMessagesImpl;
 
 /**
  * created by zshen on Aug 7, 2013 Detailled comment
@@ -37,7 +31,7 @@ import org.talend.dataquality.record.linkage.ui.i18n.internal.DefaultMessagesImp
  */
 public class BlockingKeyDataChart extends Composite {
 
-    private ChartComposite jfreeChartComp = null;
+    private Object jfreeChartComp = null;
 
     private Map<String, List<String[]>> prviewData = null;
 
@@ -62,18 +56,14 @@ public class BlockingKeyDataChart extends Composite {
         initChartData(viewData);
     }
 
-    public static JFreeChart createBarChart(String titile, HistogramDataset dataset, boolean showLegend) {
-        JFreeChart chart = TopChartFactory.createBlockingBarChart(null, titile,
-                DefaultMessagesImpl.getString("BlockingKeyDataChart.Axis.Label"), dataset, //$NON-NLS-1$
-                PlotOrientation.VERTICAL, showLegend, true, false);
-        return chart;
+    private Object createBarChart(String titile, Object dataset) {
+        return TOPChartUtil.getInstance().createBlockingBarChart(titile, dataset);
     }
 
     public void refresh(Map<String, List<String[]>> viewData) {
         this.prviewData = viewData;
         initChartData(viewData);
-        jfreeChartComp.setChart(computeChart());
-        jfreeChartComp.forceRedraw();
+        TOPChartUtil.getInstance().refrechChart(jfreeChartComp, computeChart());
     }
 
     protected boolean initChartData(Map<String, List<String[]>> viewData) {
@@ -85,20 +75,17 @@ public class BlockingKeyDataChart extends Composite {
         return false;
     }
 
-    private JFreeChart computeChart() {
-        HistogramDataset defaultcategorydataset = new HistogramDataset();
-        fillCategorySet(defaultcategorydataset);
-        JFreeChart chart = createBarChart("Number of rows", defaultcategorydataset, //$NON-NLS-1$
-                false);
+    private Object computeChart() {
+        Object chart = createBarChart("Number of rows", createDataset()); //$NON-NLS-1$
+
         return chart;
 
     }
 
-    private void fillCategorySet(HistogramDataset defaultcategorydataset) {
-
+    private Object createDataset() {
         // MOD scorreia 2011-02-10 code simplified in order to avoid unnecessary aggregation (it is now done in the
         // histogram dataset automatically)
-        final double minValue = 0; // lower value of the x-axis of the chart
+        // final double minValue = 0; // lower value of the x-axis of the chart
         double maxValue = 0; // higher value of the x-axis of the chart
         List<Double> blockSizeValueList = new ArrayList<Double>();
         // add each block size (number of rows of the block) to the list
@@ -119,8 +106,8 @@ public class BlockingKeyDataChart extends Composite {
 
         Double[] valueArray = new Double[blockSizeValueList.size()];
         blockSizeValueList.toArray(valueArray);
-        defaultcategorydataset.addSeries("Key distribution", ArrayUtils.toPrimitive(valueArray), BINS, minValue, maxValue); //$NON-NLS-1$
 
+        return TOPChartUtil.getInstance().createHistogramDataset(ArrayUtils.toPrimitive(valueArray), maxValue, BINS);
     }
 
     private void createJFreeChartComposite() {
@@ -136,7 +123,7 @@ public class BlockingKeyDataChart extends Composite {
         scrollComp.setContent(innerComp);
         scrollComp.setExpandVertical(true);
         scrollComp.setExpandHorizontal(true);
-        jfreeChartComp = new ChartComposite(innerComp, SWT.NONE, computeChart(), true);
+        this.jfreeChartComp = TOPChartUtil.getInstance().createChartComposite(innerComp, SWT.NONE, computeChart(), true);
     }
 
     /**
@@ -144,9 +131,8 @@ public class BlockingKeyDataChart extends Composite {
      * create a chart with empty dataset,so as to clear the blocking key chart.
      */
     public void clearChart() {
-        JFreeChart jfreechart = createBarChart("Number of rows", new HistogramDataset(), false); //$NON-NLS-1$
-        jfreeChartComp.setChart(jfreechart);
-        jfreeChartComp.forceRedraw();
+        Object chart = createBarChart("Number of rows", TOPChartUtil.getInstance().createHistogramDataset(null, 0, BINS)); //$NON-NLS-1$
+        TOPChartUtil.getInstance().refrechChart(jfreeChartComp, chart);
     }
 
 }

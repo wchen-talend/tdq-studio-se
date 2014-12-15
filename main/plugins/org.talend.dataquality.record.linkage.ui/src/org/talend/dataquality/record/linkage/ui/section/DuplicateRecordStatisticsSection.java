@@ -200,9 +200,7 @@ public class DuplicateRecordStatisticsSection extends AbstractMatchAnaysisTableS
         // Refresh table
         setDupRecordTableInput();
         List<DuplicateStatisticsRow> dupStatistics = (List<DuplicateStatisticsRow>) duplicateRecordTableViewer.getInput();
-        duplicateRecordPieChart.getChartComposite().dispose();
-        duplicateRecordPieChart.createPieChart(dupStatistics);
-        duplicateRecordPieChart.getChartComposite().getParent().layout();
+        duplicateRecordPieChart.refreshChart(dupStatistics);
     }
 
     /*
