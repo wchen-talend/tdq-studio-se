@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.jfree.data.xy.XYDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
 import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
@@ -66,9 +65,9 @@ public abstract class AbstractChartTypeStates implements IChartTypeStates {
      * @deprecated
      */
     @Deprecated
-    public XYDataset getXYDataset() {
+    public Object getXYDataset() {
         if (getCustomerXYDataset() != null) {
-            return (XYDataset) getCustomerXYDataset();
+            return getCustomerXYDataset();
         }
 
         return null;

@@ -102,6 +102,17 @@ public class CorePlugin extends AbstractUIPlugin {
 
     private boolean repositoryInitialized = false;
 
+    private BundleContext bundleContext;
+
+    /**
+     * Getter for context.
+     * 
+     * @return the context
+     */
+    public BundleContext getBundleContext() {
+        return this.bundleContext;
+    }
+
     /**
      * Getter for repositoryInitialized.
      * 
@@ -126,6 +137,7 @@ public class CorePlugin extends AbstractUIPlugin {
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
+        this.bundleContext = context;
         plugin = this;
         getPreferenceStore().setDefault(PluginConstant.CHEAT_SHEET_VIEW, true);
         getPreferenceStore().setValue(ITalendCorePrefConstants.PREVIEW_LIMIT, "50");//$NON-NLS-1$

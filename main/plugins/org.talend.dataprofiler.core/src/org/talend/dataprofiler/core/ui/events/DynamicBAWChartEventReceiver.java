@@ -111,8 +111,7 @@ public class DynamicBAWChartEventReceiver extends DynamicChartEventReceiver {
                 Object chart = state.getChart();
                 TOPChartUtils.getInstance().decorateChart(chart, false);
                 if (BAWparentComposite != null) {
-                    BAWparentComposite.setChart(chart);
-                    BAWparentComposite.forceRedraw();
+                    TOPChartUtils.getInstance().refrechChart(BAWparentComposite, chart);
                 }
 
                 EventManager.getInstance().publish(chartComposite, EventEnum.DQ_DYNAMIC_REFRESH_DYNAMIC_CHART, null);
@@ -154,9 +153,7 @@ public class DynamicBAWChartEventReceiver extends DynamicChartEventReceiver {
     @Override
     public void clearValue() {
         if (bawDataset != null && bawDataset.getRowCount() == 7) {
-            for (int i = 0; i < 7; i++) {
-                bawDataset.remove(String.valueOf(i), "");//$NON-NLS-1$ 
-            }
+            bawDataset.clear();
         }
     }
 

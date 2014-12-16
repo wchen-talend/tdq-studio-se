@@ -12,13 +12,12 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.events;
 
-import org.jfree.data.category.DefaultCategoryDataset;
 import org.talend.commons.utils.SpecialValueDisplay;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.core.ui.editor.preview.model.TableWithData;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.FrequencyTypeStateUtil;
-import org.talend.dataquality.indicators.BenfordLawFrequencyIndicator;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dataquality.indicators.IndicatorParameters;
 import org.talend.dataquality.indicators.ModeIndicator;
@@ -70,7 +69,7 @@ public class FrequencyDynamicChartEventReceiver extends DynamicChartEventReceive
         return true;
     }
 
-    private void setFrequecyToDataset(DefaultCategoryDataset customerdataset, FrequencyExt[] frequencyExt, Indicator indicator) {
+    private void setFrequecyToDataset(Object customerdataset, FrequencyExt[] frequencyExt, Indicator indicator) {
 
         int numOfShown = frequencyExt.length;
         IndicatorParameters parameters = indicator.getParameters();
@@ -107,7 +106,7 @@ public class FrequencyDynamicChartEventReceiver extends DynamicChartEventReceive
             if (dataset instanceof CustomerDefaultCategoryDataset) {
                 ((CustomerDefaultCategoryDataset) dataset).clearAll();
             } else {
-                dataset.clear();
+                TOPChartUtils.getInstance().clearDataset(dataset);
             }
         }
         if (tableViewer != null) {
@@ -136,11 +135,7 @@ public class FrequencyDynamicChartEventReceiver extends DynamicChartEventReceive
      * @param freqExt
      * @param keyLabel
      */
-    protected void addValueToDataset(DefaultCategoryDataset customerdataset, FrequencyExt freqExt, String keyLabel) {
-        if (indicator instanceof BenfordLawFrequencyIndicator) {
-            customerdataset.addValue(freqExt.getFrequency(), "1", keyLabel); //$NON-NLS-1$
-        } else {
-            customerdataset.addValue(freqExt.getValue(), "1", keyLabel); //$NON-NLS-1$
-        }
+    protected void addValueToDataset(Object customerdataset, FrequencyExt freqExt, String keyLabel) {
+        TOPChartUtils.getInstance().addValueToCategoryDataset(customerdataset, freqExt.getValue(), "1", keyLabel); //$NON-NLS-1$
     }
 }

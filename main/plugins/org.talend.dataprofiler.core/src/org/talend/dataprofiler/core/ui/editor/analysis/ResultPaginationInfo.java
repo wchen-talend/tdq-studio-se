@@ -239,9 +239,9 @@ public class ResultPaginationInfo extends IndicatorPaginationInfo {
 
             TOPChartUtils.getInstance().decorateChart(chart, false);
 
-            if (dataset == null) {
-                dataset = chartTypeState.getDataset();
-            }
+            // if (dataset == null) {
+            // dataset = chartTypeState.getDataset();
+            // }
             dyModel.setDataset(dataset);
 
             Object chartComposite = TOPChartUtils.getInstance().createTalendChartComposite(comp, SWT.NONE, chart, true);

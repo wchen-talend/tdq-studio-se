@@ -15,6 +15,7 @@ package org.talend.dataprofiler.core.ui.events;
 import org.talend.dataprofiler.core.ui.editor.preview.model.TableWithData;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.WhereRuleStatisticsStateTable;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.utils.WhereRuleStatisticsStateUtil;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 import org.talend.dq.indicators.preview.table.WhereRuleChartDataEntity;
@@ -38,8 +39,10 @@ public class TableDynamicChartEventReceiver extends DynamicChartEventReceiver {
             double valueMatch = WhereRuleStatisticsStateUtil.getMatchValue(value);
             double valueNotmatch = WhereRuleStatisticsStateUtil.getNotMatchValue(value, valueMatch, count);
             if (dataset != null) {
-                dataset.setValue(valueNotmatch, WhereRuleStatisticsStateTable.ROW_KEY_NOT_PASS, indicatorName);
-                dataset.setValue(valueMatch, WhereRuleStatisticsStateTable.ROW_KEY_PASS, indicatorName);
+                TOPChartUtils.getInstance().setValue(dataset, valueNotmatch, WhereRuleStatisticsStateTable.ROW_KEY_NOT_PASS,
+                        indicatorName);
+                TOPChartUtils.getInstance().setValue(dataset, valueMatch, WhereRuleStatisticsStateTable.ROW_KEY_PASS,
+                        indicatorName);
             }
             if (tableViewer != null) {
                 TableWithData input = (TableWithData) tableViewer.getInput();
@@ -63,8 +66,8 @@ public class TableDynamicChartEventReceiver extends DynamicChartEventReceiver {
             super.clearValue();
         } else {// clear the data before running.
             if (dataset != null) {
-                dataset.setValue(0.0, WhereRuleStatisticsStateTable.ROW_KEY_NOT_PASS, indicatorName);
-                dataset.setValue(0.0, WhereRuleStatisticsStateTable.ROW_KEY_PASS, indicatorName);
+                TOPChartUtils.getInstance().setValue(dataset, 0.0, WhereRuleStatisticsStateTable.ROW_KEY_NOT_PASS, indicatorName);
+                TOPChartUtils.getInstance().setValue(dataset, 0.0, WhereRuleStatisticsStateTable.ROW_KEY_PASS, indicatorName);
             }
             if (tableViewer != null) {
                 TableWithData input = (TableWithData) tableViewer.getInput();

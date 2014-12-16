@@ -15,13 +15,14 @@ package org.talend.dataprofiler.common.ui.editor.preview;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jfree.data.category.DefaultCategoryDataset;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 
 /**
  * DOC Zqin class global comment. Detailled comment
  */
-public class CustomerDefaultCategoryDataset extends DefaultCategoryDataset implements ICustomerDataset {
+public class CustomerDefaultCategoryDataset implements ICustomerDataset {
+
+    private Object dataset;
 
     /**
      * 
@@ -32,31 +33,46 @@ public class CustomerDefaultCategoryDataset extends DefaultCategoryDataset imple
 
     public CustomerDefaultCategoryDataset() {
         dataEnities = new ArrayList<ChartDataEntity>();
+        dataset = TOPChartUtil.getInstance().createDefaultCategoryDataset();
     }
 
     @Override
     public void addDataEntity(ChartDataEntity dataEntity) {
-        // TODO Auto-generated method stub
         dataEnities.add(dataEntity);
     }
 
     @Override
     public void addDataEntity(ChartDataEntity[] dataEntity) {
-        // TODO Auto-generated method stub
         for (ChartDataEntity data : dataEntity) {
             dataEnities.add(data);
         }
     }
 
+    /**
+     * add the value to the dataset
+     * 
+     * @param value
+     * @param labelx
+     * @param labely
+     */
+    public void addValue(double value, String labelx, String labely) {
+        TOPChartUtil.getInstance().addValueToCategoryDataset(dataset, value, labelx, labely);
+    }
+
     @Override
     public ChartDataEntity[] getDataEntities() {
-        // TODO Auto-generated method stub
         return dataEnities.toArray(new ChartDataEntity[dataEnities.size()]);
+    }
+
+    public Object getDataset() {
+        return dataset;
     }
 
     // when clear the dataset, also need to clear data entities
     public void clearAll() {
-        super.clear();
+        // super.clear();
         dataEnities.clear();
+        // clear the dataset
+        TOPChartUtil.getInstance().clearDataset(dataset);
     }
 }

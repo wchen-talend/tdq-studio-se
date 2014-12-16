@@ -14,7 +14,6 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states;
 
 import java.util.List;
 
-import org.jfree.chart.JFreeChart;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
@@ -70,7 +69,7 @@ public class TextStatisticsState extends AbstractChartTypeStates {
         return TextStatisticsStateUtil.getDataExplorer();
     }
 
-    public JFreeChart getExampleChart() {
+    public Object getExampleChart() {
         // TODO Auto-generated method stub
         return null;
     }
@@ -87,7 +86,7 @@ public class TextStatisticsState extends AbstractChartTypeStates {
      * org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates#getChart(org.talend.dataprofiler
      * .common.ui.editor.preview.ICustomerDataset)
      */
-    public JFreeChart getChart(ICustomerDataset dataset) {
+    public Object getChart(ICustomerDataset dataset) {
         // TODO Auto-generated method stub
         return null;
     }

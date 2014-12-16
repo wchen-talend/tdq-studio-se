@@ -14,9 +14,9 @@ package org.talend.dataprofiler.core.ui.events;
 
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.widgets.Composite;
-import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.model.TableWithData;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.indicators.FrequencyIndicator;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dataquality.indicators.ModeIndicator;
@@ -116,20 +116,20 @@ public class DynamicChartEventReceiver extends EventReceiver {
         }
         if (dataset != null) {
             if (indValue instanceof Number) {
-                ((CustomerDefaultCategoryDataset) dataset).setValue((Number) indValue, indicatorName, indicatorName);
+                TOPChartUtils.getInstance().setValue(dataset, (Number) indValue, indicatorName, indicatorName);
             } else if (indValue instanceof String) {
                 if (!(indicator instanceof ModeIndicator)) {
-                    ((CustomerDefaultCategoryDataset) dataset).setValue(Double.parseDouble((String) indValue), indicatorName,
+                    TOPChartUtils.getInstance().setValue(dataset, Double.parseDouble((String) indValue), indicatorName,
                             indicatorName);
                 }
             } else if (indValue instanceof PatternMatchingExt) {
                 PatternMatchingExt patternExt = (PatternMatchingExt) indValue;
-                ((CustomerDefaultCategoryDataset) dataset).setValue(patternExt.getNotMatchingValueCount(),
+                TOPChartUtils.getInstance().setValue(dataset, patternExt.getNotMatchingValueCount(),
                         DefaultMessagesImpl.getString("PatternStatisticsState.NotMatching"), this.indicatorName);//$NON-NLS-1$
-                ((CustomerDefaultCategoryDataset) dataset).setValue(patternExt.getMatchingValueCount(),
+                TOPChartUtils.getInstance().setValue(dataset, patternExt.getMatchingValueCount(),
                         DefaultMessagesImpl.getString("PatternStatisticsState.Matching"), this.indicatorName);//$NON-NLS-1$
             } else {
-                ((CustomerDefaultCategoryDataset) dataset).setValue(
+                TOPChartUtils.getInstance().setValue(dataset,
                         (Number) StringFormatUtil.format(indValue, StringFormatUtil.NUMBER), indicatorName, indicatorName);
             }
         }
@@ -145,7 +145,7 @@ public class DynamicChartEventReceiver extends EventReceiver {
 
     public void clearValue() {
         if (dataset != null) {
-            dataset.setValue(0.0, indicatorName, indicatorName);
+            TOPChartUtils.getInstance().setValue(dataset, 0.0, indicatorName, indicatorName);
         }
         if (tableViewer != null) {
             refreshTable(NAN_STRING);

@@ -13,6 +13,7 @@
 package org.talend.dataprofiler.chart;
 
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +40,13 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
 import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
+import org.jfree.data.statistics.BoxAndWhiskerItem;
+import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import org.jfree.data.statistics.HistogramDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
+import org.talend.dataprofiler.chart.util.ChartDatasetUtils;
 import org.talend.dataprofiler.chart.util.ChartDecorator;
 import org.talend.dataprofiler.chart.util.ChartUtils;
 import org.talend.dataprofiler.chart.util.TalendChartComposite;
@@ -334,6 +340,177 @@ public class TOPChartService implements ITOPChartService {
     @Override
     public Object createDuplicateRecordPieChart(String title, Object dataset) {
         return TopChartFactory.createDuplicateRecordPieChart(title, (PieDataset) dataset, true, true, false);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createDefaultCategoryDataset()
+     */
+    @Override
+    public Object createDefaultCategoryDataset() {
+        return new DefaultCategoryDataset();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#addValueToCategoryDataset(double, java.lang.String,
+     * java.lang.String)
+     */
+    @Override
+    public void addValueToCategoryDataset(Object dataset, double value, String labelX, String labelY) {
+        ((DefaultCategoryDataset) dataset).addValue(value, labelX, labelY);
+
+    }
+
+    @Override
+    public int getRowCount(Object dataset) {
+        return ((DefaultCategoryDataset) dataset).getRowCount();
+    }
+
+    @Override
+    public int getColumnCount(Object dataset) {
+        return ((DefaultCategoryDataset) dataset).getColumnCount();
+    }
+
+    @Override
+    public Number getValue(Object dataset, int row, int column) {
+        return ((DefaultCategoryDataset) dataset).getValue(row, column);
+    }
+
+    @Override
+    public Comparable getRowKey(Object dataset, int row) {
+        return ((DefaultCategoryDataset) dataset).getRowKey(row);
+    }
+
+    @Override
+    public int getRowIndex(Object dataset, Comparable key) {
+        return ((DefaultCategoryDataset) dataset).getRowIndex(key);
+    }
+
+    @Override
+    public List getRowKeys(Object dataset) {
+        return ((DefaultCategoryDataset) dataset).getRowKeys();
+    }
+
+    @Override
+    public Comparable getColumnKey(Object dataset, int column) {
+        return ((DefaultCategoryDataset) dataset).getColumnKey(column);
+    }
+
+    @Override
+    public int getColumnIndex(Object dataset, Comparable key) {
+        return ((DefaultCategoryDataset) dataset).getColumnIndex(key);
+    }
+
+    @Override
+    public List getColumnKeys(Object dataset) {
+        return ((DefaultCategoryDataset) dataset).getColumnKeys();
+    }
+
+    @Override
+    public Number getValue(Object dataset, Comparable rowKey, Comparable columnKey) {
+        return ((DefaultCategoryDataset) dataset).getValue(rowKey, columnKey);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createPieDataset(java.util.Map)
+     */
+    @Override
+    public Object createPieDataset(Map<String, Double> valueMap) {
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        if (valueMap != null) {
+            Iterator<String> iterator = valueMap.keySet().iterator();
+            while (iterator.hasNext()) {
+                String label = iterator.next();
+                dataset.setValue(label, valueMap.get(label));
+            }
+        }
+        return dataset;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createDefaultBoxAndWhiskerCategoryDataset(java.lang.Double,
+     * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Double)
+     */
+    @Override
+    public Object createDefaultBoxAndWhiskerCategoryDataset(Double mean, Double median, Double q1, Double q3,
+            Double minRegularValue, Double maxRegularValue) {
+        DefaultBoxAndWhiskerCategoryDataset dataset = ChartDatasetUtils.createBoxAndWhiskerDataset();
+        BoxAndWhiskerItem item = ChartDatasetUtils.createBoxAndWhiskerItem(mean, median, q1, q3, minRegularValue,
+                maxRegularValue, null);
+        dataset.add(item, "0", ""); //$NON-NLS-1$ //$NON-NLS-2$
+
+        @SuppressWarnings("rawtypes")
+        List zerolist = new ArrayList();
+        dataset.add(zerolist, "1", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        dataset.add(zerolist, "2", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        dataset.add(zerolist, "3", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        dataset.add(zerolist, "4", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        dataset.add(zerolist, "5", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        dataset.add(zerolist, "6", ""); //$NON-NLS-1$ //$NON-NLS-2$
+
+        return dataset;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createXYDataset(java.util.Map)
+     */
+    @Override
+    public Object createXYDataset(Map<Integer, Double> valueMap) {
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        XYSeries series = new XYSeries("Rules"); //$NON-NLS-1$
+        if (valueMap != null) {
+            Iterator<Integer> iterator = valueMap.keySet().iterator();
+            while (iterator.hasNext()) {
+                Integer x = iterator.next();
+                series.add(x, valueMap.get(x));
+                dataset.addSeries(series);
+            }
+        }
+        return dataset;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#setValue(java.lang.Object, java.lang.Comparable,
+     * java.lang.Comparable)
+     */
+    @Override
+    public void setValue(Object dataset, Number value, Comparable rowKey, Comparable columnKey) {
+        ((DefaultCategoryDataset) dataset).setValue(value, rowKey, columnKey);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#clearDataset(java.lang.Object)
+     */
+    @Override
+    public void clearDataset(Object dataset) {
+        // the dataset must be DefaultCategoryDataset
+        ((DefaultCategoryDataset) dataset).clear();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#clearDefaultBoxAndWhiskerCategoryDataset(java.lang.Object)
+     */
+    @Override
+    public void clearDefaultBoxAndWhiskerCategoryDataset(Object dataset) {
+        if (dataset instanceof DefaultBoxAndWhiskerCategoryDataset) {
+            ((DefaultBoxAndWhiskerCategoryDataset) dataset).clear();
+        }
+
     }
 
 }

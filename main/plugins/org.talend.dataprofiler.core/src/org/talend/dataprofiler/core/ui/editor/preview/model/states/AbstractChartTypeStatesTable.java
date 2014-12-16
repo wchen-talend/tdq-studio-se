@@ -15,8 +15,6 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.xy.XYDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.core.ui.editor.preview.TableIndicatorUnit;
 
@@ -34,16 +32,16 @@ public abstract class AbstractChartTypeStatesTable implements IChartTypeStates {
         }
     }
 
-    public CategoryDataset getDataset() {
+    public Object getDataset() {
         if (getCustomerDataset() != null) {
-            return (CategoryDataset) getCustomerDataset();
+            return getCustomerDataset();
         }
         return null;
     }
 
-    public XYDataset getXYDataset() {
+    public Object getXYDataset() {
         if (getCustomerXYDataset() != null) {
-            return (XYDataset) getCustomerXYDataset();
+            return getCustomerXYDataset();
         }
 
         return null;

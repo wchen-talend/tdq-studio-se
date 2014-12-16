@@ -13,9 +13,10 @@
 package org.talend.dataprofiler.core.ui.editor.preview.model.states;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.jfree.data.xy.XYSeries;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
@@ -94,15 +95,16 @@ public class WhereRuleStatisticsStateTable extends AbstractChartTypeStatesTable 
 
     @Override
     public ICustomerDataset getCustomerXYDataset() {
-        final CustomerXYSeriesCollection dataset = new CustomerXYSeriesCollection();
-        final XYSeries series = new XYSeries("Rules"); //$NON-NLS-1$
+        Map<Integer, Double> valueMap = new HashMap<Integer, Double>();
+
         int x = 0;
         for (TableIndicatorUnit unit : units) {
             x++;
             double y = 100 * (1 - (Double.parseDouble(unit.getValue().toString()) / getRowCount()));
-            series.add(x, y);
-            dataset.addSeries(series);
+            valueMap.put(x, y);
         }
+        final CustomerXYSeriesCollection dataset = new CustomerXYSeriesCollection(valueMap);
+
         return dataset;
     }
 

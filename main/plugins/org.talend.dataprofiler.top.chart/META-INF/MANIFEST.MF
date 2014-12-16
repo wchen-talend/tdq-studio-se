@@ -12,3 +12,5 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.browser;bundle-version="3.3.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-Vendor: .Talend SA.
+Export-Package: org.talend.dataprofiler.chart

@@ -15,62 +15,49 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.dataset;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 
 /**
  * DOC Zqin class global comment. Detailled comment
  */
-public class CustomerDefaultBAWDataset extends DefaultBoxAndWhiskerCategoryDataset implements ICustomerDataset {
+public class CustomerDefaultBAWDataset implements ICustomerDataset {
 
-    /**
-     * 
-     */
+    private Object bawDataset;
+
     private static final long serialVersionUID = 1L;
 
     private List<ChartDataEntity> dataEnities;
 
-    public CustomerDefaultBAWDataset() {
-        // TODO Auto-generated constructor stub
+    public CustomerDefaultBAWDataset(Double mean, Double median, Double q1, Double q3, Double minRegularValue,
+            Double maxRegularValue) {
         dataEnities = new ArrayList<ChartDataEntity>();
+        bawDataset = TOPChartUtils.getInstance().createDefaultBoxAndWhiskerCategoryDataset(mean, median, q1, q3, minRegularValue,
+                maxRegularValue);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.talend.dataprofiler.core.ui.editor.preview.model.IDataEntity#addDataEntity(org.talend.dq.indicators.preview
-     * .table.ChartDataEntity)
-     */
     public void addDataEntity(ChartDataEntity dataEntity) {
-        // TODO Auto-generated method stub
         dataEnities.add(dataEntity);
 
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.talend.dataprofiler.core.ui.editor.preview.model.IDataEntity#addDataEntity(org.talend.dq.indicators.preview
-     * .table.ChartDataEntity[])
-     */
     public void addDataEntity(ChartDataEntity[] dataEntity) {
-        // TODO Auto-generated method stub
         for (ChartDataEntity data : dataEntity) {
             dataEnities.add(data);
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.dataprofiler.core.ui.editor.preview.model.IDataEntity#getDataEntities()
-     */
     public ChartDataEntity[] getDataEntities() {
-        // TODO Auto-generated method stub
         return dataEnities.toArray(new ChartDataEntity[dataEnities.size()]);
     }
 
+    public int getRowCount() {
+        return TOPChartUtils.getInstance().getRowCount(bawDataset);
+    }
+
+    public void clear() {
+        dataEnities.clear();
+        TOPChartUtils.getInstance().clearDefaultBoxAndWhiskerCategoryDataset(bawDataset);
+    }
 }

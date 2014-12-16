@@ -12,15 +12,11 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.editor.preview.model.states;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
-import org.jfree.data.statistics.BoxAndWhiskerItem;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
@@ -73,9 +69,8 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
             return null;
         } else {
             if (isIntact()) {
-                BoxAndWhiskerCategoryDataset dataset = (BoxAndWhiskerCategoryDataset) getDataset();
                 return TOPChartUtils.getInstance().createBoxAndWhiskerChart(
-                        DefaultMessagesImpl.getString("SummaryStatisticsState.SummaryStatistics"), dataset); //$NON-NLS-1$
+                        DefaultMessagesImpl.getString("SummaryStatisticsState.SummaryStatistics"), getDataset()); //$NON-NLS-1$
             } else {
                 Object barChart = TOPChartUtils.getInstance().createBarChart(
                         DefaultMessagesImpl.getString("SummaryStatisticsState.Summary_Statistics"), getDataset(), false); //$NON-NLS-1$
@@ -91,9 +86,8 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
             return null;
         } else {
             if (isIntact()) {
-                BoxAndWhiskerCategoryDataset dataset2 = (BoxAndWhiskerCategoryDataset) getDataset();
                 return TOPChartUtils.getInstance().createBoxAndWhiskerChart(
-                        DefaultMessagesImpl.getString("SummaryStatisticsState.SummaryStatistics"), dataset2); //$NON-NLS-1$
+                        DefaultMessagesImpl.getString("SummaryStatisticsState.SummaryStatistics"), getDataset()); //$NON-NLS-1$
             } else {
                 Object barChart = TOPChartUtils.getInstance().createBarChart(
                         DefaultMessagesImpl.getString("SummaryStatisticsState.Summary_Statistics"), dataset, false); //$NON-NLS-1$
@@ -123,22 +117,11 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
         }
 
         if (isIntact()) {
-            CustomerDefaultBAWDataset dataset = new CustomerDefaultBAWDataset();
-            BoxAndWhiskerItem item = ChartDatasetUtils.createBoxAndWhiskerItem(map.get(IndicatorEnum.MeanIndicatorEnum),
+
+            CustomerDefaultBAWDataset dataset = new CustomerDefaultBAWDataset(map.get(IndicatorEnum.MeanIndicatorEnum),
                     map.get(IndicatorEnum.MedianIndicatorEnum), map.get(IndicatorEnum.LowerQuartileIndicatorEnum),
                     map.get(IndicatorEnum.UpperQuartileIndicatorEnum), map.get(IndicatorEnum.MinValueIndicatorEnum),
-                    map.get(IndicatorEnum.MaxValueIndicatorEnum), null);
-
-            dataset.add(item, "0", ""); //$NON-NLS-1$ //$NON-NLS-2$
-
-            @SuppressWarnings("rawtypes")
-            List zerolist = new ArrayList();
-            dataset.add(zerolist, "1", ""); //$NON-NLS-1$ //$NON-NLS-2$
-            dataset.add(zerolist, "2", ""); //$NON-NLS-1$ //$NON-NLS-2$
-            dataset.add(zerolist, "3", ""); //$NON-NLS-1$ //$NON-NLS-2$
-            dataset.add(zerolist, "4", ""); //$NON-NLS-1$ //$NON-NLS-2$
-            dataset.add(zerolist, "5", ""); //$NON-NLS-1$ //$NON-NLS-2$
-            dataset.add(zerolist, "6", ""); //$NON-NLS-1$ //$NON-NLS-2$
+                    map.get(IndicatorEnum.MaxValueIndicatorEnum));
 
             dataset.addDataEntity(customerdataset.getDataEntities());
             return dataset;
@@ -158,7 +141,7 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
         return summaryUtil.getDataExplorer(sqltype);
     }
 
-    public JFreeChart getExampleChart() {
+    public Object getExampleChart() {
         // TODO Auto-generated method stub
         return null;
     }
@@ -170,7 +153,7 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
     public String getReferenceLink() {
         String url = null;
 
-        if (getDataset() instanceof BoxAndWhiskerCategoryDataset) {
+        if (isIntact()) {
             url = "http://en.wikipedia.org/wiki/Box_plot"; //$NON-NLS-1$
         } else {
             url = "http://en.wikipedia.org/wiki/Histogram"; //$NON-NLS-1$
@@ -185,7 +168,7 @@ public class SummaryStatisticsState extends AbstractChartTypeStates {
      * org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates#getChart(org.talend.dataprofiler
      * .common.ui.editor.preview.ICustomerDataset)
      */
-    public JFreeChart getChart(ICustomerDataset dataset) {
+    public Object getChart(ICustomerDataset dataset) {
         return null;
     }
 }

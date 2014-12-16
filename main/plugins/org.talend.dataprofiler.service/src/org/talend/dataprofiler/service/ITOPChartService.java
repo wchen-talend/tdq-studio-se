@@ -69,4 +69,41 @@ public interface ITOPChartService {
     Object createDatasetForDuplicateRecord(Map<String, Long> dupStats);
 
     Object createHistogramDataset(double[] valueArray, double maxValue, int bins);
+
+    Object createDefaultCategoryDataset();
+
+    Object createPieDataset(Map<String, Double> valueMap);
+
+    Object createDefaultBoxAndWhiskerCategoryDataset(Double mean, Double median, Double q1, Double q3, Double minRegularValue,
+            Double maxRegularValue);
+
+    Object createXYDataset(Map<Integer, Double> valueMap);
+
+    void addValueToCategoryDataset(Object dataset, double value, String labelX, String labelY);
+
+    int getRowCount(Object dataset);
+
+    int getColumnCount(Object dataset);
+
+    Number getValue(Object dataset, int row, int column);
+
+    Comparable getRowKey(Object dataset, int row);
+
+    int getRowIndex(Object dataset, Comparable key);
+
+    List getRowKeys(Object dataset);
+
+    Comparable getColumnKey(Object dataset, int column);
+
+    int getColumnIndex(Object dataset, Comparable key);
+
+    List getColumnKeys(Object dataset);
+
+    Number getValue(Object dataset, Comparable rowKey, Comparable columnKey);
+
+    void setValue(Object dataset, Number value, Comparable rowKey, Comparable columnKey);
+
+    void clearDataset(Object dataset);
+
+    void clearDefaultBoxAndWhiskerCategoryDataset(Object dataset);
 }

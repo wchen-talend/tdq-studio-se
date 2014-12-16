@@ -12,9 +12,10 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.editor.preview.model.states;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.jfree.data.general.DefaultPieDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
@@ -89,7 +90,7 @@ public class PieStatisticsState extends AbstractChartTypeStates {
 
     @Override
     public Object getPieDataset() {
-        DefaultPieDataset dataset = new DefaultPieDataset();
+        Map<String, Double> valueMap = new HashMap<String, Double>();
         for (IndicatorUnit unit : units) {
             if (unit.isExcuted()) {
                 FrequencyExt[] frequencyExt = (FrequencyExt[]) unit.getValue();
@@ -99,11 +100,11 @@ public class PieStatisticsState extends AbstractChartTypeStates {
                     FrequencyExt freqExt = frequencyExt[i];
                     String keyLabel = PieStatisticsStateUtil.getkeyLabel(freqExt);
                     Double percent = freqExt.getFrequency();
-                    dataset.setValue(keyLabel, percent);
+                    valueMap.put(keyLabel, percent);
                 }
             }
         }
-        return dataset;
+        return TOPChartUtils.getInstance().createPieDataset(valueMap);
     }
 
     public ICustomerDataset getCustomerDataset() {

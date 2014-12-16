@@ -30,6 +30,7 @@ import org.osgi.framework.ServiceReference;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.cwm.management.i18n.Messages;
+import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.core.CorePlugin;
 import org.talend.dataprofiler.core.ui.editor.analysis.drilldown.DrillDownEditorInput;
 import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableFactory;
@@ -92,14 +93,14 @@ public class TOPChartUtils {
 
     public Object createBarChart(String title, Object dataset, boolean showLegend) {
         if (this.chartService != null) {
-            return chartService.createBarChart(title, dataset, showLegend);
+            return chartService.createBarChart(title, ((CustomerDefaultCategoryDataset) dataset).getDataset(), showLegend);
         }
         return null;
     }
 
     public Object createBarChart(String title, Object dataset) {
         if (this.chartService != null) {
-            return chartService.createBarChart(title, dataset);
+            return chartService.createBarChart(title, ((CustomerDefaultCategoryDataset) dataset).getDataset());
         }
         return null;
     }
@@ -107,7 +108,8 @@ public class TOPChartUtils {
     public Object createBenfordChart(String axisXLabel, String categoryAxisLabel, Object dataset, List<String> dotChartLabels,
             double[] formalValues, String title) {
         if (chartService != null) {
-            return chartService.createBenfordChart(axisXLabel, categoryAxisLabel, dataset, dotChartLabels, formalValues, title);
+            return chartService.createBenfordChart(axisXLabel, categoryAxisLabel,
+                    ((CustomerDefaultCategoryDataset) dataset).getDataset(), dotChartLabels, formalValues, title);
         }
         return null;
     }
@@ -179,14 +181,15 @@ public class TOPChartUtils {
 
     public Object createStackedBarChart(String title, Object dataset, boolean showLegend) {
         if (chartService != null) {
-            return chartService.createStackedBarChart(title, dataset, showLegend);
+            return chartService.createStackedBarChart(title, ((CustomerDefaultCategoryDataset) dataset).getDataset(), showLegend);
         }
         return null;
     }
 
     public Object createStackedBarChart(String title, Object dataset, boolean isHorizatal, boolean showLegend) {
         if (chartService != null) {
-            return chartService.createStackedBarChart(title, dataset, isHorizatal, showLegend);
+            return chartService.createStackedBarChart(title, ((CustomerDefaultCategoryDataset) dataset).getDataset(),
+                    isHorizatal, showLegend);
         }
         return null;
     }
@@ -270,5 +273,92 @@ public class TOPChartUtils {
                 }
             }
         };
+    }
+
+    public Object createDefaultCategoryDataset() {
+        if (this.chartService != null) {
+            return chartService.createDefaultCategoryDataset();
+        }
+        return null;
+    }
+
+    public void addValueToCategoryDataset(Object dataset, double value, String labelX, String labelY) {
+        if (this.chartService != null) {
+            chartService.addValueToCategoryDataset(dataset, value, labelX, labelY);
+        }
+    }
+
+    public Object createPieDataset(Map<String, Double> valueMap) {
+        if (this.chartService != null) {
+            return chartService.createPieDataset(valueMap);
+        }
+        return null;
+    }
+
+    public Object createDefaultBoxAndWhiskerCategoryDataset(Double mean, Double median, Double q1, Double q3,
+            Double minRegularValue, Double maxRegularValue) {
+        if (this.chartService != null) {
+            return chartService.createDefaultBoxAndWhiskerCategoryDataset(mean, median, q1, q3, minRegularValue, maxRegularValue);
+        }
+        return null;
+    }
+
+    public Object createXYDataset(Map<Integer, Double> valueMap) {
+        if (this.chartService != null) {
+            return chartService.createXYDataset(valueMap);
+        }
+        return null;
+    }
+
+    public int getColumnCount(Object dataset) {
+        if (this.chartService != null) {
+            return chartService.getColumnCount(dataset);
+        }
+        return Integer.MIN_VALUE;
+    }
+
+    public int getRowCount(Object dataset) {
+        if (this.chartService != null) {
+            return chartService.getRowCount(dataset);
+        }
+        return Integer.MIN_VALUE;
+    }
+
+    public Number getValue(Object dataset, int row, int column) {
+        if (this.chartService != null) {
+            return chartService.getValue(dataset, row, column);
+        }
+        return null;
+    }
+
+    public Comparable getColumnKey(Object dataset, int column) {
+        if (this.chartService != null) {
+            return chartService.getColumnKey(dataset, column);
+        }
+        return null;
+    }
+
+    public void setValue(Object dataset, Number value, Comparable rowKey, Comparable columnKey) {
+        if (this.chartService != null) {
+            chartService.setValue(dataset, value, rowKey, columnKey);
+        }
+    }
+
+    public void clearDataset(Object dataset) {
+        if (chartService != null) {
+            chartService.clearDataset(dataset);
+        }
+    }
+
+    public void refrechChart(Object chartComp, Object chart) {
+        if (chartService != null) {
+            chartService.refrechChart(chartComp, chart);
+        }
+    }
+
+    public void clearDefaultBoxAndWhiskerCategoryDataset(Object dataset) {
+        if (chartService != null) {
+            chartService.clearDefaultBoxAndWhiskerCategoryDataset(dataset);
+        }
     }
 }

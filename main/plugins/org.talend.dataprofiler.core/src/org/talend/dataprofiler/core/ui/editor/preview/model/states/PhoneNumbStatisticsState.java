@@ -14,7 +14,6 @@ package org.talend.dataprofiler.core.ui.editor.preview.model.states;
 
 import java.util.List;
 
-import org.jfree.chart.JFreeChart;
 import org.talend.dataprofiler.common.ui.editor.preview.CustomerDefaultCategoryDataset;
 import org.talend.dataprofiler.common.ui.editor.preview.ICustomerDataset;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
@@ -76,7 +75,7 @@ public class PhoneNumbStatisticsState extends AbstractChartTypeStates {
      * 
      * @see org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates#getExampleChart()
      */
-    public JFreeChart getExampleChart() {
+    public Object getExampleChart() {
         // TODO Auto-generated method stub
         return null;
     }
