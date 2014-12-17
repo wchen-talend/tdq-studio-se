@@ -12,6 +12,7 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.utils;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -361,4 +362,58 @@ public class TOPChartUtils {
             chartService.clearDefaultBoxAndWhiskerCategoryDataset(dataset);
         }
     }
+
+    public Object createTaskSeriesCollection() {
+        if (chartService != null) {
+            return chartService.createTaskSeriesCollection();
+        }
+        return null;
+    }
+
+    public Object createTaskSeries(String keyOfDataset) {
+        if (chartService != null) {
+            return chartService.createTaskSeries(keyOfDataset);
+        }
+        return null;
+    }
+
+    public void addTaskToTaskSeries(Object taskSeries, String key, Date[] date) {
+        if (chartService != null) {
+            chartService.addTaskToTaskSeries(taskSeries, key, date);
+        }
+    }
+
+    public void addSeriesToCollection(Object taskSeriesCollection, Object taskSeries) {
+        if (chartService != null) {
+            chartService.addSeriesToCollection(taskSeriesCollection, taskSeries);
+        }
+    }
+
+    public Object createGanttChart(String chartAxies, Object ganttDataset) {
+        if (chartService != null) {
+            return chartService.createGanttChart(chartAxies, ganttDataset);
+        }
+        return null;
+    }
+
+    public void addSeriesToDefaultXYZDataset(Object dataset, String keyOfDataset, double[][] data) {
+        if (chartService != null) {
+            chartService.addSeriesToDefaultXYZDataset(dataset, keyOfDataset, data);
+        }
+    }
+
+    public Object createBubbleChart(String chartName, Object dataset) {
+        if (chartService != null) {
+            return chartService.createBubbleChart(chartName, dataset);
+        }
+        return null;
+    }
+
+    public Object createDefaultXYZDataset() {
+        if (chartService != null) {
+            return chartService.createDefaultXYZDataset();
+        }
+        return null;
+    }
+
 }

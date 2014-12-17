@@ -12,6 +12,7 @@
 // ============================================================================
 package org.talend.dataprofiler.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -106,4 +107,20 @@ public interface ITOPChartService {
     void clearDataset(Object dataset);
 
     void clearDefaultBoxAndWhiskerCategoryDataset(Object dataset);
+
+    Object createTaskSeriesCollection();
+
+    Object createTaskSeries(String keyOfDataset);
+
+    Object createDefaultXYZDataset();
+
+    void addTaskToTaskSeries(Object taskSeries, String key, final Date[] date);
+
+    void addSeriesToCollection(Object taskSeriesCollection, Object taskSeries);
+
+    void addSeriesToDefaultXYZDataset(Object dataset, String keyOfDataset, double[][] data);
+
+    Object createGanttChart(String chartAxies, Object ganttDataset);
+
+    Object createBubbleChart(String chartName, Object dataset);
 }

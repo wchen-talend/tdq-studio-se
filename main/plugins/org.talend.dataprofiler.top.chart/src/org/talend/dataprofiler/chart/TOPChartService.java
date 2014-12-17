@@ -14,6 +14,7 @@ package org.talend.dataprofiler.chart;
 
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,12 +38,16 @@ import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.gantt.Task;
+import org.jfree.data.gantt.TaskSeries;
+import org.jfree.data.gantt.TaskSeriesCollection;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
 import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
 import org.jfree.data.statistics.BoxAndWhiskerItem;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import org.jfree.data.statistics.HistogramDataset;
+import org.jfree.data.xy.DefaultXYZDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
@@ -513,4 +518,84 @@ public class TOPChartService implements ITOPChartService {
 
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createTaskSeriesCollection()
+     */
+    @Override
+    public Object createTaskSeriesCollection() {
+        return new TaskSeriesCollection();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createTaskSeries()
+     */
+    @Override
+    public Object createTaskSeries(String keyOfDataset) {
+        return new TaskSeries(keyOfDataset);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#addTaskToTaskSeries(java.lang.String, java.util.Date[])
+     */
+    @Override
+    public void addTaskToTaskSeries(Object taskSeries, String key, Date[] date) {
+        ((TaskSeries) taskSeries).add(new Task(key, new org.jfree.data.time.SimpleTimePeriod(date[0], date[1])));
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#addSeriesToCollection(java.lang.Object, java.lang.Object)
+     */
+    @Override
+    public void addSeriesToCollection(Object taskSeriesCollection, Object taskSeries) {
+        ((TaskSeriesCollection) taskSeriesCollection).add(((TaskSeries) taskSeries));
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createGanttChart(java.lang.String, java.lang.Object)
+     */
+    @Override
+    public Object createGanttChart(String chartAxies, Object ganttDataset) {
+        return TopChartFactory.createGanttChart(chartAxies, ganttDataset);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#addSeriesToDefaultXYZDataset(java.lang.Object, double[][])
+     */
+    @Override
+    public void addSeriesToDefaultXYZDataset(Object dataset, String keyOfDataset, double[][] data) {
+        ((DefaultXYZDataset) dataset).addSeries(keyOfDataset, data);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createBubbleChart(java.lang.String, java.lang.Object)
+     */
+    @Override
+    public Object createBubbleChart(String chartName, Object dataset) {
+        return TopChartFactory.createBubbleChart(chartName, dataset);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createDefaultXYZDataset()
+     */
+    @Override
+    public Object createDefaultXYZDataset() {
+        return new DefaultXYZDataset();
+    }
 }

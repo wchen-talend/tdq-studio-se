@@ -34,30 +34,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
-import org.jfree.chart.ChartMouseEvent;
-import org.jfree.chart.ChartMouseListener;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.annotations.CategoryTextAnnotation;
-import org.jfree.chart.axis.CategoryAnchor;
-import org.jfree.chart.entity.CategoryItemEntity;
-import org.jfree.chart.entity.ChartEntity;
-import org.jfree.chart.entity.XYItemEntity;
-import org.jfree.chart.labels.CategoryToolTipGenerator;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.category.CategoryItemRenderer;
-import org.jfree.chart.renderer.xy.XYItemRenderer;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.gantt.Task;
-import org.jfree.data.gantt.TaskSeriesCollection;
-import org.jfree.data.xy.DefaultXYZDataset;
-import org.jfree.data.xy.XYDataset;
-import org.jfree.experimental.chart.swt.ChartComposite;
-import org.jfree.ui.TextAnchor;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.cwm.helper.ColumnHelper;
 import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
+import org.talend.dataprofiler.core.ui.editor.preview.DatasetUtils.ValueAggregator;
 import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.indicators.columnset.ColumnSetMultiValueIndicator;
@@ -69,7 +50,7 @@ import orgomg.cwm.objectmodel.core.ModelElement;
 /**
  * DOC bzhou class global comment. Detailled comment
  */
-public class HideSeriesChartComposite extends ChartComposite {
+public class HideSeriesChartComposite {
 
     private static Logger log = Logger.getLogger(HideSeriesChartComposite.class);
 
@@ -78,6 +59,8 @@ public class HideSeriesChartComposite extends ChartComposite {
     private ModelElement column;
 
     private JFreeChart chart;
+
+    private Object chartComposite;
 
     private boolean isNeedUtility;
 
@@ -89,24 +72,37 @@ public class HideSeriesChartComposite extends ChartComposite {
 
     public HideSeriesChartComposite(Composite comp, Analysis ana, ColumnSetMultiValueIndicator indicator, ModelElement column,
             boolean isNeedUtility) {
-        super(comp, SWT.NONE);
+
         this.analysis = ana;
         this.indicator = indicator;
         this.column = column;
         this.isNeedUtility = isNeedUtility;
-        this.setCursor(new Cursor(Display.getDefault(), SWT.CURSOR_HAND));
-        this.setToolTipText("sdfsdf"); //$NON-NLS-1$
 
         createHideSeriesArea();
 
         addSpecifiedListeners();
         // by zshen for bug 14173: make the height to incream by itself when have more than 8 column to be choosed in
-        // the analysis.
-        GridData gd = new GridData();
-        gd.heightHint = indicator.getAnalyzedColumns().size() * 30 < 230 ? 230 : indicator.getAnalyzedColumns().size() * 30;
-        gd.widthHint = 460;
-        this.setLayoutData(gd);
-        // ~14173
+
+        chartComposite = ChartHelper.createChartComposite(comp, indicator.getAnalyzedColumns().size() * 30 < 230 ? 230
+                : indicator.getAnalyzedColumns().size() * 30);
+    }
+
+    class ChartHelper {
+
+        static Object createChartComposite(Composite parent, int height) {
+            ChartComposite chartComposite = new ChartComposite(comp, SWT.NONE);
+            chartComposite.setCursor(new Cursor(Display.getDefault(), SWT.CURSOR_HAND));
+            chartComposite.setToolTipText("sdfsdf"); //$NON-NLS-1$
+
+            // the analysis.
+            GridData gd = new GridData();
+            gd.heightHint = height;
+            gd.widthHint = 460;
+            chartComposite.setLayoutData(gd);
+            // ~14173
+            return chartComposite;
+        }
+
     }
 
     private void addSpecifiedListeners() {
@@ -258,11 +254,11 @@ public class HideSeriesChartComposite extends ChartComposite {
      * 
      * @return
      */
-    private JFreeChart createChart() {
-        JFreeChart jchart = null;
+    private Object createChart() {
+        Object jchart = null;
 
         if (ColumnsetPackage.eINSTANCE.getCountAvgNullIndicator().equals(indicator.eClass())) {
-            jchart = TopChartFactory.createBubbleChart(indicator, column);
+            jchart = DatasetUtils.createBubbleChart(indicator, column);
             TOPChartUtils.getInstance().decorateChart(jchart, false);
         }
 
@@ -272,22 +268,37 @@ public class HideSeriesChartComposite extends ChartComposite {
             final int indexOfDateCol = indicator.getDateColumns().indexOf(column);
             assert indexOfDateCol != -1;
 
-            jchart = TopChartFactory.createGanttChart(indicator, column);
+            jchart = DatasetUtils.createGanttChart(indicator, column);
 
             createAnnotOnGantt(jchart, indicator.getListRows(), nbNominalColumns + nbDateFunctions * indexOfDateCol + 3,
                     nbNominalColumns);
 
             CategoryPlot plot = (CategoryPlot) jchart.getPlot();
             CustomHideSeriesGanttRender renderer = new CustomHideSeriesGanttRender();
-            renderer.setBaseToolTipGenerator(toolTipGenerator);
+            renderer.setBaseToolTipGenerator(new CategoryToolTipGenerator() {
+
+                public String generateToolTip(CategoryDataset dataset, int row, int column) {
+                    TaskSeriesCollection taskSeriesColl = (TaskSeriesCollection) dataset;
+                    List<Task> taskList = new ArrayList<Task>();
+                    for (int i = 0; i < taskSeriesColl.getSeriesCount(); i++) {
+                        for (int j = 0; j < taskSeriesColl.getSeries(i).getItemCount(); j++) {
+                            taskList.add(taskSeriesColl.getSeries(i).get(j));
+                        }
+                    }
+                    Task task = taskList.get(column);
+                    // Task task = taskSeriesColl.getSeries(row).get(column);
+                    String taskDescription = task.getDescription();
+
+                    Date startDate = task.getDuration().getStart();
+                    Date endDate = task.getDuration().getEnd();
+                    return taskDescription + ",     " + startDate + "---->" + endDate; //$NON-NLS-1$ //$NON-NLS-2$
+                    // return "this is a tooltip";
+                }
+            });
             plot.setRenderer(renderer);
             plot.getDomainAxis().setMaximumCategoryLabelWidthRatio(10.0f);
 
             TOPChartUtils.getInstance().decorateChart(jchart, false);
-        }
-
-        if (ColumnsetPackage.eINSTANCE.getWeakCorrelationIndicator().equals(indicator.eClass())) {
-            // create the chart
         }
 
         return jchart;
@@ -352,27 +363,27 @@ public class HideSeriesChartComposite extends ChartComposite {
         }
     };
 
-    CategoryToolTipGenerator toolTipGenerator = new CategoryToolTipGenerator() {
-
-        public String generateToolTip(CategoryDataset dataset, int row, int column) {
-            TaskSeriesCollection taskSeriesColl = (TaskSeriesCollection) dataset;
-            List<Task> taskList = new ArrayList<Task>();
-            for (int i = 0; i < taskSeriesColl.getSeriesCount(); i++) {
-                for (int j = 0; j < taskSeriesColl.getSeries(i).getItemCount(); j++) {
-                    taskList.add(taskSeriesColl.getSeries(i).get(j));
-                }
-            }
-            Task task = taskList.get(column);
-            // Task task = taskSeriesColl.getSeries(row).get(column);
-            String taskDescription = task.getDescription();
-
-            Date startDate = task.getDuration().getStart();
-            Date endDate = task.getDuration().getEnd();
-            return taskDescription + ",     " + startDate + "---->" + endDate; //$NON-NLS-1$ //$NON-NLS-2$
-            // return "this is a tooltip";
-        }
-    };
-
+    // CategoryToolTipGenerator toolTipGenerator = new CategoryToolTipGenerator() {
+    //
+    // public String generateToolTip(CategoryDataset dataset, int row, int column) {
+    // TaskSeriesCollection taskSeriesColl = (TaskSeriesCollection) dataset;
+    // List<Task> taskList = new ArrayList<Task>();
+    // for (int i = 0; i < taskSeriesColl.getSeriesCount(); i++) {
+    // for (int j = 0; j < taskSeriesColl.getSeries(i).getItemCount(); j++) {
+    // taskList.add(taskSeriesColl.getSeries(i).get(j));
+    // }
+    // }
+    // Task task = taskList.get(column);
+    // // Task task = taskSeriesColl.getSeries(row).get(column);
+    // String taskDescription = task.getDescription();
+    //
+    // Date startDate = task.getDuration().getStart();
+    // Date endDate = task.getDuration().getEnd();
+    //            return taskDescription + ",     " + startDate + "---->" + endDate; //$NON-NLS-1$ //$NON-NLS-2$
+    // // return "this is a tooltip";
+    // }
+    // };
+    //
     /**
      * 
      * DOC zhaoxinyi Comment method "createAnnotOnGantt".
@@ -381,7 +392,7 @@ public class HideSeriesChartComposite extends ChartComposite {
      * @param rowList
      * @param multiDateColumn
      */
-    public void createAnnotOnGantt(JFreeChart chart, List<Object[]> rowList, int multiDateColumn, int nominal) {
+    public void createAnnotOnGantt(Object chart, List<Object[]> rowList, int multiDateColumn, int nominal) {
         CategoryPlot xyplot = (CategoryPlot) chart.getPlot();
         CategoryTextAnnotation an;
         for (int seriesCount = 0; seriesCount < ((TaskSeriesCollection) xyplot.getDataset()).getSeriesCount(); seriesCount++) {
@@ -399,7 +410,9 @@ public class HideSeriesChartComposite extends ChartComposite {
                     RowColumPair pair = new RowColumPair();
                     pair.setRow(seriesCount);
                     pair.setColumn(columnCount);
+
                     hightlightSeriesMap.put(String.valueOf(seriesCount) + String.valueOf(columnCount), pair);
+
                     an = new CategoryTextAnnotation("#nulls = " + (rowList.get(indexOfRow))[multiDateColumn], //$NON-NLS-1$
                             taskDescription, task.getDuration().getStart().getTime());
                     an.setTextAnchor(TextAnchor.CENTER_LEFT);

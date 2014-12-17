@@ -18,10 +18,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
-import java.util.Iterator;
-import java.util.Map;
 
-import org.eclipse.ui.internal.keys.model.ModelElement;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
@@ -64,8 +61,6 @@ import org.talend.dataprofiler.chart.i18n.Messages;
 import org.talend.dataprofiler.chart.preview.CustomRenderer;
 import org.talend.dataprofiler.chart.preview.DQRuleItemLabelGenerator;
 import org.talend.dataprofiler.chart.preview.MatchRuleColorRegistry;
-import org.talend.dataprofiler.chart.util.ChartDatasetUtils.DateValueAggregate;
-import org.talend.dataprofiler.chart.util.ChartDatasetUtils.ValueAggregator;
 
 /**
  * @author scorreia
@@ -275,20 +270,11 @@ public final class TopChartFactory {
      * @param numericColumn the analyzed numeric column
      * @return the bubble chart
      */
-    public static JFreeChart createBubbleChart(final ColumnSetMultiValueIndicator indic, ModelElement numericColumn) {
-        final Map<String, ValueAggregator> createXYZDatasets = ChartDatasetUtils.createXYZDatasets(indic, numericColumn);
-
-        DefaultXYZDataset dataset = new DefaultXYZDataset();
-        final Iterator<String> iterator = createXYZDatasets.keySet().iterator();
-        while (iterator.hasNext()) {
-            final String next = iterator.next();
-            createXYZDatasets.get(next).addSeriesToXYZDataset(dataset, next);
-        }
-        String chartName = Messages.getString("TopChartFactory.ChartName", numericColumn.getName()); //$NON-NLS-1$
+    public static JFreeChart createBubbleChart(String chartName, Object dataset) {
         JFreeChart chart = TopChartFactory
                 .createBubbleChart(
                         chartName,
-                        Messages.getString("TopChartFactory.average"), Messages.getString("TopChartFactory.count"), dataset, PlotOrientation.HORIZONTAL, //$NON-NLS-1$ //$NON-NLS-2$
+                        Messages.getString("TopChartFactory.average"), Messages.getString("TopChartFactory.count"), (DefaultXYZDataset) dataset, PlotOrientation.HORIZONTAL, //$NON-NLS-1$ //$NON-NLS-2$
                         true, true, true);
         final XYPlot plot = (XYPlot) chart.getPlot();
         final XYItemRenderer renderer = plot.getRenderer();
@@ -306,10 +292,10 @@ public final class TopChartFactory {
             protected Object[] createItemArray(XYZDataset dset, int series, int item) {
                 final Comparable<?> seriesKey = dset.getSeriesKey(series);
                 final String seriesK = String.valueOf(seriesKey);
-                final ValueAggregator valueAggregator = createXYZDatasets.get(seriesKey);
-                String label = valueAggregator.getLabels(seriesK).get(item);
+                // final ValueAggregator valueAggregator = createXYZDatasets.get(seriesKey);
+                // String label = valueAggregator.getLabels(seriesK).get(item);
                 final Object[] itemArray = super.createItemArray(dset, series, item);
-                itemArray[0] = label;
+                itemArray[0] = "";// label;
                 itemArray[1] = "avg=" + itemArray[1]; //$NON-NLS-1$
                 itemArray[2] = "record count=" + itemArray[2]; //$NON-NLS-1$
                 itemArray[3] = "null count=" + itemArray[3]; //$NON-NLS-1$
@@ -324,28 +310,17 @@ public final class TopChartFactory {
      * 
      * DOC zhaoxinyi Comment method "createGanttChart".
      * 
-     * @param indic
-     * @param dateColumn
      * @return
      */
 
-    public static JFreeChart createGanttChart(final ColumnSetMultiValueIndicator indic, ModelElement dateColumn) {
-        final Map<String, DateValueAggregate> createGannttDatasets = ChartDatasetUtils.createGanttDatasets(indic, dateColumn);
-
-        TaskSeriesCollection ganttDataset = new TaskSeriesCollection();
-        final Iterator<String> iterator = createGannttDatasets.keySet().iterator();
-        while (iterator.hasNext()) {
-            final String next = iterator.next();
-            createGannttDatasets.get(next).addSeriesToGanttDataset(ganttDataset, next);
-        }
-        String chartAxies = Messages.getString("TopChartFactory.chartAxies", dateColumn.getName()); //$NON-NLS-1$
+    public static JFreeChart createGanttChart(String chartAxies, Object ganttDataset) {
         // ADD msjian TDQ-5112 2012-4-10: after upgrate to jfreechart-1.0.12.jar, change the default chart wallPaint
         ChartFactory.setChartTheme(StandardChartTheme.createLegacyTheme());
         // TDQ-5112~
         JFreeChart chart = ChartFactory.createGanttChart("", // chart title //$NON-NLS-1$
                 Messages.getString("TopChartFactory.Categories"), // domain axis label //$NON-NLS-1$
                 chartAxies, // range axis label
-                ganttDataset, // data
+                (TaskSeriesCollection) ganttDataset, // data
                 true, // include legend
                 true, // tooltips
                 false // urls
