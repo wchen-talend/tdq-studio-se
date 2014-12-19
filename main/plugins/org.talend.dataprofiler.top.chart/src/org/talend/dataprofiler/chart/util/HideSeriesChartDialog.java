@@ -36,8 +36,14 @@ public class HideSeriesChartDialog extends FullScreenChartDialog {
 
     private static final String SERIES_KEY_ID = "SERIES_KEY"; //$NON-NLS-1$
 
-    public HideSeriesChartDialog(Shell shell, JFreeChart chart) {
+    private boolean isCountAvgNull = false;
+
+    private boolean isMinMaxDate = false;
+
+    public HideSeriesChartDialog(Shell shell, JFreeChart chart, boolean isCountAvgNull, boolean isMinMaxDate) {
         super(shell, chart);
+        this.isCountAvgNull = isCountAvgNull;
+        this.isMinMaxDate = isMinMaxDate;
     }
 
     @Override
@@ -51,7 +57,7 @@ public class HideSeriesChartDialog extends FullScreenChartDialog {
         comp.setLayout(new RowLayout());
         comp.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_GRAY));
 
-        if (ColumnsetPackage.eINSTANCE.getCountAvgNullIndicator().equals(indicator.eClass())) {
+        if (isCountAvgNull) {
             XYDataset dataset = chart.getXYPlot().getDataset();
             int count = dataset.getSeriesCount();
 
@@ -65,7 +71,7 @@ public class HideSeriesChartDialog extends FullScreenChartDialog {
             }
         }
 
-        if (ColumnsetPackage.eINSTANCE.getMinMaxDateIndicator().equals(indicator.eClass())) {
+        if (isMinMaxDate) {
             CategoryPlot plot = (CategoryPlot) chart.getPlot();
             CategoryDataset dataset = plot.getDataset();
             int count = dataset.getRowCount();
@@ -91,13 +97,13 @@ public class HideSeriesChartDialog extends FullScreenChartDialog {
             Button checkBtn = (Button) e.getSource();
             int seriesid = (Integer) checkBtn.getData(SERIES_KEY_ID);
 
-            if (ColumnsetPackage.eINSTANCE.getCountAvgNullIndicator().equals(indicator.eClass())) {
+            if (isCountAvgNull) {
                 XYPlot plot = chart.getXYPlot();
                 XYItemRenderer xyRenderer = plot.getRenderer();
                 xyRenderer.setSeriesVisible(seriesid, checkBtn.getSelection());
             }
 
-            if (ColumnsetPackage.eINSTANCE.getMinMaxDateIndicator().equals(indicator.eClass())) {
+            if (isMinMaxDate) {
                 CategoryPlot plot = (CategoryPlot) chart.getPlot();
                 CategoryItemRenderer render = plot.getRenderer();
                 render.setSeriesVisible(seriesid, checkBtn.getSelection());

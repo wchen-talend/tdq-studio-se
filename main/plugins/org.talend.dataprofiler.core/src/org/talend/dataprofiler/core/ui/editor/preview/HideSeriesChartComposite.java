@@ -12,17 +12,10 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.editor.preview;
 
-import java.awt.Color;
-import java.awt.Paint;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -38,12 +31,12 @@ import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.cwm.helper.ColumnHelper;
 import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
+import org.talend.dataprofiler.core.ui.editor.preview.DatasetUtils.DateValueAggregate;
 import org.talend.dataprofiler.core.ui.editor.preview.DatasetUtils.ValueAggregator;
 import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.indicators.columnset.ColumnSetMultiValueIndicator;
 import org.talend.dataquality.indicators.columnset.ColumnsetPackage;
-import org.talend.dq.analysis.explore.MultiColumnSetValueExplorer;
 import org.talend.dq.helper.SqlExplorerUtils;
 import orgomg.cwm.objectmodel.core.ModelElement;
 
@@ -58,7 +51,7 @@ public class HideSeriesChartComposite {
 
     private ModelElement column;
 
-    private JFreeChart chart;
+    private Object chart;
 
     private Object chartComposite;
 
@@ -66,9 +59,16 @@ public class HideSeriesChartComposite {
 
     private static final String SERIES_KEY_ID = "SERIES_KEY"; //$NON-NLS-1$
 
-    private Map<String, RowColumPair> hightlightSeriesMap = new HashMap<String, RowColumPair>();
+    // used for the bubble chart to add mouse listeners
+    private Map<String, String> bubbleQueryMap;
+
+    private Map<String, String> ganttQueryMap;
 
     private Analysis analysis = null;
+
+    boolean isCoungAvg = false;
+
+    boolean isMinMax = false;
 
     public HideSeriesChartComposite(Composite comp, Analysis ana, ColumnSetMultiValueIndicator indicator, ModelElement column,
             boolean isNeedUtility) {
@@ -78,18 +78,24 @@ public class HideSeriesChartComposite {
         this.column = column;
         this.isNeedUtility = isNeedUtility;
 
-        createHideSeriesArea();
+        this.chart = createChart();
 
-        addSpecifiedListeners();
-        // by zshen for bug 14173: make the height to incream by itself when have more than 8 column to be choosed in
-
-        chartComposite = ChartHelper.createChartComposite(comp, indicator.getAnalyzedColumns().size() * 30 < 230 ? 230
+        chartComposite = ChartHelper.createChartComposite(comp, chart, indicator.getAnalyzedColumns().size() * 30 < 230 ? 230
                 : indicator.getAnalyzedColumns().size() * 30);
+
+        if (chart != null && isNeedUtility) {
+            createUtilityControl(comp);
+        }
+
+        isCoungAvg = ColumnsetPackage.eINSTANCE.getCountAvgNullIndicator().equals(indicator.eClass());
+        isMinMax = ColumnsetPackage.eINSTANCE.getMinMaxDateIndicator().equals(indicator.eClass());
+
+        addSpecifiedListeners(isCoungAvg, isMinMax);
     }
 
     class ChartHelper {
 
-        static Object createChartComposite(Composite parent, int height) {
+        static Object createChartComposite(Composite parent, Object chart, int height) {
             ChartComposite chartComposite = new ChartComposite(comp, SWT.NONE);
             chartComposite.setCursor(new Cursor(Display.getDefault(), SWT.CURSOR_HAND));
             chartComposite.setToolTipText("sdfsdf"); //$NON-NLS-1$
@@ -99,154 +105,78 @@ public class HideSeriesChartComposite {
             gd.heightHint = height;
             gd.widthHint = 460;
             chartComposite.setLayoutData(gd);
+
+            if (chart != null) {
+                chartComposite.setChart(chart);
+            }
+
             // ~14173
             return chartComposite;
         }
 
     }
 
-    private void addSpecifiedListeners() {
+    private Menu createMenu(final boolean isAvg, final boolean isDate) {
+        // create menu
+        Menu menu = new Menu(((Composite) chartComposite).getShell(), SWT.POP_UP);
+        MenuItem itemShowInFullScreen = new MenuItem(menu, SWT.PUSH);
+        itemShowInFullScreen.setText(DefaultMessagesImpl.getString("HideSeriesChartComposite.ShowInFullScreen")); //$NON-NLS-1$
+        itemShowInFullScreen.addSelectionListener(new SelectionAdapter() {
 
-        // MOD mzhao 2009-03-30, Feature 6530, add view rows menu item.
-        this.addChartMouseListener(new ChartMouseListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Display.getDefault().asyncExec(new Runnable() {
 
-            public void chartMouseClicked(ChartMouseEvent event) {
-
-                setRangeZoomable(event.getTrigger().getButton() == 1);
-                setDomainZoomable(event.getTrigger().getButton() == 1);
-
-                if (event.getTrigger().getButton() != 3) {
-                    return;
-                }
-                // create menu
-                Menu menu = new Menu(getShell(), SWT.POP_UP);
-                setMenu(menu);
-                MenuItem itemShowInFullScreen = new MenuItem(menu, SWT.PUSH);
-                itemShowInFullScreen.setText(DefaultMessagesImpl.getString("HideSeriesChartComposite.ShowInFullScreen")); //$NON-NLS-1$
-                itemShowInFullScreen.addSelectionListener(new SelectionAdapter() {
-
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        Display.getDefault().asyncExec(new Runnable() {
-
-                            public void run() {
-                                ChartUtils.showChartInFillScreen(createChart(), indicator);
-                            }
-                        });
+                    public void run() {
+                        TOPChartUtils.getInstance().showChartInFillScreen(createChart(), isAvg, isDate);
                     }
                 });
-
-                ChartEntity chartEntity = event.getEntity();
-                if (chartEntity != null) {
-                    if (ColumnsetPackage.eINSTANCE.getCountAvgNullIndicator().equals(indicator.eClass())) {
-                        addMenuOnBubbleChart(chartEntity, menu);
-                    } else if (ColumnsetPackage.eINSTANCE.getMinMaxDateIndicator().equals(indicator.eClass())) {
-                        addMenuOnGantChart(chartEntity, menu);
-                    }
-                }
-                menu.setVisible(true);
             }
-
-            private void addMenuOnBubbleChart(ChartEntity chartEntity, Menu menu) {
-
-                if (chartEntity instanceof XYItemEntity) {
-
-                    XYItemEntity xyItemEntity = (XYItemEntity) chartEntity;
-
-                    DefaultXYZDataset xyzDataSet = (DefaultXYZDataset) xyItemEntity.getDataset();
-                    final Comparable<?> seriesKey = xyzDataSet.getSeriesKey(xyItemEntity.getSeriesIndex());
-                    final String seriesK = String.valueOf(seriesKey);
-
-                    try {
-                        final Map<String, ValueAggregator> createXYZDatasets = ChartDatasetUtils.createXYZDatasets(indicator,
-                                column);
-
-                        final ValueAggregator valueAggregator = createXYZDatasets.get(seriesKey);
-
-                        valueAggregator.addSeriesToXYZDataset(xyzDataSet, seriesK);
-                        String seriesLabel = valueAggregator.getLabels(seriesK).get(xyItemEntity.getItem());
-                        EList<ModelElement> nominalList = indicator.getNominalColumns();
-                        final String queryString = MultiColumnSetValueExplorer.getInstance().getQueryStirng(column, analysis,
-                                nominalList, seriesK, seriesLabel);
-
-                        MenuItem item = new MenuItem(menu, SWT.PUSH);
-                        item.setText(DefaultMessagesImpl.getString("HideSeriesChartComposite.ViewRow")); //$NON-NLS-1$
-                        item.addSelectionListener(new SelectionAdapter() {
-
-                            @Override
-                            public void widgetSelected(SelectionEvent e) {
-                                Display.getDefault().asyncExec(new Runnable() {
-
-                                    public void run() {
-                                        Connection tdDataProvider = SwitchHelpers.CONNECTION_SWITCH.doSwitch(analysis
-                                                .getContext().getConnection());
-                                        String query = queryString;
-                                        String editorName = ColumnHelper.getColumnSetOwner(column).getName();
-                                        SqlExplorerUtils.getDefault().runInDQViewer(tdDataProvider, query, editorName);
-                                    }
-
-                                });
-                            }
-
-                        });
-
-                    } catch (Throwable e) {
-                        log.error(e, e);
-                    }
-                }
-            }
-
-            public void chartMouseMoved(ChartMouseEvent event) {
-
-            }
-
         });
+        return menu;
     }
 
-    private void addMenuOnGantChart(ChartEntity chartEntity, Menu menu) {
+    private void addSpecifiedListeners(final boolean isAvg, final boolean isDate) {
+        final Menu menu = createMenu(isAvg, isDate);
 
-        if (chartEntity instanceof CategoryItemEntity) {
-            CategoryItemEntity itemEntity = (CategoryItemEntity) chartEntity;
-
-            String seriesK = itemEntity.getRowKey().toString();
-            String seriesLabel = itemEntity.getColumnKey().toString();
-            EList<ModelElement> nominalList = indicator.getNominalColumns();
-            final String sql = MultiColumnSetValueExplorer.getInstance().getQueryStirng(column, analysis, nominalList, seriesK,
-                    seriesLabel);
-            MenuItem item = new MenuItem(menu, SWT.PUSH);
-            item.setText(DefaultMessagesImpl.getString("HideSeriesChartComposite.ViewRows")); //$NON-NLS-1$
-            item.addSelectionListener(new SelectionAdapter() {
-
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    Display.getDefault().asyncExec(new Runnable() {
-
-                        public void run() {
-                            Connection tdDataProvider = SwitchHelpers.CONNECTION_SWITCH.doSwitch(analysis.getContext()
-                                    .getConnection());
-                            String query = sql;
-                            String editorName = ColumnHelper.getColumnSetOwner(column).getName();
-                            SqlExplorerUtils.getDefault().runInDQViewer(tdDataProvider, query, editorName);
-                        }
-
-                    });
-                }
-
-            });
+        Map<String, String> queryMap;
+        if (isAvg) {
+            TOPChartUtils.getInstance().addSpecifiedListenersForCorrelationChart(queryMap, isAvg, isDate, menu, queryMap,
+                    createSelectAdapter(sql));
+        } else if (isDate) {
+            TOPChartUtils.getInstance().addSpecifiedListenersForCorrelationChart(this.ganttQueryMap, isAvg, isDate, menu,
+                    queryMap, createSelectAdapter(sql));
         }
+
     }
 
-    private void createHideSeriesArea() {
-        this.chart = createChart();
+    /**
+     * DOC yyin Comment method "createSelectAdapter".
+     * 
+     * @param sql
+     * @return
+     */
+    private SelectionAdapter createSelectAdapter(final String sql) {
+        return new SelectionAdapter() {
 
-        if (chart != null) {
-            setChart(chart);
+            private String sql;
 
-            if (isNeedUtility) {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Display.getDefault().asyncExec(new Runnable() {
 
-                createUtilityControl(this);
+                    public void run() {
+                        Connection tdDataProvider = SwitchHelpers.CONNECTION_SWITCH.doSwitch(analysis.getContext()
+                                .getConnection());
+                        String query = sql;
+                        String editorName = ColumnHelper.getColumnSetOwner(column).getName();
+                        SqlExplorerUtils.getDefault().runInDQViewer(tdDataProvider, query, editorName);
+                    }
+
+                });
             }
-        }
+
+        };
     }
 
     /**
@@ -257,62 +187,83 @@ public class HideSeriesChartComposite {
     private Object createChart() {
         Object jchart = null;
 
-        if (ColumnsetPackage.eINSTANCE.getCountAvgNullIndicator().equals(indicator.eClass())) {
-            jchart = DatasetUtils.createBubbleChart(indicator, column);
+        if (isCoungAvg) {
+            jchart = createBubbleChart();
             TOPChartUtils.getInstance().decorateChart(jchart, false);
-        }
+        } else {
+            if (isMinMax) {
+                final int nbNominalColumns = indicator.getNominalColumns().size();
+                final int nbDateFunctions = indicator.getDateFunctions().size();
+                final int indexOfDateCol = indicator.getDateColumns().indexOf(column);
+                assert indexOfDateCol != -1;
 
-        if (ColumnsetPackage.eINSTANCE.getMinMaxDateIndicator().equals(indicator.eClass())) {
-            final int nbNominalColumns = indicator.getNominalColumns().size();
-            final int nbDateFunctions = indicator.getDateFunctions().size();
-            final int indexOfDateCol = indicator.getDateColumns().indexOf(column);
-            assert indexOfDateCol != -1;
+                jchart = createGanttChart();
 
-            jchart = DatasetUtils.createGanttChart(indicator, column);
+                TOPChartUtils.getInstance().createAnnotOnGantt(jchart, indicator.getListRows(),
+                        nbNominalColumns + nbDateFunctions * indexOfDateCol + 3, nbNominalColumns);
 
-            createAnnotOnGantt(jchart, indicator.getListRows(), nbNominalColumns + nbDateFunctions * indexOfDateCol + 3,
-                    nbNominalColumns);
-
-            CategoryPlot plot = (CategoryPlot) jchart.getPlot();
-            CustomHideSeriesGanttRender renderer = new CustomHideSeriesGanttRender();
-            renderer.setBaseToolTipGenerator(new CategoryToolTipGenerator() {
-
-                public String generateToolTip(CategoryDataset dataset, int row, int column) {
-                    TaskSeriesCollection taskSeriesColl = (TaskSeriesCollection) dataset;
-                    List<Task> taskList = new ArrayList<Task>();
-                    for (int i = 0; i < taskSeriesColl.getSeriesCount(); i++) {
-                        for (int j = 0; j < taskSeriesColl.getSeries(i).getItemCount(); j++) {
-                            taskList.add(taskSeriesColl.getSeries(i).get(j));
-                        }
-                    }
-                    Task task = taskList.get(column);
-                    // Task task = taskSeriesColl.getSeries(row).get(column);
-                    String taskDescription = task.getDescription();
-
-                    Date startDate = task.getDuration().getStart();
-                    Date endDate = task.getDuration().getEnd();
-                    return taskDescription + ",     " + startDate + "---->" + endDate; //$NON-NLS-1$ //$NON-NLS-2$
-                    // return "this is a tooltip";
-                }
-            });
-            plot.setRenderer(renderer);
-            plot.getDomainAxis().setMaximumCategoryLabelWidthRatio(10.0f);
-
-            TOPChartUtils.getInstance().decorateChart(jchart, false);
+                TOPChartUtils.getInstance().decorateChart(jchart, false);
+            }
         }
 
         return jchart;
     }
 
+    /**
+     * DOC yyin Comment method "createGanttChart".
+     * 
+     * @return
+     */
+    private Object createGanttChart() {
+        final Map<String, DateValueAggregate> createGannttDatasets = DatasetUtils.createGanttDatasets(indicator, column);
+
+        Object ganttDataset = TOPChartUtils.getInstance().createTaskSeriesCollection();
+        final Iterator<String> iterator = createGannttDatasets.keySet().iterator();
+        while (iterator.hasNext()) {
+            final String next = iterator.next();
+            createGannttDatasets.get(next).addSeriesToGanttDataset(ganttDataset, next);
+        }
+
+        ganttQueryMap = DatasetUtils.getGanttQueryMap(createGannttDatasets, indicator, column, analysis);
+
+        String chartAxies = DefaultMessagesImpl.getString("TopChartFactory.chartAxies", column.getName()); //$NON-NLS-1$
+
+        return TOPChartUtils.getInstance().createGanttChart(chartAxies, ganttDataset);
+    }
+
+    /**
+     * DOC yyin Comment method "createBubbleChart".
+     * 
+     * @return
+     */
+    private Object createBubbleChart() {
+        final Map<String, ValueAggregator> createXYZDatasets = DatasetUtils.createXYZDatasets(indicator, column);
+
+        Object dataset = TOPChartUtils.getInstance().createDefaultXYZDataset();
+        final Iterator<String> iterator = createXYZDatasets.keySet().iterator();
+        while (iterator.hasNext()) {
+            final String next = iterator.next();
+            createXYZDatasets.get(next).addSeriesToXYZDataset(dataset, next);
+        }
+
+        bubbleQueryMap = DatasetUtils.getQueryMap(createXYZDatasets, indicator, column, analysis);
+
+        String chartName = DefaultMessagesImpl.getString("TopChartFactory.ChartName", column.getName()); //$NON-NLS-1$
+
+        return TOPChartUtils.getInstance().createBubbleChart(chartName, dataset);
+    }
+
     private void createUtilityControl(Composite parent) {
-        Composite comp = new Composite(getParent(), SWT.BORDER);
+        Composite comp = new Composite(parent, SWT.BORDER);
         comp.setLayout(new GridLayout());
         comp.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_END));
         comp.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_GRAY));
 
-        if (ColumnsetPackage.eINSTANCE.getCountAvgNullIndicator().equals(indicator.eClass())) {
-            XYDataset dataset = chart.getXYPlot().getDataset();
-            int count = dataset.getSeriesCount();
+        SelectionAdapter listener = (SelectionAdapter) TOPChartUtils.getInstance().createSelectionAdapterForButton(chart,
+                isCoungAvg, isMinMax);
+
+        if (this.isCoungAvg) {
+            int count = TOPChartUtils.getInstance().getSeriesCount(chart);
 
             for (int i = 0; i < count; i++) {
 
@@ -324,10 +275,8 @@ public class HideSeriesChartComposite {
             }
         }
 
-        if (ColumnsetPackage.eINSTANCE.getMinMaxDateIndicator().equals(indicator.eClass())) {
-            CategoryPlot plot = (CategoryPlot) chart.getPlot();
-            CategoryDataset dataset = plot.getDataset();
-            int count = dataset.getRowCount();
+        if (isMinMax) {
+            int count = TOPChartUtils.getInstance().getSeriesRowCount(chart);
 
             for (int i = 0; i < count; i++) {
 
@@ -340,28 +289,6 @@ public class HideSeriesChartComposite {
         }
 
     }
-
-    SelectionAdapter listener = new SelectionAdapter() {
-
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-
-            Button checkBtn = (Button) e.getSource();
-            int seriesid = (Integer) checkBtn.getData(SERIES_KEY_ID);
-
-            if (ColumnsetPackage.eINSTANCE.getCountAvgNullIndicator().equals(indicator.eClass())) {
-                XYPlot plot = chart.getXYPlot();
-                XYItemRenderer xyRenderer = plot.getRenderer();
-                xyRenderer.setSeriesVisible(seriesid, checkBtn.getSelection());
-            }
-
-            if (ColumnsetPackage.eINSTANCE.getMinMaxDateIndicator().equals(indicator.eClass())) {
-                CategoryPlot plot = (CategoryPlot) chart.getPlot();
-                CategoryItemRenderer render = plot.getRenderer();
-                render.setSeriesVisible(seriesid, checkBtn.getSelection());
-            }
-        }
-    };
 
     // CategoryToolTipGenerator toolTipGenerator = new CategoryToolTipGenerator() {
     //
@@ -384,114 +311,5 @@ public class HideSeriesChartComposite {
     // }
     // };
     //
-    /**
-     * 
-     * DOC zhaoxinyi Comment method "createAnnotOnGantt".
-     * 
-     * @param chart
-     * @param rowList
-     * @param multiDateColumn
-     */
-    public void createAnnotOnGantt(Object chart, List<Object[]> rowList, int multiDateColumn, int nominal) {
-        CategoryPlot xyplot = (CategoryPlot) chart.getPlot();
-        CategoryTextAnnotation an;
-        for (int seriesCount = 0; seriesCount < ((TaskSeriesCollection) xyplot.getDataset()).getSeriesCount(); seriesCount++) {
-            int indexOfRow = 0;
-            int columnCount = 0;
-            for (int itemCount = 0; itemCount < ((TaskSeriesCollection) xyplot.getDataset()).getSeries(seriesCount)
-                    .getItemCount(); itemCount++, columnCount++) {
-                Task task = ((TaskSeriesCollection) xyplot.getDataset()).getSeries(seriesCount).get(itemCount);
-                String taskDescription = task.getDescription();
-                String[] taskArray = taskDescription.split("\\|"); //$NON-NLS-1$
-                boolean isSameTime = task.getDuration().getStart().getTime() == task.getDuration().getEnd().getTime();
-                if (!isSameTime && (rowList.get(indexOfRow))[multiDateColumn - 3] != null
-                        && (rowList.get(indexOfRow))[multiDateColumn - 2] != null
-                        && !((rowList.get(indexOfRow))[multiDateColumn]).equals(new BigDecimal(0L))) {
-                    RowColumPair pair = new RowColumPair();
-                    pair.setRow(seriesCount);
-                    pair.setColumn(columnCount);
-
-                    hightlightSeriesMap.put(String.valueOf(seriesCount) + String.valueOf(columnCount), pair);
-
-                    an = new CategoryTextAnnotation("#nulls = " + (rowList.get(indexOfRow))[multiDateColumn], //$NON-NLS-1$
-                            taskDescription, task.getDuration().getStart().getTime());
-                    an.setTextAnchor(TextAnchor.CENTER_LEFT);
-                    an.setCategoryAnchor(CategoryAnchor.MIDDLE);
-                    xyplot.addAnnotation(an);
-                }
-                if (taskArray.length == nominal) {
-                    indexOfRow++;
-
-                    if (rowList.size() != indexOfRow
-                            && ((rowList.get(indexOfRow))[multiDateColumn - 3] == null || (rowList.get(indexOfRow))[multiDateColumn - 2] == null)) {
-                        indexOfRow++;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * 
-     * DOC zhaoxinyi HideSeriesPanel class global comment. Detailled comment
-     */
-    class CustomHideSeriesGanttRender extends HideSeriesGanttRenderer {
-
-        /**
-         * 
-         */
-        private static final long serialVersionUID = 1L;
-
-        /**
-         * 
-         * DOC zhaoxinyi CustomHideSeriesGantt constructor comment.
-         * 
-         * @param colors
-         */
-        @Override
-        public Paint getItemPaint(int row, int column) {
-            Paint itemPaint = super.getItemPaint(row, column);
-            String key = String.valueOf(row) + String.valueOf(column);
-            if (hightlightSeriesMap.get(key) != null && hightlightSeriesMap.get(key).getRow() == row
-                    && hightlightSeriesMap.get(key).getColumn() == column) {
-                return ((Color) itemPaint).brighter().brighter();
-            }
-            return itemPaint;
-        }
-    }
-
-    /**
-     * 
-     * DOC zhaoxinyi class global comment. Detailled comment
-     * 
-     * FIXME this inner class should be static. Confirm and fix the error.
-     */
-    class RowColumPair {
-
-        private int row;
-
-        private int column;
-
-        public int getRow() {
-            return row;
-        }
-
-        public void setRow(int row) {
-            this.row = row;
-        }
-
-        public int getColumn() {
-            return column;
-        }
-
-        public void setColumn(int column) {
-            this.column = column;
-        }
-
-        @Override
-        public String toString() {
-            return "row = " + row + ", column = " + column; //$NON-NLS-1$ //$NON-NLS-2$
-        }
-    }
 
 }

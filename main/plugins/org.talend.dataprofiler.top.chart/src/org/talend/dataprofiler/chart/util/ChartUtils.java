@@ -124,8 +124,4 @@ public final class ChartUtils {
         }
     }
 
-    public static void showChartInFillScreen(JFreeChart chart) {
-        new HideSeriesChartDialog(null, chart).open();
-    }
-
 }

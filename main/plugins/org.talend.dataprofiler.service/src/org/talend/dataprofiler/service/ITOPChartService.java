@@ -123,4 +123,17 @@ public interface ITOPChartService {
     Object createGanttChart(String chartAxies, Object ganttDataset);
 
     Object createBubbleChart(String chartName, Object dataset);
+
+    void createAnnotOnGantt(Object chart, List<Object[]> rowList, int multiDateColumn, int nominal);
+
+    void showChartInFillScreen(Object chart, boolean isCountAvgNull, boolean isMinMaxDate);
+
+    void addSpecifiedListenersForCorrelationChart(Object chartcomp, final boolean isAvg, final boolean isDate, Object menu,
+            Map<String, String> querySqls, Object selectionAdapter);
+
+    int getSeriesCount(Object chart);
+
+    int getSeriesRowCount(Object chart);
+
+    Object createSelectionAdapterForButton(Object chart, boolean isCountAvg, boolean isMinMax);
 }

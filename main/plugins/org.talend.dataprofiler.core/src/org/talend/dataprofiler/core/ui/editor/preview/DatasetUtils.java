@@ -24,7 +24,9 @@ import java.util.TreeSet;
 import org.eclipse.emf.common.util.EList;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
+import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.indicators.columnset.ColumnSetMultiValueIndicator;
+import org.talend.dq.analysis.explore.MultiColumnSetValueExplorer;
 import org.talend.utils.collections.DoubleValueAggregate;
 import org.talend.utils.collections.MultiMapHelper;
 import org.talend.utils.collections.MultipleKey;
@@ -39,32 +41,48 @@ public class DatasetUtils {
 
     public static final String SPACE_STRING = " "; //$NON-NLS-1$
 
-    public static Object createGanttChart(final ColumnSetMultiValueIndicator indic, ModelElement dateColumn) {
-        final Map<String, DateValueAggregate> createGannttDatasets = createGanttDatasets(indic, dateColumn);
-
-        Object ganttDataset = TOPChartUtils.getInstance().createTaskSeriesCollection();
-        final Iterator<String> iterator = createGannttDatasets.keySet().iterator();
+    public static Map<String, String> getQueryMap(final Map<String, ValueAggregator> xyzMap,
+            final ColumnSetMultiValueIndicator indicator, ModelElement column, Analysis analysis) {
+        Map<String, String> queryMap = new HashMap<String, String>();
+        Iterator<String> iterator = xyzMap.keySet().iterator();
         while (iterator.hasNext()) {
-            final String next = iterator.next();
-            createGannttDatasets.get(next).addSeriesToGanttDataset(ganttDataset, next);
+            final String seriesKey = iterator.next();
+            final ValueAggregator valueAggregator = xyzMap.get(seriesKey);
+            List<String> labels = valueAggregator.getLabels(seriesKey);
+            for (String seriesLabel : labels) {
+                EList<ModelElement> nominalList = indicator.getNominalColumns();
+                final String queryString = MultiColumnSetValueExplorer.getInstance().getQueryStirng(column, analysis,
+                        nominalList, seriesKey, seriesLabel);
+                queryMap.put(seriesKey, queryString);
+            }
         }
-        String chartAxies = DefaultMessagesImpl.getString("TopChartFactory.chartAxies", dateColumn.getName()); //$NON-NLS-1$
 
-        return TOPChartUtils.getInstance().createGanttChart(chartAxies, ganttDataset);
+        return queryMap;
     }
 
-    public static Object createBubbleChart(final ColumnSetMultiValueIndicator indic, ModelElement numericColumn) {
-        final Map<String, ValueAggregator> createXYZDatasets = createXYZDatasets(indic, numericColumn);
-
-        Object dataset = TOPChartUtils.getInstance().createDefaultXYZDataset();
-        final Iterator<String> iterator = createXYZDatasets.keySet().iterator();
+    /**
+     * DOC yyin Comment method "getGanttQueryMap".
+     * 
+     * @param createGannttDatasets
+     * @param indicator
+     * @param column
+     * @param analysis
+     * @return
+     */
+    public static Map<String, String> getGanttQueryMap(Map<String, DateValueAggregate> gannttMap,
+            ColumnSetMultiValueIndicator indicator, ModelElement column, Analysis analysis) {
+        Map<String, String> ganttQueryMap = new HashMap<String, String>();
+        Iterator<String> iterator = gannttMap.keySet().iterator();
         while (iterator.hasNext()) {
-            final String next = iterator.next();
-            createXYZDatasets.get(next).addSeriesToXYZDataset(dataset, next);
+            final String seriesKey = iterator.next();
+            final DateValueAggregate valueAggregator = gannttMap.get(seriesKey);
+            final String seriesLabel = ;
+            EList<ModelElement> nominalList = indicator.getNominalColumns();
+            final String queryString = MultiColumnSetValueExplorer.getInstance().getQueryStirng(column, analysis, nominalList, seriesKey,
+                    seriesLabel);
+            ganttQueryMap.put(seriesKey, queryString);
         }
-        String chartName = DefaultMessagesImpl.getString("TopChartFactory.ChartName", numericColumn.getName()); //$NON-NLS-1$
-
-        return TOPChartUtils.getInstance().createBubbleChart(chartName, dataset);
+        return ganttQueryMap;
     }
 
     /**
@@ -356,4 +374,5 @@ public class DatasetUtils {
         }
 
     }
+
 }

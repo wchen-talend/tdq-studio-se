@@ -416,4 +416,44 @@ public class TOPChartUtils {
         return null;
     }
 
+    public void createAnnotOnGantt(Object chart, List<Object[]> rowList, int multiDateColumn, int nominal) {
+        if (chartService != null) {
+            chartService.createAnnotOnGantt(chart, rowList, multiDateColumn, nominal);
+        }
+    }
+
+    public void showChartInFillScreen(Object chart, boolean isCountAvgNull, boolean isMinMaxDate) {
+        if (chartService != null) {
+            chartService.showChartInFillScreen(chart, isCountAvgNull, isMinMaxDate);
+        }
+    }
+
+    public void addSpecifiedListenersForCorrelationChart(Object chartcomp, final boolean isAvg, final boolean isDate,
+            Object menu1, final Map<String, String> querySqls, final Object selectionAdapter) {
+        if (chartService != null) {
+            chartService.addSpecifiedListenersForCorrelationChart(chartcomp, isAvg, isDate, menu1, querySqls, selectionAdapter);
+        }
+    }
+
+    public int getSeriesCount(Object chart) {
+        if (this.chartService != null) {
+            return chartService.getSeriesCount(chart);
+        }
+        return Integer.MIN_VALUE;
+    }
+
+    public int getSeriesRowCount(Object chart) {
+        if (this.chartService != null) {
+            return chartService.getSeriesRowCount(chart);
+        }
+        return Integer.MIN_VALUE;
+    }
+
+    public Object createSelectionAdapterForButton(final Object chart, final boolean isCountAvg, final boolean isMinMax) {
+        if (chartService != null) {
+            return chartService.createSelectionAdapterForButton(chart, isCountAvg, isMinMax);
+        }
+        return null;
+    }
+
 }
