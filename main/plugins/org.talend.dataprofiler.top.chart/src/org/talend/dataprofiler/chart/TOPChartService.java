@@ -26,9 +26,11 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.jfree.chart.ChartFactory;
@@ -157,6 +159,13 @@ public class TOPChartService implements ITOPChartService {
         gd.heightHint = CHART_STANDARD_HEIGHT;
         cc.setLayoutData(gd);
         return cc;
+    }
+
+    @Override
+    public Object createChartCompositeWithFull(Object composite, Object chart) {
+        ChartComposite chartComp = new ChartComposite((Composite) composite, SWT.NONE, (JFreeChart) chart, true);
+        chartComp.setLayoutData(new GridData(GridData.FILL_BOTH));
+        return chartComp;
     }
 
     @Override
@@ -696,7 +705,7 @@ public class TOPChartService implements ITOPChartService {
      */
     @Override
     public void addSpecifiedListenersForCorrelationChart(Object chartcomp, final boolean isAvg, final boolean isDate,
-            Object menu1, final Map<String, String> querySqls, final Object selectionAdapter) {
+            Object menu1, final Map<String, Object> keyWithAdapter) {
         final Menu menu = (Menu) menu1;
         final ChartComposite chartComp = (ChartComposite) chartcomp;
         chartComp.addChartMouseListener(new ChartMouseListener() {
@@ -748,11 +757,11 @@ public class TOPChartService implements ITOPChartService {
             }
 
             private void createMenuItem(final String seriesK) {
-                final String queryString = querySqls.get(seriesK);
+                final SelectionAdapter selectionAdapter = (SelectionAdapter) keyWithAdapter.get(seriesK);
 
                 MenuItem item = new MenuItem(menu, SWT.PUSH);
                 item.setText(Messages.getString("HideSeriesChartComposite.ViewRow")); //$NON-NLS-1$
-                item.addSelectionListener((SelectionAdapter) selectionAdapter);
+                item.addSelectionListener(selectionAdapter);
             }
 
             @Override
@@ -816,6 +825,56 @@ public class TOPChartService implements ITOPChartService {
                 }
             }
         };
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#getSeriesKeyOfBubbleChart(java.lang.Object, int)
+     */
+    @Override
+    public String getSeriesKeyOfBubbleChart(Object chart, int index) {
+        XYDataset dataset = ((JFreeChart) chart).getXYPlot().getDataset();
+
+        return dataset.getSeriesKey(index).toString();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#getSeriestKeyOfGanttChart(java.lang.Object, int)
+     */
+    @Override
+    public String getSeriestKeyOfGanttChart(Object chart, int index) {
+        CategoryPlot plot = (CategoryPlot) ((JFreeChart) chart).getPlot();
+        CategoryDataset dataset = plot.getDataset();
+        return dataset.getRowKey(index).toString();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createChartCompositeForCorrelationAna(java.lang.Object,
+     * java.lang.Object, int)
+     */
+    @Override
+    public Object createChartCompositeForCorrelationAna(Object parent, Object chart, int height) {
+        ChartComposite chartComposite = new ChartComposite((Composite) parent, SWT.NONE);
+        chartComposite.setCursor(new Cursor(Display.getDefault(), SWT.CURSOR_HAND));
+        chartComposite.setToolTipText("sdfsdf"); //$NON-NLS-1$
+
+        // the analysis.
+        GridData gd = new GridData();
+        gd.heightHint = height;
+        gd.widthHint = 460;
+        chartComposite.setLayoutData(gd);
+
+        if (chart != null) {
+            chartComposite.setChart((JFreeChart) chart);
+        }
+
+        // ~14173
+        return chartComposite;
     }
 
 }

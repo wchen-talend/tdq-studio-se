@@ -16,9 +16,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.wizard.Wizard;
-import org.jfree.util.Log;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.properties.ConnectionItem;
@@ -28,6 +28,7 @@ import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.dataprofiler.core.CorePlugin;
 import org.talend.dataprofiler.core.ui.utils.MessageUI;
 import org.talend.dataprofiler.core.ui.utils.UIMessages;
+import org.talend.dataprofiler.core.ui.wizard.database.DatabaseWizardPage;
 import org.talend.dataquality.analysis.impl.AnalysisImpl;
 import org.talend.dataquality.helpers.MetadataHelper;
 import org.talend.dataquality.reports.impl.TdReportImpl;
@@ -49,6 +50,8 @@ import orgomg.cwm.objectmodel.core.ModelElement;
  * DOC zqin class global comment. Detailled comment
  */
 public abstract class AbstractWizard extends Wizard implements ICWMResouceAdapter {
+
+    private static Logger log = Logger.getLogger(DatabaseWizardPage.class);
 
     protected ModelElement modelElement = null;
 
@@ -121,7 +124,7 @@ public abstract class AbstractWizard extends Wizard implements ICWMResouceAdapte
                         conns.add(connItem.getConnection());
                     }
                 } catch (PersistenceException e) {
-                    Log.error(e, e);
+                    log.error(e, e);
                 }
                 modelElements.addAll(conns);
                 break;

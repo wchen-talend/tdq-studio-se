@@ -15,11 +15,9 @@ package org.talend.dataprofiler.core.ui.editor.preview;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -27,9 +25,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
-import org.talend.core.model.metadata.builder.connection.Connection;
-import org.talend.cwm.helper.ColumnHelper;
-import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.DatasetUtils.DateValueAggregate;
 import org.talend.dataprofiler.core.ui.editor.preview.DatasetUtils.ValueAggregator;
@@ -37,15 +32,12 @@ import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.indicators.columnset.ColumnSetMultiValueIndicator;
 import org.talend.dataquality.indicators.columnset.ColumnsetPackage;
-import org.talend.dq.helper.SqlExplorerUtils;
 import orgomg.cwm.objectmodel.core.ModelElement;
 
 /**
  * DOC bzhou class global comment. Detailled comment
  */
 public class HideSeriesChartComposite {
-
-    private static Logger log = Logger.getLogger(HideSeriesChartComposite.class);
 
     private ColumnSetMultiValueIndicator indicator;
 
@@ -55,14 +47,12 @@ public class HideSeriesChartComposite {
 
     private Object chartComposite;
 
-    private boolean isNeedUtility;
-
     private static final String SERIES_KEY_ID = "SERIES_KEY"; //$NON-NLS-1$
 
     // used for the bubble chart to add mouse listeners
-    private Map<String, String> bubbleQueryMap;
+    private Map<String, Object> bubbleQueryMap;
 
-    private Map<String, String> ganttQueryMap;
+    private Map<String, Object> ganttQueryMap;
 
     private Analysis analysis = null;
 
@@ -76,12 +66,11 @@ public class HideSeriesChartComposite {
         this.analysis = ana;
         this.indicator = indicator;
         this.column = column;
-        this.isNeedUtility = isNeedUtility;
 
         this.chart = createChart();
 
-        chartComposite = ChartHelper.createChartComposite(comp, chart, indicator.getAnalyzedColumns().size() * 30 < 230 ? 230
-                : indicator.getAnalyzedColumns().size() * 30);
+        chartComposite = TOPChartUtils.getInstance().createChartCompositeForCorrelationAna(comp, chart,
+                indicator.getAnalyzedColumns().size() * 30 < 230 ? 230 : indicator.getAnalyzedColumns().size() * 30);
 
         if (chart != null && isNeedUtility) {
             createUtilityControl(comp);
@@ -91,29 +80,6 @@ public class HideSeriesChartComposite {
         isMinMax = ColumnsetPackage.eINSTANCE.getMinMaxDateIndicator().equals(indicator.eClass());
 
         addSpecifiedListeners(isCoungAvg, isMinMax);
-    }
-
-    class ChartHelper {
-
-        static Object createChartComposite(Composite parent, Object chart, int height) {
-            ChartComposite chartComposite = new ChartComposite(comp, SWT.NONE);
-            chartComposite.setCursor(new Cursor(Display.getDefault(), SWT.CURSOR_HAND));
-            chartComposite.setToolTipText("sdfsdf"); //$NON-NLS-1$
-
-            // the analysis.
-            GridData gd = new GridData();
-            gd.heightHint = height;
-            gd.widthHint = 460;
-            chartComposite.setLayoutData(gd);
-
-            if (chart != null) {
-                chartComposite.setChart(chart);
-            }
-
-            // ~14173
-            return chartComposite;
-        }
-
     }
 
     private Menu createMenu(final boolean isAvg, final boolean isDate) {
@@ -139,44 +105,14 @@ public class HideSeriesChartComposite {
     private void addSpecifiedListeners(final boolean isAvg, final boolean isDate) {
         final Menu menu = createMenu(isAvg, isDate);
 
-        Map<String, String> queryMap;
         if (isAvg) {
-            TOPChartUtils.getInstance().addSpecifiedListenersForCorrelationChart(queryMap, isAvg, isDate, menu, queryMap,
-                    createSelectAdapter(sql));
+            TOPChartUtils.getInstance().addSpecifiedListenersForCorrelationChart(chartComposite, isAvg, isDate, menu,
+                    bubbleQueryMap);
         } else if (isDate) {
-            TOPChartUtils.getInstance().addSpecifiedListenersForCorrelationChart(this.ganttQueryMap, isAvg, isDate, menu,
-                    queryMap, createSelectAdapter(sql));
+            TOPChartUtils.getInstance().addSpecifiedListenersForCorrelationChart(chartComposite, isAvg, isDate, menu,
+                    ganttQueryMap);
         }
 
-    }
-
-    /**
-     * DOC yyin Comment method "createSelectAdapter".
-     * 
-     * @param sql
-     * @return
-     */
-    private SelectionAdapter createSelectAdapter(final String sql) {
-        return new SelectionAdapter() {
-
-            private String sql;
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                Display.getDefault().asyncExec(new Runnable() {
-
-                    public void run() {
-                        Connection tdDataProvider = SwitchHelpers.CONNECTION_SWITCH.doSwitch(analysis.getContext()
-                                .getConnection());
-                        String query = sql;
-                        String editorName = ColumnHelper.getColumnSetOwner(column).getName();
-                        SqlExplorerUtils.getDefault().runInDQViewer(tdDataProvider, query, editorName);
-                    }
-
-                });
-            }
-
-        };
     }
 
     /**
@@ -268,7 +204,7 @@ public class HideSeriesChartComposite {
             for (int i = 0; i < count; i++) {
 
                 Button checkBtn = new Button(comp, SWT.CHECK);
-                checkBtn.setText(dataset.getSeriesKey(i).toString());
+                checkBtn.setText(TOPChartUtils.getInstance().getSeriesKeyOfBubbleChart(chart, i));
                 checkBtn.setSelection(true);
                 checkBtn.addSelectionListener(listener);
                 checkBtn.setData(SERIES_KEY_ID, i);
@@ -281,7 +217,7 @@ public class HideSeriesChartComposite {
             for (int i = 0; i < count; i++) {
 
                 Button checkBtn = new Button(comp, SWT.CHECK);
-                checkBtn.setText(dataset.getRowKey(i).toString());
+                checkBtn.setText(TOPChartUtils.getInstance().getSeriestKeyOfGanttChart(chart, i));
                 checkBtn.setSelection(true);
                 checkBtn.addSelectionListener(listener);
                 checkBtn.setData(SERIES_KEY_ID, i);
@@ -290,26 +226,14 @@ public class HideSeriesChartComposite {
 
     }
 
-    // CategoryToolTipGenerator toolTipGenerator = new CategoryToolTipGenerator() {
-    //
-    // public String generateToolTip(CategoryDataset dataset, int row, int column) {
-    // TaskSeriesCollection taskSeriesColl = (TaskSeriesCollection) dataset;
-    // List<Task> taskList = new ArrayList<Task>();
-    // for (int i = 0; i < taskSeriesColl.getSeriesCount(); i++) {
-    // for (int j = 0; j < taskSeriesColl.getSeries(i).getItemCount(); j++) {
-    // taskList.add(taskSeriesColl.getSeries(i).get(j));
-    // }
-    // }
-    // Task task = taskList.get(column);
-    // // Task task = taskSeriesColl.getSeries(row).get(column);
-    // String taskDescription = task.getDescription();
-    //
-    // Date startDate = task.getDuration().getStart();
-    // Date endDate = task.getDuration().getEnd();
-    //            return taskDescription + ",     " + startDate + "---->" + endDate; //$NON-NLS-1$ //$NON-NLS-2$
-    // // return "this is a tooltip";
-    // }
-    // };
-    //
+    /**
+     * DOC yyin Comment method "setLayoutData".
+     * 
+     * @param gd
+     */
+    public void setLayoutData(GridData gd) {
+        ((Composite) this.chartComposite).setLayoutData(gd);
+
+    }
 
 }

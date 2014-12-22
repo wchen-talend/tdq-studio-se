@@ -38,7 +38,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.jfree.util.Log;
 import org.talend.core.model.metadata.builder.database.dburl.SupportDBUrlStore;
 import org.talend.core.model.metadata.builder.database.dburl.SupportDBUrlType;
 import org.talend.core.model.metadata.builder.util.DatabaseConstant;
@@ -620,7 +619,7 @@ public class DatabaseWizardPage extends AbstractWizardPage {
                 rc.setOk(true);
             }
         } catch (Exception exception) {
-            Log.error(exception);
+            log.error(exception);
         }
         return rc;
     }

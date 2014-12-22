@@ -22,11 +22,18 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Display;
+import org.talend.core.model.metadata.builder.connection.Connection;
+import org.talend.cwm.helper.ColumnHelper;
+import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.indicators.columnset.ColumnSetMultiValueIndicator;
 import org.talend.dq.analysis.explore.MultiColumnSetValueExplorer;
+import org.talend.dq.helper.SqlExplorerUtils;
 import org.talend.utils.collections.DoubleValueAggregate;
 import org.talend.utils.collections.MultiMapHelper;
 import org.talend.utils.collections.MultipleKey;
@@ -41,9 +48,9 @@ public class DatasetUtils {
 
     public static final String SPACE_STRING = " "; //$NON-NLS-1$
 
-    public static Map<String, String> getQueryMap(final Map<String, ValueAggregator> xyzMap,
+    public static Map<String, Object> getQueryMap(final Map<String, ValueAggregator> xyzMap,
             final ColumnSetMultiValueIndicator indicator, ModelElement column, Analysis analysis) {
-        Map<String, String> queryMap = new HashMap<String, String>();
+        Map<String, Object> queryMap = new HashMap<String, Object>();
         Iterator<String> iterator = xyzMap.keySet().iterator();
         while (iterator.hasNext()) {
             final String seriesKey = iterator.next();
@@ -53,7 +60,7 @@ public class DatasetUtils {
                 EList<ModelElement> nominalList = indicator.getNominalColumns();
                 final String queryString = MultiColumnSetValueExplorer.getInstance().getQueryStirng(column, analysis,
                         nominalList, seriesKey, seriesLabel);
-                queryMap.put(seriesKey, queryString);
+                queryMap.put(seriesKey, createSelectAdapter(queryString, column, analysis));
             }
         }
 
@@ -69,20 +76,43 @@ public class DatasetUtils {
      * @param analysis
      * @return
      */
-    public static Map<String, String> getGanttQueryMap(Map<String, DateValueAggregate> gannttMap,
+    public static Map<String, Object> getGanttQueryMap(Map<String, DateValueAggregate> gannttMap,
             ColumnSetMultiValueIndicator indicator, ModelElement column, Analysis analysis) {
-        Map<String, String> ganttQueryMap = new HashMap<String, String>();
+        Map<String, Object> ganttQueryMap = new HashMap<String, Object>();
         Iterator<String> iterator = gannttMap.keySet().iterator();
         while (iterator.hasNext()) {
             final String seriesKey = iterator.next();
             final DateValueAggregate valueAggregator = gannttMap.get(seriesKey);
-            final String seriesLabel = ;
+            // TODO: need debug to correct
+            final String seriesLabel = valueAggregator.seriesKeyToLabel.toString();
             EList<ModelElement> nominalList = indicator.getNominalColumns();
-            final String queryString = MultiColumnSetValueExplorer.getInstance().getQueryStirng(column, analysis, nominalList, seriesKey,
-                    seriesLabel);
-            ganttQueryMap.put(seriesKey, queryString);
+            final String queryString = MultiColumnSetValueExplorer.getInstance().getQueryStirng(column, analysis, nominalList,
+                    seriesKey, seriesLabel);
+            ganttQueryMap.put(seriesKey, createSelectAdapter(queryString, column, analysis));
         }
         return ganttQueryMap;
+    }
+
+    private static SelectionAdapter createSelectAdapter(final String sql, final ModelElement column, final Analysis analysis) {
+        return new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Display.getDefault().asyncExec(new Runnable() {
+
+                    public void run() {
+                        Connection tdDataProvider = SwitchHelpers.CONNECTION_SWITCH.doSwitch(analysis.getContext()
+                                .getConnection());
+                        String query = sql;
+                        @SuppressWarnings("deprecation")
+                        String editorName = ColumnHelper.getColumnSetOwner(column).getName();
+                        SqlExplorerUtils.getDefault().runInDQViewer(tdDataProvider, query, editorName);
+                    }
+
+                });
+            }
+
+        };
     }
 
     /**

@@ -28,6 +28,8 @@ public interface ITOPChartService {
 
     Object createChartComposite(Object composite, int style, Object chart, boolean useBuffer);
 
+    Object createChartCompositeWithFull(Object composite, Object chart);
+
     Object createBarChart(String title, Object dataset, boolean showLegend);
 
     Object createBarChart(Object dataset);
@@ -129,11 +131,17 @@ public interface ITOPChartService {
     void showChartInFillScreen(Object chart, boolean isCountAvgNull, boolean isMinMaxDate);
 
     void addSpecifiedListenersForCorrelationChart(Object chartcomp, final boolean isAvg, final boolean isDate, Object menu,
-            Map<String, String> querySqls, Object selectionAdapter);
+            final Map<String, Object> keyWithAdapter);
 
     int getSeriesCount(Object chart);
 
     int getSeriesRowCount(Object chart);
 
     Object createSelectionAdapterForButton(Object chart, boolean isCountAvg, boolean isMinMax);
+
+    String getSeriesKeyOfBubbleChart(Object chart, int index);
+
+    String getSeriestKeyOfGanttChart(Object chart, int index);
+
+    Object createChartCompositeForCorrelationAna(Object parent, Object chart, int height);
 }

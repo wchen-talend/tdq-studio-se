@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -125,6 +126,13 @@ public class TOPChartUtils {
     public Object createChartComposite(Object composite, int style, Object chart, boolean useBuffer) {
         if (chartService != null) {
             return chartService.createChartComposite(composite, style, chart, useBuffer);
+        }
+        return null;
+    }
+
+    public Object createChartCompositeWithFull(Object composite, Object chart) {
+        if (chartService != null) {
+            return chartService.createChartCompositeWithFull(composite, chart);
         }
         return null;
     }
@@ -429,9 +437,9 @@ public class TOPChartUtils {
     }
 
     public void addSpecifiedListenersForCorrelationChart(Object chartcomp, final boolean isAvg, final boolean isDate,
-            Object menu1, final Map<String, String> querySqls, final Object selectionAdapter) {
+            Object menu1, final Map<String, Object> keyWithAdapter) {
         if (chartService != null) {
-            chartService.addSpecifiedListenersForCorrelationChart(chartcomp, isAvg, isDate, menu1, querySqls, selectionAdapter);
+            chartService.addSpecifiedListenersForCorrelationChart(chartcomp, isAvg, isDate, menu1, keyWithAdapter);
         }
     }
 
@@ -452,6 +460,27 @@ public class TOPChartUtils {
     public Object createSelectionAdapterForButton(final Object chart, final boolean isCountAvg, final boolean isMinMax) {
         if (chartService != null) {
             return chartService.createSelectionAdapterForButton(chart, isCountAvg, isMinMax);
+        }
+        return null;
+    }
+
+    public String getSeriesKeyOfBubbleChart(Object chart, int index) {
+        if (this.chartService != null) {
+            return chartService.getSeriesKeyOfBubbleChart(chart, index);
+        }
+        return StringUtils.EMPTY;
+    }
+
+    public String getSeriestKeyOfGanttChart(Object chart, int index) {
+        if (this.chartService != null) {
+            return chartService.getSeriestKeyOfGanttChart(chart, index);
+        }
+        return StringUtils.EMPTY;
+    }
+
+    public Object createChartCompositeForCorrelationAna(Object parent, Object chart, int height) {
+        if (chartService != null) {
+            return chartService.createChartCompositeForCorrelationAna(parent, chart, height);
         }
         return null;
     }
