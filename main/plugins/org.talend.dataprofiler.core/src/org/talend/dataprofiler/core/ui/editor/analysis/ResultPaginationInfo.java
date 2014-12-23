@@ -221,7 +221,7 @@ public class ResultPaginationInfo extends IndicatorPaginationInfo {
         dyModel.setIndicatorList(indicators);
 
         // create chart
-        if (!EditorPreferencePage.isHideGraphics()) {
+        if (!EditorPreferencePage.isHideGraphics() && TOPChartUtils.getInstance().isTOPChartInstalled()) {
             IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartState(chartType, units);
             if (event == null) {
                 chart = chartTypeState.getChart();

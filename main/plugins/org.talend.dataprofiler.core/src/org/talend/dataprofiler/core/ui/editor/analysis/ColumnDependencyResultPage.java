@@ -33,7 +33,6 @@ import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableFactory;
 import org.talend.dataprofiler.core.ui.editor.preview.model.MenuItemEntity;
 import org.talend.dataprofiler.core.ui.editor.preview.model.entity.TableStructureEntity;
-import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
 import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.PluginConstant;
 import org.talend.dataquality.analysis.Analysis;
@@ -164,7 +163,7 @@ public class ColumnDependencyResultPage extends AbstractAnalysisResultPageWithCh
 
         createTable(sectionClient);
 
-        if (!EditorPreferencePage.isHideGraphics()) {
+        if (canShowChart()) {
             createChart(sectionClient, analysis);
         }
 

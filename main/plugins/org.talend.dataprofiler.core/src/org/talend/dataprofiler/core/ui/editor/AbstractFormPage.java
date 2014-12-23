@@ -28,6 +28,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.FileEditorInput;
 import org.talend.core.model.properties.Property;
 import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
+import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dq.helper.PropertyHelper;
 
 /**
@@ -186,4 +187,10 @@ public abstract class AbstractFormPage extends FormPage {
      */
     public abstract void setDirty(boolean isDirty);
 
+    /**
+     * Added TDQ-9797 if show the chart or not
+     */
+    protected boolean canShowChart() {
+        return (!EditorPreferencePage.isHideGraphics() && TOPChartUtils.getInstance().isTOPChartInstalled());
+    }
 }

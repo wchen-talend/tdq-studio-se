@@ -184,7 +184,7 @@ public class TableMasterDetailsPage extends DynamicAnalysisMasterPage implements
         createContextGroupSection(form, topComp);
 
         // MOD klliu Hide the setting pate graphics 2011-03-11
-        if (!EditorPreferencePage.isHideGraphics()) {
+        if (canShowChart()) {
             createPreviewComposite();
 
             createPreviewSection(form, previewComp);

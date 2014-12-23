@@ -62,7 +62,6 @@ import org.talend.dataprofiler.core.ui.editor.preview.model.TableTypeStatesFacto
 import org.talend.dataprofiler.core.ui.editor.preview.model.TableWithData;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.table.ITableTypeStates;
-import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
 import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataprofiler.core.ui.utils.TableUtils;
 import org.talend.dataquality.indicators.columnset.ColumnSetMultiValueIndicator;
@@ -141,7 +140,7 @@ public class ColumnCorrelationNominalIntervalResultPage extends AbstractAnalysis
         if (executeData == null || executeData.equals(PluginConstant.EMPTY_STRING)) {
             return;
         } else {
-            if (!EditorPreferencePage.isHideGraphics()) {
+            if (canShowChart()) {
                 this.createGraphicsSectionPart(sectionClient);
             }
         }
@@ -321,11 +320,10 @@ public class ColumnCorrelationNominalIntervalResultPage extends AbstractAnalysis
         tableviewer.setInput(chartData);
         TableUtils.addTooltipOnTableItem(tableviewer.getTable());
 
-        // then create chart
-        IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartState(simpleStatType, units);
-
         // create chart
-        if (!EditorPreferencePage.isHideGraphics()) {
+        if (canShowChart()) {
+            // then create chart
+            IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartState(simpleStatType, units);
             Object chart = chartTypeState.getChart();
             TOPChartUtils.getInstance().decorateChart(chart, false);
             if (chart != null) {

@@ -278,7 +278,7 @@ public class TableAnalysisResultPage extends AbstractAnalysisResultPageWithChart
                                     chartTopComp.setLayout(new GridLayout(1, false));
                                     chartTopComp.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-                                    if (!EditorPreferencePage.isHideGraphics()) {
+                                    if (canShowChart()) {
                                         IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartStateTable(chartType,
                                                 units, tableIndicator);
 

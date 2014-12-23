@@ -52,7 +52,6 @@ import org.talend.dataprofiler.core.ImageLib;
 import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.model.MenuItemEntity;
-import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
 import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.indicators.Indicator;
@@ -247,7 +246,7 @@ public class ColumnsComparisonAnalysisResultPage extends AbstractAnalysisResultP
             }
             createTableItems(resultTable);
 
-            if (!EditorPreferencePage.isHideGraphics()) {
+            if (canShowChart()) {
                 creatChart(sectionClient, tableNameA, tableNameB);
             }
 

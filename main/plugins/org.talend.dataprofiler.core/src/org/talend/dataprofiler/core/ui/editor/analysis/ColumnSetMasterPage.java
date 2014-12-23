@@ -275,7 +275,7 @@ public class ColumnSetMasterPage extends AbstractAnalysisMetadataPage implements
 
         createContextGroupSection(form, topComp);
 
-        if (!EditorPreferencePage.isHideGraphics()) {
+        if (canShowChart()) {
             previewComp = toolkit.createComposite(sForm);
             previewComp.setLayoutData(new GridData(GridData.FILL_BOTH));
             previewComp.setLayout(new GridLayout());

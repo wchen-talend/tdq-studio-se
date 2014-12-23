@@ -77,7 +77,6 @@ import org.talend.dataprofiler.core.ui.editor.preview.model.TableTypeStatesFacto
 import org.talend.dataprofiler.core.ui.editor.preview.model.TableWithData;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeStates;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.table.ITableTypeStates;
-import org.talend.dataprofiler.core.ui.pref.EditorPreferencePage;
 import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataprofiler.core.ui.utils.TableUtils;
 import org.talend.dataprofiler.core.ui.wizard.patterns.DataFilterType;
@@ -231,7 +230,7 @@ public class ColumnSetResultPage extends AbstractAnalysisResultPage implements P
             ChartTableFactory.addMenuAndTip(tableviewer, tableTypeState.getDataExplorer(), masterPage.getAnalysis());
         }
 
-        if (!EditorPreferencePage.isHideGraphics()) {
+        if (canShowChart()) {
             IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartState(matchingType, units);
             Object chart = chartTypeState.getChart();
             TOPChartUtils.getInstance().decorateChart(chart, false);
@@ -286,7 +285,7 @@ public class ColumnSetResultPage extends AbstractAnalysisResultPage implements P
         ChartTableFactory.addMenuAndTip(tableviewer, dataExplorer, analysis);
 
         // create chart
-        if (!EditorPreferencePage.isHideGraphics()) {
+        if (canShowChart()) {
             IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartState(simpleStatType, units);
             Object chart = chartTypeState.getChart();
             TOPChartUtils.getInstance().decorateChart(chart, false);
