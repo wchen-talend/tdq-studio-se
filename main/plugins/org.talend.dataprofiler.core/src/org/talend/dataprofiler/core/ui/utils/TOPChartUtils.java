@@ -38,6 +38,7 @@ import org.talend.dataprofiler.core.ui.editor.analysis.drilldown.DrillDownEditor
 import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableFactory;
 import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableMenuGenerator;
 import org.talend.dataprofiler.core.ui.editor.preview.model.MenuItemEntity;
+import org.talend.dataprofiler.core.ui.editor.preview.model.dataset.CustomerDefaultBAWDataset;
 import org.talend.dataprofiler.service.ITOPChartService;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.analysis.ExecutionLanguage;
@@ -162,9 +163,9 @@ public class TOPChartUtils {
         }
     }
 
-    public void addMouseListenerForChart(Object chartComposite, final Map<String, Object> menuMap) {
+    public void addMouseListenerForChart(Object chartComposite, final Map<String, Object> menuMap, boolean useRowFirst) {
         if (isTOPChartInstalled()) {
-            chartService.addMouseListenerForChart(chartComposite, menuMap);
+            chartService.addMouseListenerForChart(chartComposite, menuMap, useRowFirst);
         }
     }
 
@@ -177,7 +178,7 @@ public class TOPChartUtils {
 
     public Object createBoxAndWhiskerChart(String title, Object dataset) {
         if (isTOPChartInstalled()) {
-            return chartService.createBoxAndWhiskerChart(title, dataset);
+            return chartService.createBoxAndWhiskerChart(title, ((CustomerDefaultBAWDataset) dataset).getDataset());
         }
         return null;
     }

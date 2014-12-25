@@ -295,7 +295,7 @@ public class ColumnSetResultPage extends AbstractAnalysisResultPage implements P
                 Map<String, Object> menuMap = createMenuForAllDataEntity(chartComposite.getShell(), dataExplorer, analysis,
                         ((ICustomerDataset) chartTypeState.getDataset()).getDataEntities());
                 // call chart service to create related mouse listener
-                TOPChartUtils.getInstance().addMouseListenerForChart(chartComposite, menuMap);
+                TOPChartUtils.getInstance().addMouseListenerForChart(chartComposite, menuMap, true);
             }
         }
     }

@@ -25,3 +25,4 @@ Import-Package: org.eclipse.ui.actions,
  org.talend.repository
 Bundle-ClassPath: .,
  dist/org.talend.dataprofiler.common.ui.jar
+Bundle-Activator: org.talend.dataprofiler.common.ui.CommonUIPlogin

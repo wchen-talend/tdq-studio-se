@@ -237,23 +237,28 @@ public class ResultPaginationInfo extends IndicatorPaginationInfo {
                 chart = chartTypeState.getChart(((DynamicChartEventReceiver) event).getDataset());
             }
 
-            TOPChartUtils.getInstance().decorateChart(chart, false);
-
             // if (dataset == null) {
             // dataset = chartTypeState.getDataset();
             // }
             dyModel.setDataset(dataset);
+            if (chart != null) {
+                TOPChartUtils.getInstance().decorateChart(chart, false);
+                Object chartComposite = TOPChartUtils.getInstance().createTalendChartComposite(composite, SWT.NONE, chart, true);
+                if (EIndicatorChartType.SUMMARY_STATISTICS.equals(chartType)) {
+                    // for summary indicators: need to record the chart composite, which is used for create BAW chart
+                    dyModel.setBawParentChartComp(chartComposite);
+                }
 
-            Object chartComposite = TOPChartUtils.getInstance().createTalendChartComposite(comp, SWT.NONE, chart, true);
-            if (EIndicatorChartType.SUMMARY_STATISTICS.equals(chartType)) {
-                // for summary indicators: need to record the chart composite, which is used for create BAW chart
-                dyModel.setBawParentChartComp(chartComposite);
+                Map<String, Object> menuMap = createMenuForAllDataEntity(((Composite) chartComposite).getShell(), dataExplorer,
+                        analysis, ((ICustomerDataset) chartTypeState.getDataset()).getDataEntities());
+                // call chart service to create related mouse listener
+                if (EIndicatorChartType.BENFORD_LAW_STATISTICS.equals(chartType)
+                        || EIndicatorChartType.FREQUENCE_STATISTICS.equals(chartType)) {
+                    TOPChartUtils.getInstance().addMouseListenerForChart(chartComposite, menuMap, false);
+                } else {
+                    TOPChartUtils.getInstance().addMouseListenerForChart(chartComposite, menuMap, true);
+                }
             }
-
-            Map<String, Object> menuMap = createMenuForAllDataEntity(((Composite) chartComposite).getShell(), dataExplorer,
-                    analysis, ((ICustomerDataset) chartTypeState.getDataset()).getDataEntities());
-            // call chart service to create related mouse listener
-            TOPChartUtils.getInstance().addMouseListenerForChart(chartComposite, menuMap);
         }
 
         subComp.setClient(composite);

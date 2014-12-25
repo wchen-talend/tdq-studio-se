@@ -53,7 +53,7 @@ public abstract class AbstractAnalysisResultPageWithChart extends AbstractAnalys
         Map<String, Object> menuMap = createMenuForAllDataEntity(((Composite) chartComp).getShell(), dataExplorer, analysis,
                 chartDataEntities);
         // call chart service to create related mouse listener
-        TOPChartUtils.getInstance().addMouseListenerForChart(chartComp, menuMap);
+        TOPChartUtils.getInstance().addMouseListenerForChart(chartComp, menuMap, true);
     }
 
     private Map<String, Object> createMenuForAllDataEntity(Shell shell, DataExplorer dataExplorer, Analysis analysis,

@@ -61,7 +61,7 @@ public interface ITOPChartService {
 
     void setDisplayDecimalFormatOfChart(Object chart);
 
-    void addMouseListenerForChart(Object chartComposite, Map<String, Object> menuMap);
+    void addMouseListenerForChart(Object chartComposite, Map<String, Object> menuMap, boolean useRowFirst);
 
     void addListenerToChartComp(Object chartComp, final String referenceLink, final String menuText);
 

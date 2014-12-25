@@ -28,3 +28,4 @@ Export-Package: org.talend.dataquality.record.linkage.ui.action,
  org.talend.dataquality.record.linkage.ui.section.definition,
  org.talend.dataquality.record.linkage.ui.service
 Bundle-ClassPath: .
+Bundle-Activator: org.talend.dataquality.record.linkage.ui.LinkageUIPlugin

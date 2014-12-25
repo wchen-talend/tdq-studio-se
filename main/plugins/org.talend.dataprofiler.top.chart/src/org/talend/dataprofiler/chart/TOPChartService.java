@@ -183,7 +183,7 @@ public class TOPChartService implements ITOPChartService {
     }
 
     @Override
-    public void addMouseListenerForChart(Object chartComposite, final Map<String, Object> menuMap) {
+    public void addMouseListenerForChart(Object chartComposite, final Map<String, Object> menuMap, final boolean useRowFirst) {
         final ChartComposite chartComp = (ChartComposite) chartComposite;
         chartComp.addChartMouseListener(new ChartMouseListener() {
 
@@ -200,7 +200,7 @@ public class TOPChartService implements ITOPChartService {
                 if (chartEntity != null && chartEntity instanceof CategoryItemEntity) {
                     CategoryItemEntity cateEntity = (CategoryItemEntity) chartEntity;
 
-                    Menu menu = getCurrentMenu(cateEntity, menuMap);
+                    Menu menu = getCurrentMenu(cateEntity);
 
                     chartComp.setMenu(menu);
 
@@ -208,12 +208,27 @@ public class TOPChartService implements ITOPChartService {
                 }
             }
 
-            private Menu getCurrentMenu(CategoryItemEntity cateEntity, Map<String, Object> menuMap1) {
-                Object menu = menuMap1.get(cateEntity.getRowKey());
+            private Menu getCurrentMenu(CategoryItemEntity cateEntity) {
+                if (useRowFirst) {
+                    return findCurrentMenu(cateEntity.getRowKey(), cateEntity.getColumnKey());
+                } else {
+                    return findCurrentMenu(cateEntity.getColumnKey(), cateEntity.getRowKey());
+                }
+            }
+
+            /**
+             * DOC yyin Comment method "findCurrentMenu".
+             * 
+             * @param firstKey
+             * @param secondKey
+             * @return
+             */
+            private Menu findCurrentMenu(final Object firstKey, Object secondKey) {
+                Object menu = menuMap.get(firstKey);
                 if (menu != null) {
                     return (Menu) menu;
                 }
-                menu = menuMap1.get(cateEntity.getColumnKey());
+                menu = menuMap.get(secondKey);
                 if (menu != null) {
                     return (Menu) menu;
                 }

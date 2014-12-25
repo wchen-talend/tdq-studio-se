@@ -56,6 +56,10 @@ public class CustomerDefaultBAWDataset implements ICustomerDataset {
         return TOPChartUtils.getInstance().getRowCount(bawDataset);
     }
 
+    public Object getDataset() {
+        return this.bawDataset;
+    }
+
     public void clear() {
         dataEnities.clear();
         TOPChartUtils.getInstance().clearDefaultBoxAndWhiskerCategoryDataset(bawDataset);

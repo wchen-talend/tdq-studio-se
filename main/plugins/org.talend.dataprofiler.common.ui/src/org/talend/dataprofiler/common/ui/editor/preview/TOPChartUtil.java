@@ -16,8 +16,8 @@ import java.util.List;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.talend.dataprofiler.common.ui.CommonUIPlogin;
 import org.talend.dataprofiler.service.ITOPChartService;
-import org.talend.dq.CWMPlugin;
 
 /**
  * created by yyin on 2014-12-15 Detailled comment
@@ -48,7 +48,7 @@ public class TOPChartUtil {
      */
     private void initTOPChartService(boolean b) {
         if (this.chartService == null) {
-            BundleContext context = CWMPlugin.getDefault().getBundleContext();
+            BundleContext context = CommonUIPlogin.getDefault().getBundleContext();
             if (context == null) {
                 return;
             }
@@ -64,76 +64,76 @@ public class TOPChartUtil {
     }
 
     public Object createDefaultCategoryDataset() {
-        if (chartService != null) {
+        if (isTOPChartInstalled()) {
             return chartService.createDefaultCategoryDataset();
         }
         return null;
     }
 
     public void addValueToCategoryDataset(Object dataset, double value, String labelX, String labelY) {
-        if (chartService != null) {
+        if (isTOPChartInstalled()) {
             chartService.addValueToCategoryDataset(dataset, value, labelX, labelY);
         }
     }
 
     public int getRowCount(Object dataset) {
-        if (chartService != null) {
+        if (isTOPChartInstalled()) {
             return chartService.getRowCount(dataset);
         }
         return Integer.MIN_VALUE;
     }
 
     public int getColumnCount(Object dataset) {
-        if (chartService != null) {
+        if (isTOPChartInstalled()) {
             return chartService.getColumnCount(dataset);
         }
         return Integer.MIN_VALUE;
     }
 
     public Number getValue(Object dataset, int row, int column) {
-        if (chartService != null) {
+        if (isTOPChartInstalled()) {
             return chartService.getValue(dataset, row, column);
         }
         return Integer.MIN_VALUE;
     }
 
     public Comparable getRowKey(Object dataset, int row) {
-        if (chartService != null) {
+        if (isTOPChartInstalled()) {
             return chartService.getRowKey(dataset, row);
         }
         return Integer.MIN_VALUE;
     }
 
     public int getRowIndex(Object dataset, Comparable key) {
-        if (chartService != null) {
+        if (isTOPChartInstalled()) {
             return chartService.getRowIndex(dataset, key);
         }
         return Integer.MIN_VALUE;
     }
 
     public List getRowKeys(Object dataset) {
-        if (chartService != null) {
+        if (isTOPChartInstalled()) {
             return chartService.getRowKeys(dataset);
         }
         return null;
     }
 
     public Comparable getColumnKey(Object dataset, int column) {
-        if (chartService != null) {
+        if (isTOPChartInstalled()) {
             return chartService.getColumnKey(dataset, column);
         }
         return Integer.MIN_VALUE;
     }
 
     public int getColumnIndex(Object dataset, Comparable key) {
-        if (chartService != null) {
+        if (isTOPChartInstalled()) {
             return chartService.getColumnIndex(dataset, key);
         }
         return Integer.MIN_VALUE;
     }
 
     public List getColumnKeys(Object dataset) {
-        if (chartService != null) {
+        if (isTOPChartInstalled()) {
             return chartService.getColumnKeys(dataset);
         }
         return null;
