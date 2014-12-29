@@ -28,6 +28,8 @@ public interface ITOPChartService {
 
     Object createChartComposite(Object composite, int style, Object chart, boolean useBuffer);
 
+    Object createChartCompositeWithSpecialSize(Object composite, int style, Object chart, boolean useBuffer, int height, int width);
+
     Object createChartCompositeWithFull(Object composite, Object chart);
 
     Object createBarChart(String title, Object dataset, boolean showLegend);

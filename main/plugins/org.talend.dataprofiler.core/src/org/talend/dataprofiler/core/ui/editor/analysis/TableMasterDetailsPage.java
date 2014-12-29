@@ -352,7 +352,7 @@ public class TableMasterDetailsPage extends DynamicAnalysisMasterPage implements
                                 for (EIndicatorChartType chartType : indicatorComposite.keySet()) {
                                     List<TableIndicatorUnit> units = indicatorComposite.get(chartType);
                                     if (!units.isEmpty()) {
-                                        final IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartStateTable(
+                                        final IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartStateOfTableAna(
                                                 chartType, units, tableIndicator);
                                         // get all indicator lists separated by chart, and only
                                         // WhereRuleStatisticsStateTable can get not-null charts
@@ -387,7 +387,7 @@ public class TableMasterDetailsPage extends DynamicAnalysisMasterPage implements
 
                                         if (charts != null) {
                                             for (Object chart : charts) {
-                                                Object chartComp = TOPChartUtils.getInstance().createChartComposite(composite,
+                                                Object chartComp = TOPChartUtils.getInstance().createChartComposite(comp,
                                                         SWT.NONE, chart, true);
 
                                                 // Added TDQ-8787 20140707 yyin: create and store the dynamic model

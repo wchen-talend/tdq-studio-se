@@ -46,7 +46,7 @@ public final class CompositeIndicator {
             patternList, sqlPatternList, modelIndicatorList, udiCountList, udiFrequencyList, udiMatchingList, udiRealValueList,
             dateFrequencyList, dateLowFrequencyList, simpleTextList, phoneNumbList, formatFreqList;
 
-    private List<TableIndicatorUnit> tableSimpleList, tableWhereRuleList;
+    private List<TableIndicatorUnit> tableWhereRuleList;
 
     private List<IndicatorUnit> binFrequencyList, fraudList;
 
@@ -90,7 +90,6 @@ public final class CompositeIndicator {
         modelIndicatorList = new ArrayList<IndicatorUnit>();
         separatedMap = new HashMap<EIndicatorChartType, List<IndicatorUnit>>();
         // MOD xqliu 2009-02-25 feature 6015
-        tableSimpleList = new ArrayList<TableIndicatorUnit>();
         tableWhereRuleList = new ArrayList<TableIndicatorUnit>();
         tableSeparatedMap = new HashMap<EIndicatorChartType, List<TableIndicatorUnit>>();
         // ~
@@ -136,7 +135,6 @@ public final class CompositeIndicator {
         modelIndicatorList.clear();
         separatedMap.clear();
         // MOD xqliu 2009-02-25 feature 6015
-        tableSimpleList.clear();
         tableWhereRuleList.clear();
         tableSeparatedMap.clear();
         // ~
@@ -383,7 +381,6 @@ public final class CompositeIndicator {
             }
         }
 
-        tableSeparatedMap.put(EIndicatorChartType.SIMPLE_STATISTICS, tableSimpleList);
         tableSeparatedMap.put(EIndicatorChartType.WHERERULE_INDICATOR, tableWhereRuleList);
 
         return tableSeparatedMap;

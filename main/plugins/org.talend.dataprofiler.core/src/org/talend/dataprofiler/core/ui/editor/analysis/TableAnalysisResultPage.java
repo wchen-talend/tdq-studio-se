@@ -66,7 +66,6 @@ import org.talend.dataprofiler.core.ui.utils.TOPChartUtils;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dq.analysis.AnalysisHandler;
-import org.talend.dq.analysis.explore.DataExplorer;
 import org.talend.dq.indicators.preview.EIndicatorChartType;
 import org.talend.dq.nodes.indicator.type.IndicatorEnum;
 import orgomg.cwm.resource.relational.NamedColumnSet;
@@ -203,133 +202,27 @@ public class TableAnalysisResultPage extends AbstractAnalysisResultPageWithChart
                             for (EIndicatorChartType chartType : indicatorComposite.keySet()) {
                                 List<TableIndicatorUnit> units = indicatorComposite.get(chartType);
                                 if (!units.isEmpty()) {
-
                                     // create UI
-                                    ExpandableComposite subComp = toolkit.createExpandableComposite(comp,
-                                            ExpandableComposite.TWISTIE | ExpandableComposite.CLIENT_INDENT
-                                                    | ExpandableComposite.EXPANDED);
-                                    subComp.setText(chartType.getLiteral());
-                                    subComp.setLayoutData(new GridData(GridData.FILL_BOTH));
+                                    ExpandableComposite subComp = createSubWholeComposite(comp, chartType);
 
-                                    // MOD xqliu 2009-06-23 bug 7481
-                                    subComp.setExpanded(EditorPreferencePage.isUnfoldingIndicators());
-                                    // ~
+                                    final Composite composite = createCompositeForTableAndChart(subComp);
 
-                                    final Composite composite = toolkit.createComposite(subComp, SWT.NULL);
-                                    composite.setLayout(new GridLayout(2, false));
-                                    composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-                                    Composite tableTopComp = toolkit.createComposite(composite, SWT.NULL);
-                                    tableTopComp.setLayout(new GridLayout(1, false));
-                                    tableTopComp.setLayoutData(new GridData(GridData.FILL_BOTH));
+                                    Composite tableTopComp = createTableComposite(composite);
 
                                     Analysis analysis = masterPage.getAnalysisHandler().getAnalysis();
                                     ITableTypeStates tableTypeState = TableTypeStatesFactory.getInstance().getTableStateForRule(
                                             chartType, units, tableIndicator);
 
                                     // create table for RownCountIndicator
-                                    if (tableTypeState instanceof WhereRuleStatisticsTableState) {
-                                        WhereRuleStatisticsTableState tableWhereRule = (WhereRuleStatisticsTableState) tableTypeState;
-                                        TableWithData chartDataRowCount = new TableWithData(chartType, tableWhereRule
-                                                .getDataEntityOfRowCount());
-
-                                        TableViewer tableviewerRowCount = tableWhereRule.getTableFormRowCount(tableTopComp);
-                                        tableviewerRowCount.setInput(chartDataRowCount);
-                                        DataExplorer dataExplorerRownCount = tableTypeState.getDataExplorer();
-                                        ChartTableFactory.addMenuAndTip(tableviewerRowCount, dataExplorerRownCount, analysis);
-
-                                        // Added TDQ-8787 20140707 yyin: create and store the dynamic model for row
-                                        // count's table
-                                        List<Indicator> rowCount = new ArrayList<Indicator>();
-                                        rowCount.add(tableWhereRule.getRownCountUnit(units).getIndicator());
-                                        DynamicIndicatorModel dyModel = AnalysisUtils.createDynamicModel(chartType, rowCount,
-                                                null);
-                                        dyModel.setTableViewer(tableviewerRowCount);
-
-                                        dynamicList.add(dyModel);
-                                        // ~
-                                    }
+                                    createTableViewerForRowCount(chartType, units, tableTopComp, analysis, tableTypeState);
 
                                     // create table for WhereRuleIndicator
-                                    TableWithData chartData = new TableWithData(chartType, tableTypeState.getDataEntity());
-                                    TableViewer tableviewer = tableTypeState.getTableForm(tableTopComp);
-                                    tableviewer.setInput(chartData);
-                                    DataExplorer dataExplorer = tableTypeState.getDataExplorer();
-                                    ChartTableFactory.addMenuAndTip(tableviewer, dataExplorer, analysis);
+                                    createTableForWhereRule(chartType, tableTopComp, analysis, tableTypeState, units);
 
-                                    // Added TDQ-8787 20140707 yyin: create and store the dynamic model for all dq
-                                    // rules's table
-                                    if (tableTypeState instanceof WhereRuleStatisticsTableState) {
-                                        List<Indicator> allRules = new ArrayList<Indicator>();
-                                        List<TableIndicatorUnit> removeRowCountUnit = ((WhereRuleStatisticsTableState) tableTypeState)
-                                                .removeRowCountUnit(units);
-                                        for (TableIndicatorUnit indUnit : removeRowCountUnit) {
-                                            allRules.add(indUnit.getIndicator());
-                                        }
-                                        DynamicIndicatorModel dyModel = AnalysisUtils.createDynamicModel(chartType, allRules,
-                                                null);
-                                        dyModel.setTableViewer(tableviewer);
-
-                                        dynamicList.add(dyModel);
-                                    }
-                                    // ~
-
-                                    Composite chartTopComp = toolkit.createComposite(composite, SWT.NULL);
-                                    chartTopComp.setLayout(new GridLayout(1, false));
-                                    chartTopComp.setLayoutData(new GridData(GridData.FILL_BOTH));
+                                    Composite chartTopComp = createTableComposite(composite);
 
                                     if (canShowChart()) {
-                                        IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartStateTable(chartType,
-                                                units, tableIndicator);
-
-                                        // get all indicator lists separated by chart, and only
-                                        // WhereRuleStatisticsStateTable can get not-null charts
-                                        List<List<Indicator>> pagedIndicators = ((WhereRuleStatisticsStateTable) chartTypeState)
-                                                .getPagedIndicators();
-                                        // Added TDQ-9241: for each list(for each chart), check if the current
-                                        // list has been registered dynamic event
-                                        List<Object> datasets = new ArrayList<Object>();
-                                        for (List<Indicator> oneChart : pagedIndicators) {
-                                            IEventReceiver event = EventManager.getInstance().findRegisteredEvent(
-                                                    oneChart.get(0), EventEnum.DQ_DYMANIC_CHART, 0);
-                                            if (event != null) {
-                                                // get the dataset from the event
-                                                Object dataset = ((TableDynamicChartEventReceiver) event).getDataset();
-                                                // if there has the dataset for the current rule, use it to replace,
-                                                // (only happen when first switch from master to result page, during
-                                                // one running)
-                                                if (dataset != null) {
-                                                    datasets.add(dataset);
-                                                }
-
-                                            }// ~
-                                        }
-                                        // create chart
-                                        List<Object> charts = null;
-                                        if (datasets.size() > 0) {
-                                            charts = chartTypeState.getChartList(datasets);
-                                        } else {
-                                            charts = chartTypeState.getChartList();
-                                        }
-                                        if (charts != null) {
-
-                                            int index = 0;
-                                            for (int i = 0; i < charts.size(); i++) {
-                                                Object chart2 = charts.get(i);
-                                                Object chartComp = TOPChartUtils.getInstance().createChartComposite(chartTopComp,
-                                                        SWT.NONE, chart2, true);
-                                                // Added TDQ-8787 20140707 yyin: create and store the dynamic model for
-                                                // each chart
-                                                DynamicIndicatorModel dyModel = AnalysisUtils.createDynamicModel(chartType,
-                                                        pagedIndicators.get(index++), chart2);
-                                                dynamicList.add(dyModel);
-                                                // ~
-
-                                                // one dataset <--> one chart
-                                                addMenuToChartComp(chartComp, dataExplorer, analysis,
-                                                        ((ICustomerDataset) datasets.get(i)).getDataEntities());
-                                            }
-                                        }
+                                        createChartsForRules(tableIndicator, chartType, units, analysis, chartTopComp);
                                     }
 
                                     subComp.setClient(composite);
@@ -343,6 +236,172 @@ public class TableAnalysisResultPage extends AbstractAnalysisResultPageWithChart
                                     });
                                 }
                             }
+                        }
+
+                        /**
+                         * DOC yyin Comment method "createChartsForRules".
+                         * 
+                         * @param tableIndicator
+                         * @param chartType
+                         * @param units
+                         * @param analysis
+                         * @param chartTopComp
+                         */
+                        private void createChartsForRules(final TableIndicator tableIndicator, EIndicatorChartType chartType,
+                                List<TableIndicatorUnit> units, Analysis analysis, Composite chartTopComp) {
+                            IChartTypeStates chartTypeState = ChartTypeStatesFactory.getChartStateOfTableAna(chartType, units,
+                                    tableIndicator);
+
+                            // get all indicator lists separated by chart, and only
+                            // WhereRuleStatisticsStateTable can get not-null charts
+                            List<List<Indicator>> pagedIndicators = ((WhereRuleStatisticsStateTable) chartTypeState)
+                                    .getPagedIndicators();
+                            // Added TDQ-9241: for each list(for each chart), check if the current
+                            // list has been registered dynamic event
+                            List<Object> datasets = new ArrayList<Object>();
+                            for (List<Indicator> oneChart : pagedIndicators) {
+                                IEventReceiver event = EventManager.getInstance().findRegisteredEvent(oneChart.get(0),
+                                        EventEnum.DQ_DYMANIC_CHART, 0);
+                                if (event != null) {
+                                    // get the dataset from the event
+                                    Object dataset = ((TableDynamicChartEventReceiver) event).getDataset();
+                                    // if there has the dataset for the current rule, use it to replace,
+                                    // (only happen when first switch from master to result page, during
+                                    // one running)
+                                    if (dataset != null) {
+                                        datasets.add(dataset);
+                                    }
+
+                                }// ~
+                            }
+                            // create chart
+                            List<Object> charts = null;
+                            if (datasets.size() > 0) {
+                                charts = chartTypeState.getChartList(datasets);
+                            } else {
+                                charts = chartTypeState.getChartList();
+                                datasets = ((WhereRuleStatisticsStateTable) chartTypeState).getTempDatasetList();
+                            }
+                            if (charts != null) {
+
+                                int index = 0;
+                                for (int i = 0; i < charts.size(); i++) {
+                                    Object chart2 = charts.get(i);
+                                    Object chartComp = TOPChartUtils.getInstance().createChartCompositeWithSpecialSize(
+                                            chartTopComp, SWT.NONE, chart2, true, 250, 550);
+                                    // Added TDQ-8787 20140707 yyin: create and store the dynamic model for
+                                    // each chart
+                                    DynamicIndicatorModel dyModel = AnalysisUtils.createDynamicModel(chartType,
+                                            pagedIndicators.get(index++), chart2);
+                                    dynamicList.add(dyModel);
+                                    // ~
+
+                                    // one dataset <--> one chart
+                                    addMenuToChartComp(chartComp, chartTypeState.getDataExplorer(), analysis,
+                                            ((ICustomerDataset) datasets.get(i)).getDataEntities());
+                                }
+                            }
+                        }
+
+                        /**
+                         * DOC yyin Comment method "createTableForWhereRule".
+                         * 
+                         * @param chartType
+                         * @param tableTopComp
+                         * @param analysis
+                         * @param tableTypeState
+                         * @param units
+                         * @return
+                         */
+                        private void createTableForWhereRule(EIndicatorChartType chartType, Composite tableTopComp,
+                                Analysis analysis, ITableTypeStates tableTypeState, List<TableIndicatorUnit> units) {
+                            TableWithData chartData = new TableWithData(chartType, tableTypeState.getDataEntity());
+                            TableViewer tableviewer = tableTypeState.getTableForm(tableTopComp);
+                            tableviewer.setInput(chartData);
+                            ChartTableFactory.addMenuAndTip(tableviewer, tableTypeState.getDataExplorer(), analysis);
+
+                            // Added TDQ-8787 20140707 yyin: create and store the dynamic model
+                            List<Indicator> allRules = new ArrayList<Indicator>();
+                            List<TableIndicatorUnit> removeRowCountUnit = ((WhereRuleStatisticsTableState) tableTypeState)
+                                    .removeRowCountUnit(units);
+                            for (TableIndicatorUnit indUnit : removeRowCountUnit) {
+                                allRules.add(indUnit.getIndicator());
+                            }
+                            DynamicIndicatorModel dyModel = AnalysisUtils.createDynamicModel(chartType, allRules, null);
+                            dyModel.setTableViewer(tableviewer);
+
+                            dynamicList.add(dyModel);
+                        }
+
+                        /**
+                         * DOC yyin Comment method "createTableViewerForRowCount".
+                         * 
+                         * @param chartType
+                         * @param units
+                         * @param tableTopComp
+                         * @param analysis
+                         * @param tableTypeState
+                         */
+                        private void createTableViewerForRowCount(EIndicatorChartType chartType, List<TableIndicatorUnit> units,
+                                Composite tableTopComp, Analysis analysis, ITableTypeStates tableTypeState) {
+                            WhereRuleStatisticsTableState tableWhereRule = (WhereRuleStatisticsTableState) tableTypeState;
+                            TableWithData chartDataRowCount = new TableWithData(chartType, tableWhereRule
+                                    .getDataEntityOfRowCount());
+
+                            TableViewer tableviewerRowCount = tableWhereRule.getTableFormRowCount(tableTopComp);
+                            tableviewerRowCount.setInput(chartDataRowCount);
+                            ChartTableFactory.addMenuAndTip(tableviewerRowCount, tableTypeState.getDataExplorer(), analysis);
+
+                            // Added TDQ-8787 20140707 yyin: create and store the dynamic model for row
+                            // count's table
+                            List<Indicator> rowCount = new ArrayList<Indicator>();
+                            rowCount.add(tableWhereRule.getRownCountUnit(units).getIndicator());
+                            DynamicIndicatorModel dyModel = AnalysisUtils.createDynamicModel(chartType, rowCount, null);
+                            dyModel.setTableViewer(tableviewerRowCount);
+
+                            dynamicList.add(dyModel);
+                        }
+
+                        /**
+                         * DOC yyin Comment method "createTableComposite".
+                         * 
+                         * @param composite
+                         * @return
+                         */
+                        private Composite createTableComposite(final Composite composite) {
+                            Composite tableTopComp = toolkit.createComposite(composite, SWT.NULL);
+                            tableTopComp.setLayout(new GridLayout(1, false));
+                            tableTopComp.setLayoutData(new GridData(GridData.FILL_BOTH));
+                            return tableTopComp;
+                        }
+
+                        /**
+                         * DOC yyin Comment method "createCompositeForTableAndChart".
+                         * 
+                         * @param subComp
+                         * @return
+                         */
+                        private Composite createCompositeForTableAndChart(ExpandableComposite subComp) {
+                            final Composite composite = toolkit.createComposite(subComp, SWT.NULL);
+                            composite.setLayout(new GridLayout(2, false));
+                            composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+                            return composite;
+                        }
+
+                        /**
+                         * DOC yyin Comment method "createSubWholeComposite".
+                         * 
+                         * @param comp
+                         * @param chartType
+                         * @return
+                         */
+                        private ExpandableComposite createSubWholeComposite(final Composite comp, EIndicatorChartType chartType) {
+                            ExpandableComposite subComp = toolkit.createExpandableComposite(comp, ExpandableComposite.TWISTIE
+                                    | ExpandableComposite.CLIENT_INDENT | ExpandableComposite.EXPANDED);
+                            subComp.setText(chartType.getLiteral());
+                            subComp.setLayoutData(new GridData(GridData.FILL_BOTH));
+                            subComp.setExpanded(EditorPreferencePage.isUnfoldingIndicators());
+                            return subComp;
                         }
 
                     });

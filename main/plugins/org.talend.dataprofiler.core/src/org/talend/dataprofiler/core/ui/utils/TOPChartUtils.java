@@ -125,6 +125,14 @@ public class TOPChartUtils {
         return null;
     }
 
+    public Object createChartCompositeWithSpecialSize(Object composite, int style, Object chart, boolean useBuffer, int height,
+            int width) {
+        if (isTOPChartInstalled()) {
+            return chartService.createChartCompositeWithSpecialSize(composite, style, chart, useBuffer, height, width);
+        }
+        return null;
+    }
+
     public Object createChartCompositeWithFull(Object composite, Object chart) {
         if (isTOPChartInstalled()) {
             return chartService.createChartCompositeWithFull(composite, chart);

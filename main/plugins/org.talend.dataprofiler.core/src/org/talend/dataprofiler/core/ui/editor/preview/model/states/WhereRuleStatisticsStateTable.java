@@ -120,11 +120,18 @@ public class WhereRuleStatisticsStateTable extends AbstractChartTypeStatesTable 
         return null;
     }
 
+    private List<Object> tempDatasets;
+
+    // better call this after getChartList()
+    public List<Object> getTempDatasetList() {
+        return tempDatasets;
+    }
+
     @Override
     public List<Object> getChartList() {
         // MOD xqliu 2010-03-17 feature 10834
-        List<Object> optimizeShowDataset = getOptimizeShowDataset();
-        return getChartList(optimizeShowDataset);
+        tempDatasets = getOptimizeShowDataset();
+        return getChartList(tempDatasets);
     }
 
     /**
@@ -271,21 +278,22 @@ public class WhereRuleStatisticsStateTable extends AbstractChartTypeStatesTable 
      */
     public List<Object> getChartList(List<Object> datasets) {
         List<Object> ret = new ArrayList<Object>();
-        // MOD xqliu 2012-04-23 TDQ-5057
-        int i = 0;
-        for (Object dataset : datasets) {
-            if (i < 1) {
-                Object chart = TOPChartUtils.getInstance().createBarChart(
-                        DefaultMessagesImpl.getString("SimpleStatisticsState.SimpleStatistics"), dataset, false); //$NON-NLS-1$
-                TOPChartUtils.getInstance().decorateChart(chart, false);
-                ret.add(chart);
-            } else {
-                Object stackChart = TOPChartUtils.getInstance().createStackedBarChart(
-                        DefaultMessagesImpl.getString("WhereRuleStatisticsStateTable.WhereRuleStatistics"), dataset, true); //$NON-NLS-1$
+        if (datasets == null || datasets.size() < 1) {
+            return ret;
+        }
+        // first get the chart for the row count
+        Object chart = TOPChartUtils.getInstance().createBarChart(
+                DefaultMessagesImpl.getString("SimpleStatisticsState.SimpleStatistics"), datasets.get(0), false); //$NON-NLS-1$
+        TOPChartUtils.getInstance().decorateChart(chart, false);
+        ret.add(chart);
 
-                ret.add(stackChart);
-            }
-            i++;
+        // THEN get the charts for each paged rules
+        for (int i = 1; i < datasets.size(); i++) {
+            Object dataset = datasets.get(i);
+            Object stackChart = TOPChartUtils.getInstance().createStackedBarChart(
+                    DefaultMessagesImpl.getString("WhereRuleStatisticsStateTable.WhereRuleStatistics"), dataset, true); //$NON-NLS-1$
+
+            ret.add(stackChart);
         }
         return ret;
     }

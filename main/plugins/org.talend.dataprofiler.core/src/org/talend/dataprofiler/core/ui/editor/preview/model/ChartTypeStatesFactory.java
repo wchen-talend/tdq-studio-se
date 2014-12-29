@@ -22,8 +22,8 @@ import org.talend.dataprofiler.core.ui.editor.preview.model.states.IChartTypeSta
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.ModeStatisticsState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.PhoneNumbStatisticsState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.PieStatisticsState;
-import org.talend.dataprofiler.core.ui.editor.preview.model.states.SimpleStatisticsState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.SimpleRuleStatisticsChartState;
+import org.talend.dataprofiler.core.ui.editor.preview.model.states.SimpleStatisticsState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.SimpleTextStatisticsState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.SummaryStatisticsState;
 import org.talend.dataprofiler.core.ui.editor.preview.model.states.TextStatisticsState;
@@ -139,7 +139,7 @@ public final class ChartTypeStatesFactory {
         case PHONE_NUMBER_STATISTICS:
             return new PhoneNumbStatisticsState(units);
         case FORMAT_FREQ_PIE_STATISTICS:
-            return new PieStatisticsState(units, DefaultMessagesImpl.getString("PieStatisticsState.Title"));
+            return new PieStatisticsState(units, DefaultMessagesImpl.getString("PieStatisticsState.Title")); //$NON-NLS-1$
         case BENFORD_LAW_STATISTICS:
             return new BenfordLawFrequencyState(units);
         default:
@@ -147,7 +147,7 @@ public final class ChartTypeStatesFactory {
         }
     }
 
-    public static IChartTypeStates getChartStateTable(EIndicatorChartType type, List<TableIndicatorUnit> units,
+    public static IChartTypeStates getChartStateOfTableAna(EIndicatorChartType type, List<TableIndicatorUnit> units,
             TableIndicator tableIndicator) {
         switch (type) {
         case WHERERULE_INDICATOR:

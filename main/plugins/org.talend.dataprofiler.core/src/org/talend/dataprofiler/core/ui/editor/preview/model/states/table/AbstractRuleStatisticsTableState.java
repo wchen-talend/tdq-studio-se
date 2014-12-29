@@ -30,11 +30,11 @@ import org.talend.dataprofiler.core.ui.editor.preview.model.entity.TableStructur
  */
 public abstract class AbstractRuleStatisticsTableState extends AbstractTableTypeStates {
 
-    protected List<TableIndicatorUnit> units = new ArrayList<TableIndicatorUnit>();
+    protected List<TableIndicatorUnit> tableunits = new ArrayList<TableIndicatorUnit>();
 
     public AbstractRuleStatisticsTableState(List<TableIndicatorUnit> units) {
         if (units != null) {
-            this.units.addAll(units);
+            this.tableunits.addAll(units);
         }
     }
 

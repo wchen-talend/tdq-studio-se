@@ -152,11 +152,18 @@ public class TOPChartService implements ITOPChartService {
 
     @Override
     public Object createChartComposite(Object composite, int style, Object chart, boolean useBuffer) {
+        return createChartCompositeWithSpecialSize(composite, style, chart, useBuffer, CHART_STANDARD_HEIGHT,
+                CHART_STANDARD_WIDHT);
+    }
+
+    @Override
+    public Object createChartCompositeWithSpecialSize(Object composite, int style, Object chart, boolean useBuffer, int height,
+            int width) {
         ChartComposite cc = new ChartComposite((Composite) composite, style, (JFreeChart) chart, useBuffer);
 
         GridData gd = new GridData();
-        gd.widthHint = CHART_STANDARD_WIDHT;
-        gd.heightHint = CHART_STANDARD_HEIGHT;
+        gd.widthHint = width;
+        gd.heightHint = height;
         cc.setLayoutData(gd);
         return cc;
     }
@@ -781,7 +788,7 @@ public class TOPChartService implements ITOPChartService {
 
             @Override
             public void chartMouseMoved(ChartMouseEvent event) {
-
+                // no need to implement
             }
 
         });

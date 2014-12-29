@@ -50,7 +50,7 @@ public class SimpleRuleStatisticsTableState extends AbstractRuleStatisticsTableS
      */
     @Override
     public ChartDataEntity[] getDataEntity() {
-        TableIndicatorUnit rownCountUnit = WhereRuleStatisticsStateUtil.getRownCountUnit(units);
+        TableIndicatorUnit rownCountUnit = WhereRuleStatisticsStateUtil.getRownCountUnit(tableunits);
         List<ChartDataEntity> dataEnities = new ArrayList<ChartDataEntity>();
         if (rownCountUnit != null) {
             final Object unitValue = rownCountUnit.getValue();

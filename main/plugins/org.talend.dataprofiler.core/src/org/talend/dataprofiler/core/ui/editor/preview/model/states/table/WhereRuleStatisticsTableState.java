@@ -49,13 +49,10 @@ import org.talend.dq.nodes.indicator.type.IndicatorEnum;
  */
 public class WhereRuleStatisticsTableState extends AbstractRuleStatisticsTableState {
 
-    private TableIndicator tableIndicator;
-
     private Long rowCount;
 
     public WhereRuleStatisticsTableState(List<TableIndicatorUnit> units, TableIndicator tableIndicator) {
         super(units);
-        this.tableIndicator = tableIndicator;
         this.rowCount = WhereRuleStatisticsStateUtil.initRowCount(tableIndicator);
     }
 
@@ -68,7 +65,7 @@ public class WhereRuleStatisticsTableState extends AbstractRuleStatisticsTableSt
     public ChartDataEntity[] getDataEntity() {
         List<WhereRuleChartDataEntity> dataEnities = new ArrayList<WhereRuleChartDataEntity>();
 
-        for (TableIndicatorUnit unit : units) {
+        for (TableIndicatorUnit unit : tableunits) {
             if (IndicatorEnum.WhereRuleIndicatorEnum.equals(unit.getType())) {
                 double value = WhereRuleStatisticsStateUtil.getMatchValue(unit.getValue());
                 WhereRuleChartDataEntity entity = WhereRuleStatisticsStateUtil.createRuleDataEntity(unit,
@@ -87,7 +84,7 @@ public class WhereRuleStatisticsTableState extends AbstractRuleStatisticsTableSt
      * @return
      */
     public ChartDataEntity[] getDataEntityOfRowCount() {
-        TableIndicatorUnit rownCountUnit = WhereRuleStatisticsStateUtil.getRownCountUnit(units);
+        TableIndicatorUnit rownCountUnit = WhereRuleStatisticsStateUtil.getRownCountUnit(tableunits);
         List<ChartDataEntity> dataEnities = new ArrayList<ChartDataEntity>();
         if (rownCountUnit != null) {
             final Object unitValue = rownCountUnit.getValue();
