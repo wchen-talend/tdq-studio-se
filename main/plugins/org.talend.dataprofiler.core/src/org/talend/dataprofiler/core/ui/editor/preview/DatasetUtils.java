@@ -57,7 +57,6 @@ public class DatasetUtils {
         while (iterator.hasNext()) {
             final String seriesKey = iterator.next();
             final ValueAggregator valueAggregator = xyzMap.get(seriesKey);
-            // List<String> labels = valueAggregator.getLabels(seriesKey);
             Iterator<Entry<MultipleKey, Double[]>> keyValueMap = valueAggregator.getKeyValueMap();
             int index = 0;
             while (keyValueMap.hasNext()) {
@@ -69,10 +68,6 @@ public class DatasetUtils {
         }
 
         return queryMap;
-    }
-
-    public static String getQuerySql() {
-        return "";
     }
 
     /**
@@ -94,15 +89,13 @@ public class DatasetUtils {
             final String seriesKey = iterator.next();
             final DateValueAggregate valueAggregator = gannttMap.get(seriesKey);
 
-            Iterator<Entry<MultipleKey, Date[]>> keyValueMap = valueAggregator.getKeyValueMap();
+            Iterator<MultipleKey> keyValueMap = valueAggregator.getKeyValueMap();
             while (keyValueMap.hasNext()) {
-                Entry<MultipleKey, Date[]> next = keyValueMap.next();
-                final String seriesLabel = next.getKey().toString();
-                System.err.println("index=" + index + "--------------" + seriesLabel);
+                MultipleKey next = keyValueMap.next();
+                final String seriesLabel = next.toString();
                 final String queryString = MultiColumnSetValueExplorer.getInstance().getQueryStirng(column, analysis,
                         nominalList, seriesKey, seriesLabel);
                 ganttQueryMap.put(index++, createSelectAdapter(queryString, column, analysis));
-                System.err.println("index=" + index + "finished");
             }
         }
         return ganttQueryMap;
@@ -377,8 +370,9 @@ public class DatasetUtils {
             return seriesKeyToLabel.get(seriesKey);
         }
 
-        public Iterator<Entry<MultipleKey, Date[]>> getKeyValueMap() {
-            return keyToVal.entrySet().iterator();
+        public Iterator<MultipleKey> getKeyValueMap() {
+            TreeSet<MultipleKey> treeSet = new TreeSet<MultipleKey>(keyToVal.keySet());
+            return treeSet.iterator();
         }
 
         public Date[] getValueByKey(MultipleKey key) {
@@ -404,15 +398,12 @@ public class DatasetUtils {
                 return;
             }
 
-            // assert max.after(max)(min);
-
             Date prevMinDate = dates[0];
             Date prevMaxDate = dates[1];
             dates[0] = (prevMinDate == null || min.before(prevMinDate)) ? min : prevMinDate;
             dates[1] = (prevMaxDate == null || max.after(prevMaxDate)) ? max : prevMaxDate;
 
             keyToVal.put(key, dates);
-            System.err.println(key + "---" + dates[0] + "," + dates[1]);
         }
 
         /**
@@ -422,7 +413,6 @@ public class DatasetUtils {
          * @param keyOfDataset the series key of the data series
          */
         public void addSeriesToGanttDataset(Object ganttDataset, String keyOfDataset) {
-            // System.out.println(keyOfDataset);
             Object series = TOPChartUtils.getInstance().createTaskSeries(keyOfDataset);
             int i = 0;
             for (MultipleKey key : new TreeSet<MultipleKey>(keyToVal.keySet())) {
@@ -430,11 +420,8 @@ public class DatasetUtils {
                 TOPChartUtils.getInstance().addTaskToTaskSeries(series, key.toString(), date);
 
                 MultiMapHelper.addUniqueObjectToListMap(keyOfDataset, key.toString(), this.seriesKeyToLabel);
-                System.err.println((i++) + "..........." + key + "---" + date[0] + "," + date[1]);
             }
             TOPChartUtils.getInstance().addSeriesToCollection(ganttDataset, series);
-            // ganttDataset.add(series);
-            // dataset.addSeries(keyOfDataset, date);
         }
 
     }

@@ -15,6 +15,7 @@ package org.talend.dq.analysis.explore;
 
 import java.util.Map;
 
+import org.apache.axis.utils.StringUtils;
 import org.eclipse.emf.common.util.EList;
 import org.talend.cwm.relational.TdColumn;
 import org.talend.dataquality.analysis.Analysis;
@@ -58,7 +59,7 @@ public final class MultiColumnSetValueExplorer extends DataExplorer {
 
             if (col > 0 && val > 0) {
                 String[] name = columnName.split(" "); //$NON-NLS-1$
-                String[] value = columnValue.split(" \\| "); //$NON-NLS-1$
+                String[] value = StringUtils.split(columnValue, '|');
 
                 for (int i = 0; i < name.length; i++) {
                     String where = dbmsLanguage.and();

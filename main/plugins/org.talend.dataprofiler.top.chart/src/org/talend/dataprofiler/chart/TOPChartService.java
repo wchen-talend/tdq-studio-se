@@ -769,7 +769,7 @@ public class TOPChartService implements ITOPChartService {
                     if (isAvg) {
                         addMenuOnBubbleChart(menu, chartEntity);
                     } else if (isDate) {
-                        addMenuOnGantChart(chartEntity);
+                        addMenuOnGantChart(menu, chartEntity);
                     }
                 }
                 menu.setVisible(true);
@@ -782,13 +782,11 @@ public class TOPChartService implements ITOPChartService {
                 }
             }
 
-            private void addMenuOnGantChart(ChartEntity chartEntity) {
+            private void addMenuOnGantChart(Menu menu, ChartEntity chartEntity) {
 
                 if (chartEntity instanceof CategoryItemEntity) {
                     CategoryItemEntity itemEntity = (CategoryItemEntity) chartEntity;
-
-                    String seriesK = itemEntity.getRowKey().toString();
-                    // createMenuItem(seriesK);
+                    createMenuItem(menu, itemEntity.getCategoryIndex());
                 }
             }
 
