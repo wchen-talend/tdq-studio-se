@@ -98,8 +98,9 @@ public class TdRowHeaderRenderer extends GridCellRenderer {
 
             toggleRenderer.setLocation(getBounds().x + x, (getBounds().height - toggleRenderer.getBounds().height) / 2
                     + getBounds().y);
-            if (item.hasChildren())
+            if (item.hasChildren()) {
                 toggleRenderer.paint(gc, null);
+            }
 
             if (renderBranches) {
                 branchRenderer.setToggleBounds(toggleRenderer.getBounds());
@@ -258,41 +259,43 @@ public class TdRowHeaderRenderer extends GridCellRenderer {
         if (item.getParentItem() == null) {
             // Add descender if not last item
             if (!item.isExpanded() && roots[roots.length - 1].equals(item)) {
-                if (item.hasChildren())
+                if (item.hasChildren()) {
                     branches[item.getLevel()] = BranchRenderer.LAST_ROOT;
-                else
+                } else {
                     branches[item.getLevel()] = BranchRenderer.SMALL_L;
+                }
             } else {
-                if (item.hasChildren())
+                if (item.hasChildren()) {
                     branches[item.getLevel()] = BranchRenderer.ROOT;
-                else
+                } else {
                     branches[item.getLevel()] = BranchRenderer.SMALL_T;
+                }
             }
 
-        } else if (item.hasChildren())
-            if (item.isExpanded())
+        } else if (item.hasChildren()) {
+            if (item.isExpanded()) {
                 branches[item.getLevel()] = BranchRenderer.NODE;
-            else
+            } else {
                 branches[item.getLevel()] = BranchRenderer.NONE;
-        else
+            }
+        } else {
             branches[item.getLevel()] = BranchRenderer.LEAF;
+        }
 
         // Branch for current item
         GridItem parent = item.getParentItem();
-        if (parent == null)
+        if (parent == null) {
             return branches;
+        }
 
         // Are there siblings below this item?
-        if (parent.indexOf(item) < parent.getItemCount() - 1)
+        if (parent.indexOf(item) < parent.getItemCount() - 1) {
             branches[item.getLevel() - 1] = BranchRenderer.T;
-
-        // Is the next node a root?
-        else if (parent.getParentItem() == null && !parent.equals(roots[roots.length - 1]))
+        } else if (parent.getParentItem() == null && !parent.equals(roots[roots.length - 1])) {
             branches[item.getLevel() - 1] = BranchRenderer.T;
-
-        // This must be the last element at this level
-        else
+        } else {
             branches[item.getLevel() - 1] = BranchRenderer.L;
+        }
 
         Grid grid = item.getParent();
         item = parent;
@@ -301,12 +304,14 @@ public class TdRowHeaderRenderer extends GridCellRenderer {
         // Branches for parent items
         while (item.getLevel() > 0) {
             if (parent.indexOf(item) == parent.getItemCount() - 1) {
-                if (parent.getParentItem() == null && !grid.getRootItem(grid.getRootItemCount() - 1).equals(parent))
+                if (parent.getParentItem() == null && !grid.getRootItem(grid.getRootItemCount() - 1).equals(parent)) {
                     branches[item.getLevel() - 1] = BranchRenderer.I;
-                else
+                } else {
                     branches[item.getLevel() - 1] = BranchRenderer.NONE;
-            } else
+                }
+            } else {
                 branches[item.getLevel() - 1] = BranchRenderer.I;
+            }
             item = parent;
             parent = item.getParentItem();
         }
@@ -358,10 +363,11 @@ public class TdRowHeaderRenderer extends GridCellRenderer {
             textHeight = topMargin + textTopMargin + gc.getFontMetrics().getHeight() + textBottomMargin + bottomMargin;
         } else {
             int plainTextWidth;
-            if (wHint == SWT.DEFAULT)
+            if (wHint == SWT.DEFAULT) {
                 plainTextWidth = gc.textExtent(item.getText(getColumn())).x;
-            else
+            } else {
                 plainTextWidth = wHint - x - rightMargin;
+            }
 
             TextLayout currTextLayout = new TextLayout(gc.getDevice());
             currTextLayout.setFont(gc.getFont());
@@ -372,8 +378,9 @@ public class TdRowHeaderRenderer extends GridCellRenderer {
             x += plainTextWidth + rightMargin;
 
             textHeight += topMargin + textTopMargin;
-            for (int cnt = 0; cnt < currTextLayout.getLineCount(); cnt++)
+            for (int cnt = 0; cnt < currTextLayout.getLineCount(); cnt++) {
                 textHeight += currTextLayout.getLineBounds(cnt).height;
+            }
             textHeight += textBottomMargin + bottomMargin;
 
             currTextLayout.dispose();
@@ -446,6 +453,7 @@ public class TdRowHeaderRenderer extends GridCellRenderer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setTree(boolean tree) {
         super.setTree(tree);
 
@@ -461,6 +469,7 @@ public class TdRowHeaderRenderer extends GridCellRenderer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Rectangle getTextBounds(GridItem item, boolean preferred) {
         int x = leftMargin;
 

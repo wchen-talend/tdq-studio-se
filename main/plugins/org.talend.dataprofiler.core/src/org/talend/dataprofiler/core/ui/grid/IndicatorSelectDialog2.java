@@ -41,7 +41,7 @@ import org.talend.dq.nodes.indicator.IIndicatorNode;
 /**
  * This dialog is used to select indicator objects for different columns.
  */
-public class IndicatorSelectDialog2 extends TrayDialog {
+public class IndicatorSelectDialog2 extends TrayDialog implements IIndicatorSelectDialog {
 
     private static final String DESCRIPTION = DefaultMessagesImpl.getString("IndicatorSelectDialog.description"); //$NON-NLS-1$
 
@@ -92,6 +92,7 @@ public class IndicatorSelectDialog2 extends TrayDialog {
     /*
      * (non-Javadoc) Method declared in Window.
      */
+    @Override
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
         if (title != null) {
@@ -99,6 +100,7 @@ public class IndicatorSelectDialog2 extends TrayDialog {
         }
     }
 
+    @Override
     protected Control createDialogArea(Composite parent) {
         Composite comp = (Composite) super.createDialogArea(parent);
 
@@ -107,8 +109,12 @@ public class IndicatorSelectDialog2 extends TrayDialog {
         style |= SWT.H_SCROLL;
         style |= SWT.BORDER;
         style |= SWT.SINGLE;
-
         grid = new IndicatorSelectGrid(this, comp, style, modelElementIndicators);
+        // GridTreeViewer gridTreeViewer = new GridTreeViewer(grid);
+        // gridTreeViewer.setLabelProvider(new GridTreeLabelProvider());
+        // gridTreeViewer.setContentProvider(new GridTreeContentProvider());
+        // gridTreeViewer.setRowHeaderLabelProvider(new GridTreeRowHeaderLabelProvider());
+        // gridTreeViewer.setInput(IndicatorTreeModelBuilder.getRootNode());
         GridData controlGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
         controlGridData.minimumWidth = 650;
         controlGridData.minimumHeight = 570;
@@ -130,7 +136,7 @@ public class IndicatorSelectDialog2 extends TrayDialog {
         return comp;
     }
 
-    boolean isMatchCurrentIndicator(ModelElementIndicator currentIndicator, IIndicatorNode indicatorNode) {
+    public boolean isMatchCurrentIndicator(ModelElementIndicator currentIndicator, IIndicatorNode indicatorNode) {
         boolean returnCurrentIndicator = true;
         IIndicatorNode parentNode = indicatorNode.getParent();
         boolean isParentPhoneStatistics = parentNode != null && parentNode.getIndicatorInstance() != null
@@ -138,10 +144,10 @@ public class IndicatorSelectDialog2 extends TrayDialog {
         if (!ModelElementIndicatorRule.match(indicatorNode, currentIndicator, this.language)) {
             returnCurrentIndicator = false;
         }
-        if (null != indicatorNode.getIndicatorInstance()
-                && !(indicatorNode.getIndicatorInstance() instanceof DatePatternFreqIndicator)
-                && null != indicatorNode.getIndicatorInstance().getIndicatorDefinition()
-                && indicatorNode.getIndicatorInstance().getIndicatorDefinition().getSqlGenericExpression().size() < 1
+        Indicator indicatorInstance = indicatorNode.getIndicatorInstance();
+        if (null != indicatorInstance && !(indicatorInstance instanceof DatePatternFreqIndicator)
+                && null != indicatorInstance.getIndicatorDefinition()
+                && indicatorInstance.getIndicatorDefinition().getSqlGenericExpression().size() < 1
                 && !indicatorNode.hasChildren() && !(currentIndicator instanceof DelimitedFileIndicator)
                 && !isParentPhoneStatistics) {
             returnCurrentIndicator = false;

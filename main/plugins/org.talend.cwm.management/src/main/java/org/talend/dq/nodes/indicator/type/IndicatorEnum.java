@@ -348,7 +348,13 @@ public enum IndicatorEnum {
                                      IndicatorsPackage.BENFORD_LAW_FREQUENCY_INDICATOR,
                                      IndicatorsPackage.Literals.BENFORD_LAW_FREQUENCY_INDICATOR,
                                      "Benford Law Frequency", //$NON-NLS-1$
-                                     null);
+                                     null),
+
+    PatternIndicatorEnum(
+                         IndicatorsPackage.PATTERN_MATCHING_INDICATOR,
+                         IndicatorsPackage.Literals.PATTERN_MATCHING_INDICATOR,
+                         "Patterns", //$NON-NLS-1$
+                         null);
 
     private EClass indicatorType;
 

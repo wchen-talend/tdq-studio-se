@@ -75,7 +75,7 @@ import org.talend.dataprofiler.core.ui.editor.AbstractMetadataFormPage;
 import org.talend.dataprofiler.core.ui.editor.analysis.AbstractAnalysisMetadataPage;
 import org.talend.dataprofiler.core.ui.editor.analysis.ColumnMasterDetailsPage;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
-import org.talend.dataprofiler.core.ui.grid.IndicatorSelectDialog2;
+import org.talend.dataprofiler.core.ui.grid.IndicatorSelectDialog3;
 import org.talend.dataprofiler.core.ui.utils.UDIUtils;
 import org.talend.dataprofiler.core.ui.views.ColumnViewerDND;
 import org.talend.dataprofiler.help.HelpPlugin;
@@ -739,7 +739,7 @@ public class AnalysisColumnTreeViewer extends AbstractColumnDropTree {
 
         } else {
 
-            final IndicatorSelectDialog2 dialog = new IndicatorSelectDialog2(
+            final IndicatorSelectDialog3 dialog = new IndicatorSelectDialog3(
                     shell,
                     DefaultMessagesImpl.getString("AnalysisColumnTreeViewer.indicatorSelection"), masterPage.getCurrentModelElementIndicators()); //$NON-NLS-1$
             dialog.create();

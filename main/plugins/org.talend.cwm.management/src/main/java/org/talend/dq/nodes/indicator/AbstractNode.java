@@ -12,12 +12,9 @@
 // ============================================================================
 package org.talend.dq.nodes.indicator;
 
-import org.talend.cwm.management.i18n.InternationalizationUtil;
+import org.eclipse.emf.ecore.impl.EFactoryImpl;
 import org.talend.dataquality.PluginConstant;
 import org.talend.dataquality.indicators.Indicator;
-import org.talend.dataquality.indicators.IndicatorsFactory;
-import org.talend.dataquality.indicators.definition.IndicatorDefinition;
-import org.talend.dq.helper.PropertyHelper;
 import org.talend.dq.indicators.definitions.DefinitionHandler;
 import org.talend.dq.nodes.indicator.type.IndicatorEnum;
 
@@ -25,20 +22,24 @@ import org.talend.dq.nodes.indicator.type.IndicatorEnum;
  * @author rli
  * 
  */
-public abstract class AbstractIndicatorNode implements IIndicatorNode {
+public abstract class AbstractNode implements IIndicatorNode {
 
     private IIndicatorNode parent;
 
     protected IIndicatorNode[] children;
 
-    protected IndicatorEnum indicatorEnum;
-
     protected String label;
+
+    protected IndicatorEnum indicatorEnum;
 
     protected Indicator indicatorInstance;
 
-    public AbstractIndicatorNode(IndicatorEnum indicatorEnum) {
+    public AbstractNode(IndicatorEnum indicatorEnum) {
         this.indicatorEnum = indicatorEnum;
+    }
+
+    public AbstractNode(String label) {
+        this.label = label;
     }
 
     /**
@@ -62,20 +63,14 @@ public abstract class AbstractIndicatorNode implements IIndicatorNode {
      * 
      * @see org.talend.dataprofiler.core.model.nodes.indicator.IIndicatorNode#hasChildren()
      */
-    public boolean hasChildren() {
-        return children != null;
-    }
+    public abstract boolean hasChildren();
 
     public String getLabel() {
-        if (getIndicatorInstance() != null) {
-            IndicatorDefinition define = getIndicatorInstance().getIndicatorDefinition();
-            if (define != null) {
-                // MOD yyin 20130118 make it international
-                return InternationalizationUtil.getDefinitionInternationalizationLabel(PropertyHelper.getProperty(define));
-            }
+        if (label == null) {
+            return PluginConstant.EMPTY_STRING;
+        } else {
+            return label;
         }
-
-        return PluginConstant.EMPTY_STRING;
     }
 
     /*
@@ -90,13 +85,23 @@ public abstract class AbstractIndicatorNode implements IIndicatorNode {
     /*
      * (non-Javadoc)
      * 
+     * @see org.talend.dq.nodes.indicator.IIndicatorNode#setIndicatorEnum()
+     */
+    public void setIndicatorEnum(IndicatorEnum indicatorEnum) {
+        this.indicatorEnum = indicatorEnum;
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.talend.dataprofiler.core.model.nodes.indicator.IIndicatorNode#getIndicatorInstance()
      */
     public Indicator getIndicatorInstance() {
         if (indicatorInstance != null) {
             return indicatorInstance;
         } else if (this.indicatorEnum != null) {
-            IndicatorsFactory factory = IndicatorsFactory.eINSTANCE;
+            EFactoryImpl factory = (EFactoryImpl) indicatorEnum.getIndicatorType().getEPackage().getEFactoryInstance();
             indicatorInstance = (Indicator) factory.create(indicatorEnum.getIndicatorType());
             DefinitionHandler.getInstance().setDefaultIndicatorDefinition(indicatorInstance);
             return indicatorInstance;
