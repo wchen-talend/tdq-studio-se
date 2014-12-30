@@ -229,18 +229,18 @@ public class ColumnDependencyResultPage extends AbstractAnalysisResultPageWithCh
         int i = 0;
         if (dataEntities != null) {
             // MOD mzhao bug 8839 There might be duplicate dependencies on left and right columnSet.
-            if (TOPChartUtils.getInstance().getColumnCount(dataset) < dataEntities.length) {
+            if (TOPChartUtils.getInstance().getColumnCount(dataset.getDataset()) < dataEntities.length) {
                 MessageDialog.openError(this.getEditor().getSite().getShell(), "Duplicate dependencies",//$NON-NLS-1$
                         "There might be duplicate dependencies on left and right columnSet.");//$NON-NLS-1$
             } else {
                 for (ChartDataEntity dataEntity : dataEntities) {
                     TableItem item = new TableItem(resultTable, SWT.NULL);
 
-                    Number match = TOPChartUtils.getInstance().getValue(dataset, 0, i);
-                    Number notMatch = TOPChartUtils.getInstance().getValue(dataset, 1, i);
+                    Number match = TOPChartUtils.getInstance().getValue(dataset.getDataset(), 0, i);
+                    Number notMatch = TOPChartUtils.getInstance().getValue(dataset.getDataset(), 1, i);
                     Number row = match.intValue() + notMatch.intValue();
 
-                    item.setText(0, TOPChartUtils.getInstance().getColumnKey(dataset, i).toString());
+                    item.setText(0, TOPChartUtils.getInstance().getColumnKey(dataset.getDataset(), i).toString());
                     item.setText(1, String.valueOf(match.intValue()));
                     // TDQ-8695 display "N/A" if it is infinite or NaN
                     double percentage = match.doubleValue() / row.doubleValue();

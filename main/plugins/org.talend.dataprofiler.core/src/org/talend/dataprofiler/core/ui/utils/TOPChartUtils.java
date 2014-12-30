@@ -439,10 +439,10 @@ public class TOPChartUtils {
         }
     }
 
-    public void addSpecifiedListenersForCorrelationChart(Object chartcomp, final boolean isAvg, final boolean isDate,
-            Object menu1, final Map<String, Object> keyWithAdapter) {
+    public void addSpecifiedListenersForCorrelationChart(Object chartcomp, Object chart, final boolean isAvg,
+            final boolean isDate, final Map<Integer, Object> keyWithAdapter) {
         if (isTOPChartInstalled()) {
-            chartService.addSpecifiedListenersForCorrelationChart(chartcomp, isAvg, isDate, menu1, keyWithAdapter);
+            chartService.addSpecifiedListenersForCorrelationChart(chartcomp, chart, isAvg, isDate, keyWithAdapter);
         }
     }
 

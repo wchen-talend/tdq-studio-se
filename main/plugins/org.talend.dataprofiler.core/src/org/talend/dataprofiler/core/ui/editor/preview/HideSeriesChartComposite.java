@@ -17,14 +17,11 @@ import java.util.Map;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.editor.preview.DatasetUtils.DateValueAggregate;
 import org.talend.dataprofiler.core.ui.editor.preview.DatasetUtils.ValueAggregator;
@@ -50,9 +47,9 @@ public class HideSeriesChartComposite {
     private static final String SERIES_KEY_ID = "SERIES_KEY"; //$NON-NLS-1$
 
     // used for the bubble chart to add mouse listeners
-    private Map<String, Object> bubbleQueryMap;
+    private Map<Integer, Object> bubbleQueryMap;
 
-    private Map<String, Object> ganttQueryMap;
+    private Map<Integer, Object> ganttQueryMap;
 
     private Analysis analysis = null;
 
@@ -67,6 +64,9 @@ public class HideSeriesChartComposite {
         this.indicator = indicator;
         this.column = column;
 
+        isCoungAvg = ColumnsetPackage.eINSTANCE.getCountAvgNullIndicator().equals(indicator.eClass());
+        isMinMax = ColumnsetPackage.eINSTANCE.getMinMaxDateIndicator().equals(indicator.eClass());
+
         this.chart = createChart();
 
         chartComposite = TOPChartUtils.getInstance().createChartCompositeForCorrelationAna(comp, chart,
@@ -76,40 +76,15 @@ public class HideSeriesChartComposite {
             createUtilityControl(comp);
         }
 
-        isCoungAvg = ColumnsetPackage.eINSTANCE.getCountAvgNullIndicator().equals(indicator.eClass());
-        isMinMax = ColumnsetPackage.eINSTANCE.getMinMaxDateIndicator().equals(indicator.eClass());
-
         addSpecifiedListeners(isCoungAvg, isMinMax);
     }
 
-    private Menu createMenu(final boolean isAvg, final boolean isDate) {
-        // create menu
-        Menu menu = new Menu(((Composite) chartComposite).getShell(), SWT.POP_UP);
-        MenuItem itemShowInFullScreen = new MenuItem(menu, SWT.PUSH);
-        itemShowInFullScreen.setText(DefaultMessagesImpl.getString("HideSeriesChartComposite.ShowInFullScreen")); //$NON-NLS-1$
-        itemShowInFullScreen.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                Display.getDefault().asyncExec(new Runnable() {
-
-                    public void run() {
-                        TOPChartUtils.getInstance().showChartInFillScreen(createChart(), isAvg, isDate);
-                    }
-                });
-            }
-        });
-        return menu;
-    }
-
     private void addSpecifiedListeners(final boolean isAvg, final boolean isDate) {
-        final Menu menu = createMenu(isAvg, isDate);
-
         if (isAvg) {
-            TOPChartUtils.getInstance().addSpecifiedListenersForCorrelationChart(chartComposite, isAvg, isDate, menu,
+            TOPChartUtils.getInstance().addSpecifiedListenersForCorrelationChart(chartComposite, chart, isAvg, isDate,
                     bubbleQueryMap);
         } else if (isDate) {
-            TOPChartUtils.getInstance().addSpecifiedListenersForCorrelationChart(chartComposite, isAvg, isDate, menu,
+            TOPChartUtils.getInstance().addSpecifiedListenersForCorrelationChart(chartComposite, chart, isAvg, isDate,
                     ganttQueryMap);
         }
 

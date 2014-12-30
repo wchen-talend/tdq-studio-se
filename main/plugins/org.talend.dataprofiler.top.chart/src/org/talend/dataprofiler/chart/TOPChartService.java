@@ -157,6 +157,11 @@ public class TOPChartService implements ITOPChartService {
     }
 
     @Override
+    public Object createChartCompositeWithoutGrid(Object composite, int style, Object chart, boolean useBuffer) {
+        return new ChartComposite((Composite) composite, style, (JFreeChart) chart, useBuffer);
+    }
+
+    @Override
     public Object createChartCompositeWithSpecialSize(Object composite, int style, Object chart, boolean useBuffer, int height,
             int width) {
         ChartComposite cc = new ChartComposite((Composite) composite, style, (JFreeChart) chart, useBuffer);
@@ -726,9 +731,9 @@ public class TOPChartService implements ITOPChartService {
      * java.lang.Object, java.util.List)
      */
     @Override
-    public void addSpecifiedListenersForCorrelationChart(Object chartcomp, final boolean isAvg, final boolean isDate,
-            Object menu1, final Map<String, Object> keyWithAdapter) {
-        final Menu menu = (Menu) menu1;
+    public void addSpecifiedListenersForCorrelationChart(Object chartcomp, final Object chart, final boolean isAvg,
+            final boolean isDate, final Map<Integer, Object> keyWithAdapter) {
+        // final Menu menu = (Menu) menu1;
         final ChartComposite chartComp = (ChartComposite) chartcomp;
         chartComp.addChartMouseListener(new ChartMouseListener() {
 
@@ -741,12 +746,28 @@ public class TOPChartService implements ITOPChartService {
                 if (event.getTrigger().getButton() != 3) {
                     return;
                 }
+                final Menu menu = new Menu(chartComp.getShell(), SWT.POP_UP);
+                MenuItem itemShowInFullScreen = new MenuItem(menu, SWT.PUSH);
+                itemShowInFullScreen.setText(Messages.getString("HideSeriesChartComposite.ShowInFullScreen")); //$NON-NLS-1$
+                itemShowInFullScreen.addSelectionListener(new SelectionAdapter() {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        Display.getDefault().asyncExec(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                showChartInFillScreen(chart, isAvg, isDate);
+                            }
+                        });
+                    }
+                });
 
                 chartComp.setMenu(menu);
                 ChartEntity chartEntity = event.getEntity();
                 if (chartEntity != null) {
                     if (isAvg) {
-                        addMenuOnBubbleChart(chartEntity);
+                        addMenuOnBubbleChart(menu, chartEntity);
                     } else if (isDate) {
                         addMenuOnGantChart(chartEntity);
                     }
@@ -754,17 +775,10 @@ public class TOPChartService implements ITOPChartService {
                 menu.setVisible(true);
             }
 
-            private void addMenuOnBubbleChart(ChartEntity chartEntity) {
-
+            private void addMenuOnBubbleChart(Menu menu, ChartEntity chartEntity) {
                 if (chartEntity instanceof XYItemEntity) {
-
                     XYItemEntity xyItemEntity = (XYItemEntity) chartEntity;
-
-                    DefaultXYZDataset xyzDataSet = (DefaultXYZDataset) xyItemEntity.getDataset();
-                    final Comparable<?> seriesKey = xyzDataSet.getSeriesKey(xyItemEntity.getSeriesIndex());
-                    final String seriesK = String.valueOf(seriesKey);
-
-                    createMenuItem(seriesK);
+                    createMenuItem(menu, xyItemEntity.getItem());
                 }
             }
 
@@ -774,14 +788,14 @@ public class TOPChartService implements ITOPChartService {
                     CategoryItemEntity itemEntity = (CategoryItemEntity) chartEntity;
 
                     String seriesK = itemEntity.getRowKey().toString();
-                    createMenuItem(seriesK);
+                    // createMenuItem(seriesK);
                 }
             }
 
-            private void createMenuItem(final String seriesK) {
+            private void createMenuItem(Menu menu, final int seriesK) {
                 final SelectionAdapter selectionAdapter = (SelectionAdapter) keyWithAdapter.get(seriesK);
-
-                MenuItem item = new MenuItem(menu, SWT.PUSH);
+                MenuItem item;
+                item = new MenuItem(menu, SWT.PUSH);
                 item.setText(Messages.getString("HideSeriesChartComposite.ViewRow")); //$NON-NLS-1$
                 item.addSelectionListener(selectionAdapter);
             }

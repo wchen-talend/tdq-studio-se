@@ -71,6 +71,13 @@ public class TOPChartUtil {
         return null;
     }
 
+    public Object createChartCompositeWithoutGrid(Object composite, int style, Object chart, boolean useBuffer) {
+        if (isTOPChartInstalled()) {
+            return chartService.createChartCompositeWithoutGrid(composite, style, chart, useBuffer);
+        }
+        return null;
+    }
+
     public Object createMatchRuleBarChart(String categoryAxisLabel, String valueAxisLabel, Object dataset) {
         if (isTOPChartInstalled()) {
             return chartService.createMatchRuleBarChart(categoryAxisLabel, valueAxisLabel, dataset);

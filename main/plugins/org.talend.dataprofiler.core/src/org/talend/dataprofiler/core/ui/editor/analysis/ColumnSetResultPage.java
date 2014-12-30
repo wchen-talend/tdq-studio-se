@@ -113,8 +113,6 @@ public class ColumnSetResultPage extends AbstractAnalysisResultPage implements P
 
     private AllMatchIndicator allMatchIndicator;
 
-    private Composite chartComposite;
-
     private Composite[] previewChartCompsites;
 
     private String executeData;
@@ -290,12 +288,12 @@ public class ColumnSetResultPage extends AbstractAnalysisResultPage implements P
             Object chart = chartTypeState.getChart();
             TOPChartUtils.getInstance().decorateChart(chart, false);
             if (chart != null) {
-                Object cc = TOPChartUtils.getInstance().createChartComposite(composite, SWT.NONE, chart, true);
+                Object chartComposite2 = TOPChartUtils.getInstance().createChartComposite(composite, SWT.NONE, chart, true);
 
-                Map<String, Object> menuMap = createMenuForAllDataEntity(chartComposite.getShell(), dataExplorer, analysis,
-                        ((ICustomerDataset) chartTypeState.getDataset()).getDataEntities());
+                Map<String, Object> menuMap = createMenuForAllDataEntity(((Composite) chartComposite2).getShell(), dataExplorer,
+                        analysis, ((ICustomerDataset) chartTypeState.getDataset()).getDataEntities());
                 // call chart service to create related mouse listener
-                TOPChartUtils.getInstance().addMouseListenerForChart(chartComposite, menuMap, true);
+                TOPChartUtils.getInstance().addMouseListenerForChart(chartComposite2, menuMap, true);
             }
         }
     }
@@ -712,10 +710,6 @@ public class ColumnSetResultPage extends AbstractAnalysisResultPage implements P
         }
         masterPage.refresh();
         createFormContent(getManagedForm());
-    }
-
-    public Composite getChartComposite() {
-        return chartComposite;
     }
 
     public Composite[] getPreviewChartCompsites() {

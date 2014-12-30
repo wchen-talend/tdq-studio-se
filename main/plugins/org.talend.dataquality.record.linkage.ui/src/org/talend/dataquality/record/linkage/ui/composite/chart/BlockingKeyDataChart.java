@@ -123,7 +123,8 @@ public class BlockingKeyDataChart extends Composite {
         scrollComp.setContent(innerComp);
         scrollComp.setExpandVertical(true);
         scrollComp.setExpandHorizontal(true);
-        this.jfreeChartComp = TOPChartUtil.getInstance().createChartComposite(innerComp, SWT.NONE, computeChart(), true);
+        this.jfreeChartComp = TOPChartUtil.getInstance().createChartCompositeWithoutGrid(innerComp, SWT.NONE, computeChart(),
+                true);
     }
 
     /**
