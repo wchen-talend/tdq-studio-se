@@ -12,10 +12,18 @@
 // ============================================================================
 package org.talend.dataprofiler.core.helper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.MetadataColumn;
+import org.talend.core.model.metadata.builder.connection.MetadataTable;
 import org.talend.core.model.properties.ConnectionItem;
 import org.talend.core.model.properties.Property;
+import org.talend.core.model.repository.IRepositoryViewObject;
+import org.talend.core.model.repository.ISubRepositoryObject;
+import org.talend.core.repository.model.repositoryObject.MetadataColumnRepositoryObject;
+import org.talend.cwm.helper.ColumnHelper;
 import org.talend.cwm.relational.TdSqlDataType;
 import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.model.ColumnIndicator;
@@ -29,6 +37,7 @@ import org.talend.dq.nodes.DBColumnRepNode;
 import org.talend.dq.nodes.DFColumnRepNode;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.utils.sql.TalendTypeConvert;
+import orgomg.cwm.objectmodel.core.ModelElement;
 
 /**
  * DOC xqliu class global comment. Detailled comment
@@ -59,6 +68,40 @@ public final class ModelElementIndicatorHelper {
 
     /**
      * 
+     * Convert from ModelElementIndicators to ModelElement
+     * 
+     * @param ModelElementIndicators
+     * @return
+     */
+    public static ModelElement[] getModelElementFromMEIndicator(ModelElementIndicator[] ModelElementIndicators) {
+        if (ModelElementIndicators == null) {
+            return new ModelElement[0];
+        }
+        ModelElement[] selectedColumns = new ModelElement[ModelElementIndicators.length];
+        int index = 0;
+        for (ModelElementIndicator modelElemIndi : ModelElementIndicators) {
+            IRepositoryViewObject currentObject = modelElemIndi.getModelElementRepositoryNode().getObject();
+            if (ISubRepositoryObject.class.isInstance(currentObject)) {
+                selectedColumns[index++] = ((ISubRepositoryObject) currentObject).getModelElement();
+            }
+        }
+        return selectedColumns;
+    }
+
+    /**
+     * 
+     * Check whether parameters are come from same table in the database
+     * 
+     * @param ModelElementIndicators
+     * @return true it is come from same table else it is not
+     */
+    public static boolean checkSameTable(ModelElementIndicator[] ModelElementIndicators) {
+        ModelElement[] modelElements = getModelElementFromMEIndicator(ModelElementIndicators);
+        return ColumnHelper.checkSameTable(modelElements);
+    }
+
+    /**
+     * 
      * 
      * @deprecated
      * 
@@ -72,6 +115,43 @@ public final class ModelElementIndicatorHelper {
             return switchColumnIndicator((ColumnIndicatorUnit) indicatorUnit);
         }
         return null;
+    }
+
+    /**
+     * 
+     * Get columns from modelElementIndicators
+     * 
+     * @param modelElementIndicators
+     * @return
+     */
+    public static final List<MetadataColumn> getColumns(ModelElementIndicator[] modelElementIndicators) {
+        List<MetadataColumn> columns = new ArrayList<MetadataColumn>();
+        for (ModelElementIndicator modelElementIndicator : modelElementIndicators) {
+            ColumnIndicator switchColumnIndicator = switchColumnIndicator(modelElementIndicator);
+            if (switchColumnIndicator == null) {
+                continue;
+            }
+            columns.add(switchColumnIndicator.getTdColumn());
+        }
+        return columns;
+    }
+
+    /**
+     * 
+     * Get column from modelElementIndicator
+     * 
+     * @param modelElementIndicator
+     * @return MetadataColumn if convert is normal else return null
+     */
+    public static final MetadataColumn getColumn(ModelElementIndicator modelElementIndicator) {
+        if (modelElementIndicator == null) {
+            return null;
+        }
+        ColumnIndicator switchColumnIndicator = switchColumnIndicator(modelElementIndicator);
+        if (switchColumnIndicator == null) {
+            return null;
+        }
+        return switchColumnIndicator.getTdColumn();
     }
 
     /**
@@ -136,5 +216,34 @@ public final class ModelElementIndicatorHelper {
         }
         return meName != null ? meName + PluginConstant.SPACE_STRING + PluginConstant.PARENTHESIS_LEFT + typeName
                 + PluginConstant.PARENTHESIS_RIGHT : "null";//$NON-NLS-1$
+    }
+
+    /**
+     * Check whether repViewObj and modelElementIndicator is come from same table
+     * 
+     * @param repViewObj
+     * @param modelElementIndicators
+     */
+    public static boolean checkSameTable(MetadataColumnRepositoryObject repViewObj, ModelElementIndicator modelElementIndicator) {
+        if (modelElementIndicator == null || repViewObj == null) {
+            return false;
+        }
+
+        MetadataColumn newColumn = repViewObj.getTdColumn();
+        MetadataColumn Oldcolumn = getColumn(modelElementIndicator);
+
+        if (newColumn == null || Oldcolumn == null) {
+            return false;
+        }
+        MetadataTable newMetadataTable = ColumnHelper.getColumnOwnerAsMetadataTable(newColumn);
+        MetadataTable oldMetadataTable = ColumnHelper.getColumnOwnerAsMetadataTable(Oldcolumn);
+
+        if (newMetadataTable == null || oldMetadataTable == null) {
+            return false;
+        }
+        if (newMetadataTable.equals(oldMetadataTable)) {
+            return true;
+        }
+        return false;
     }
 }

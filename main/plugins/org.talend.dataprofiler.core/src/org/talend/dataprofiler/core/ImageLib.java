@@ -48,6 +48,9 @@ import org.talend.dq.nodes.ReportRepNode;
 import org.talend.dq.nodes.RuleRepNode;
 import org.talend.dq.nodes.SourceFileRepNode;
 import org.talend.dq.nodes.SysIndicatorDefinitionRepNode;
+import org.talend.dq.nodes.indicator.impl.IndicatorCategoryNode;
+import org.talend.dq.nodes.indicator.impl.IndicatorNode;
+import org.talend.dq.nodes.indicator.impl.PatternNode;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.IRepositoryNode.ENodeType;
 import org.talend.resource.EResourceConstant;
@@ -73,6 +76,9 @@ public final class ImageLib {
 
     public static final String REFRESH_IMAGE = "run_exc.gif"; //$NON-NLS-1$
 
+    /**
+     * {@link IndicatorCategoryNode#getImageName()}
+     */
     public static final String FOLDERNODE_IMAGE = "folder.gif"; //$NON-NLS-1$
 
     public static final String FOLDER_WIZ_IMAGE = "folder_wiz.gif"; //$NON-NLS-1$
@@ -121,6 +127,7 @@ public final class ImageLib {
 
     public static final String LICENSE_WIZ = "license_wiz.png"; //$NON-NLS-1$
 
+    /** {@link PatternNode#getImageName()} */
     public static final String PATTERN_REG = "pattern.png"; //$NON-NLS-1$
 
     public static final String REGISTER_WIZ = "register_wiz.png"; //$NON-NLS-1$
@@ -194,7 +201,9 @@ public final class ImageLib {
     /** Icon for Talend Exchange folder. */
     public static final String EXCHANGE = "ecosystem_view.gif"; //$NON-NLS-1$
 
-    /** Icon of indicator's definition. */
+    /**
+     * Icon of indicator's definition. {@link IndicatorNode#getImageName()}
+     * */
     public static final String IND_DEFINITION = "IndicatorDefinition.gif"; //$NON-NLS-1$
 
     public static final String ADD_IND_DEFINITION = "IndicatorAdd.gif"; //$NON-NLS-1$

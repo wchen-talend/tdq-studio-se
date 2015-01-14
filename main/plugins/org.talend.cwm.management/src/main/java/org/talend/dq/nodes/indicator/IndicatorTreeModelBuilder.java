@@ -12,9 +12,26 @@
 // ============================================================================
 package org.talend.dq.nodes.indicator;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.talend.core.model.properties.Property;
 import org.talend.cwm.management.i18n.Messages;
+import org.talend.dataquality.domain.pattern.Pattern;
+import org.talend.dq.helper.PropertyHelper;
+import org.talend.dq.helper.resourcehelper.IndicatorResourceFileHelper;
+import org.talend.dq.helper.resourcehelper.PatternResourceFileHelper;
+import org.talend.dq.helper.resourcehelper.ResourceFileMap;
 import org.talend.dq.nodes.indicator.impl.IndicatorCategoryNode;
+import org.talend.dq.nodes.indicator.impl.PatternNode;
+import org.talend.dq.nodes.indicator.impl.UDINode;
 import org.talend.dq.nodes.indicator.type.IndicatorEnum;
+import org.talend.resource.ResourceManager;
+import orgomg.cwm.objectmodel.core.ModelElement;
 
 /**
  * This class for the indicator tree building.
@@ -38,10 +55,25 @@ public final class IndicatorTreeModelBuilder {
 
     private static final String SIMPLE_LABEL = Messages.getString("IndicatorTreeModelBuilder.SimpleStatistics"); //$NON-NLS-1$
 
+    private static final String UDI_LABEL = Messages.getString("IndicatorTreeModelBuilder.UserDefIndicators"); //$NON-NLS-1$
+
+    private static final String PATTERN = Messages.getString("IndicatorTreeModelBuilder.Patterns"); //$NON-NLS-1$
+
+    private static final String REGEX_PATTERN = Messages.getString("IndicatorTreeModelBuilder.Regex_Patterns"); //$NON-NLS-1$
+
+    private static final String SQL_PATTERN = Messages.getString("IndicatorTreeModelBuilder.Sql_Patterns"); //$NON-NLS-1$
+
     private IndicatorTreeModelBuilder() {
     }
 
     private static IndicatorCategoryNode[] indicatorCategoryNodes;
+
+    public static IIndicatorNode getRootNode() {
+        IndicatorCategoryNode rootNode = new IndicatorCategoryNode("root");
+        rootNode.setChildren(buildIndicatorCategory());
+
+        return rootNode;
+    }
 
     /**
      * build Indicator Category. we DO NOT use the CACHE here, because sometimes, when the indicator definitions become
@@ -50,9 +82,9 @@ public final class IndicatorTreeModelBuilder {
      * @return
      */
     public static IIndicatorNode[] buildIndicatorCategory() {
-        if (indicatorCategoryNodes != null) {
-            return indicatorCategoryNodes;
-        }
+        // if (indicatorCategoryNodes != null) {
+        // return indicatorCategoryNodes;
+        // }
         // build Basic Statistic categoryNode
         IndicatorCategoryNode simpleCategoryNode = new IndicatorCategoryNode(SIMPLE_LABEL, IndicatorEnum.CountsIndicatorEnum);
 
@@ -89,8 +121,115 @@ public final class IndicatorTreeModelBuilder {
         IndicatorEnum[] fraudIndicatorEnums = new IndicatorEnum[] { IndicatorEnum.BenfordLawFrequencyIndicatorEnum };
         IndicatorCategoryNode fraudCategoryNode = new IndicatorCategoryNode(FRAUD_LABEL, fraudIndicatorEnums);
 
+        // Add UDIEnums
+        IndicatorCategoryNode UDICategoryNode = new IndicatorCategoryNode(UDI_LABEL);
+        UDICategoryNode.setChildren(createUDIChildrens());
+        // Add PatternEnums
+        IndicatorCategoryNode regexPatternCategoryNode = new IndicatorCategoryNode(REGEX_PATTERN);
+        regexPatternCategoryNode.setChildren(createRegexPatternChildrens());
+        IndicatorCategoryNode sqlPatternCategoryNode = new IndicatorCategoryNode(SQL_PATTERN);// new
+        sqlPatternCategoryNode.setChildren(createSqlPatternChildrens()); // IndicatorEnum[]
+        // {IndicatorEnum.SqlPatternMatchingIndicatorEnum
+        // });
+
+        IndicatorCategoryNode patternCategoryNode = new IndicatorCategoryNode(PATTERN,
+                new IndicatorEnum[] { IndicatorEnum.PatternIndicatorEnum });
+
+        patternCategoryNode.setChildren(new IIndicatorNode[] { sqlPatternCategoryNode, regexPatternCategoryNode });
         indicatorCategoryNodes = new IndicatorCategoryNode[] { simpleCategoryNode, textCategoryNode, boxCategoryNode,
-                advanceCategoryNode, patternFinderCategoryNode, soundexCategoryNode, phoneCategoryNode, fraudCategoryNode };
+                advanceCategoryNode, patternFinderCategoryNode, soundexCategoryNode, phoneCategoryNode, fraudCategoryNode,
+                UDICategoryNode, patternCategoryNode };
         return indicatorCategoryNodes;
+    }
+
+    /**
+     * DOC talend Comment method "createSqlPatternChildrens".
+     * 
+     * @return
+     */
+    private static IIndicatorNode[] createSqlPatternChildrens() {
+        return getNestFolderNodes(ResourceManager.getPatternSQLFolder(), IndicatorEnum.SqlPatternMatchingIndicatorEnum,
+                PatternResourceFileHelper.getInstance());
+    }
+
+    /**
+     * 
+     * Create IIndicatorNode for every folder or file which is valid
+     * 
+     * @param folder
+     * @param indiEnum
+     * @param resourceMap
+     * @return
+     */
+    public static IIndicatorNode[] getNestFolderNodes(IFolder folder, IndicatorEnum indiEnum, ResourceFileMap resourceMap) {
+        List<IIndicatorNode> chilren = new ArrayList<IIndicatorNode>();
+        try {
+            for (IResource resource : folder.members()) {
+                if (resource instanceof IFile) {
+                    ModelElement modelElement = resourceMap.getModelElement((IFile) resource);
+                    if (modelElement == null) {
+                        continue;
+                    }
+                    Property property = PropertyHelper.getProperty(modelElement);
+                    if (property == null) {
+                        continue;
+                    }
+                    IIndicatorNode indicatorNode = createLeafNode(property.getDisplayName(), indiEnum, modelElement);
+                    if (indicatorNode == null) {
+                        continue;
+                    }
+                    chilren.add(indicatorNode);
+                } else {
+                    ICategoryNode indicatorCateNode = new IndicatorCategoryNode(resource.getName());
+                    IIndicatorNode[] nestFolderNodes = getNestFolderNodes((IFolder) resource, indiEnum, resourceMap);
+                    if (nestFolderNodes.length > 0) {
+                        indicatorCateNode.setChildren(nestFolderNodes);
+                        chilren.add(indicatorCateNode);
+                    }
+                }
+            }
+        } catch (CoreException e) {
+        }
+        return chilren.toArray(new IIndicatorNode[chilren.size()]);
+    }
+
+    /**
+     * Create leafNode by the type of indiEnum
+     * 
+     * @param label
+     * @param indiEnum
+     * @return
+     */
+    private static IIndicatorNode createLeafNode(String label, IndicatorEnum indiEnum, ModelElement modelElement) {
+        IIndicatorNode indicatorNode = null;
+        if (IndicatorEnum.RegexpMatchingIndicatorEnum == indiEnum || IndicatorEnum.SqlPatternMatchingIndicatorEnum == indiEnum) {
+            indicatorNode = new PatternNode(label, (Pattern) modelElement);
+        } else if (IndicatorEnum.UserDefinedIndicatorEnum == indiEnum) {
+            indicatorNode = new UDINode(label);
+        } else {
+            return indicatorNode;
+        }
+        indicatorNode.setIndicatorEnum(indiEnum);
+        return indicatorNode;
+    }
+
+    /**
+     * DOC talend Comment method "createRegexPatternChildrens".
+     * 
+     * @return
+     */
+    private static IIndicatorNode[] createRegexPatternChildrens() {
+        return getNestFolderNodes(ResourceManager.getPatternRegexFolder(), IndicatorEnum.RegexpMatchingIndicatorEnum,
+                PatternResourceFileHelper.getInstance());
+    }
+
+    /**
+     * Init and return all of user define indicators
+     * 
+     * @return
+     */
+    private static IIndicatorNode[] createUDIChildrens() {
+        return getNestFolderNodes(ResourceManager.getUDIFolder(), IndicatorEnum.UserDefinedIndicatorEnum,
+                IndicatorResourceFileHelper.getInstance());
     }
 }

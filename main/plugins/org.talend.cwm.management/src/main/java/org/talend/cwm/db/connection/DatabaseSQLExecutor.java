@@ -51,53 +51,7 @@ public class DatabaseSQLExecutor extends SQLExecutor {
      * @see org.talend.cwm.db.connection.ISQLExecutor#executeQuery(org.talend.dataquality.analysis.Analysis)
      */
     public List<Object[]> executeQuery(DataManager connection, List<ModelElement> analysedElements) throws SQLException {
-        dataFromTable.clear();
-        try {
-            beginQuery();
-        } catch (Exception e1) {
-            log.error(e1.getMessage(), e1);
-            return dataFromTable;
-        }
-        int columnListSize = analysedElements.size();
-
-        TypedReturnCode<java.sql.Connection> sqlconnection = getSQLConnection(connection);
-        Statement statement = null;
-        ResultSet resultSet = null;
-        try {
-            statement = sqlconnection.getObject().createStatement();
-            statement.execute(createSqlStatement(connection, analysedElements));
-            resultSet = statement.getResultSet();
-
-            while (resultSet.next()) {
-                Object[] oneRow = new Object[columnListSize];
-                // --- for each column
-                for (int i = 0; i < columnListSize; i++) {
-                    // --- get content of column
-                    oneRow[i] = resultSet.getObject(i + 1);
-                }
-                handleRow(oneRow);
-            }
-        } catch (Exception e) {
-            log.error(e, e);
-        } finally {
-            if (resultSet != null) {
-                resultSet.close();
-            }
-            if (statement != null) {
-                statement.close();
-            }
-            ReturnCode closed = ConnectionUtils.closeConnection(sqlconnection.getObject());
-            if (!closed.isOk()) {
-                log.error(closed.getMessage());
-            }
-        }
-
-        try {
-            endQuery();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-        return dataFromTable;
+        return executeQuery(connection, analysedElements, null);
     }
 
     /**
@@ -127,6 +81,19 @@ public class DatabaseSQLExecutor extends SQLExecutor {
      * @return
      */
     private String createSqlStatement(DataManager connection, List<ModelElement> analysedElements) {
+        return createSqlStatement(connection, analysedElements, null);
+
+    }
+
+    /**
+     * 
+     * createSqlStatement: if has limit, add it, else do not use limit
+     * 
+     * @param connection
+     * @param analysedElements
+     * @return
+     */
+    private String createSqlStatement(DataManager connection, List<ModelElement> analysedElements, String where) {
         DbmsLanguage dbms = createDbmsLanguage(connection);
         TdColumn col = null;
         StringBuilder sql = new StringBuilder("SELECT ");//$NON-NLS-1$
@@ -142,6 +109,10 @@ public class DatabaseSQLExecutor extends SQLExecutor {
         }
         sql.append(dbms.from());
         sql.append(dbms.getQueryColumnSetWithPrefix(col));
+        if (where != null && where.length() > 0) {
+            sql.append(dbms.where());
+            sql.append(where);
+        }
         if (limit > 0) {
             return dbms.getTopNQuery(sql.toString(), limit);
         } else {
@@ -181,5 +152,62 @@ public class DatabaseSQLExecutor extends SQLExecutor {
         }
 
         return new ResultSetIterator(sqlconnection.getObject(), sqlString, elementsName);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.cwm.db.connection.ISQLExecutor#executeQuery(orgomg.cwm.foundation.softwaredeployment.DataManager,
+     * java.util.List, java.lang.String)
+     */
+    public List<Object[]> executeQuery(DataManager connection, List<ModelElement> analysedElements, String where)
+            throws SQLException {
+        dataFromTable.clear();
+        try {
+            beginQuery();
+        } catch (Exception e1) {
+            log.error(e1.getMessage(), e1);
+            return dataFromTable;
+        }
+        int columnListSize = analysedElements.size();
+
+        TypedReturnCode<java.sql.Connection> sqlconnection = getSQLConnection(connection);
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = sqlconnection.getObject().createStatement();
+            statement.execute(createSqlStatement(connection, analysedElements, where));
+            resultSet = statement.getResultSet();
+
+            while (resultSet.next()) {
+                Object[] oneRow = new Object[columnListSize];
+                // --- for each column
+                for (int i = 0; i < columnListSize; i++) {
+                    // --- get content of column
+                    oneRow[i] = resultSet.getObject(i + 1);
+                }
+                handleRow(oneRow);
+            }
+        } catch (Exception e) {
+            log.error(e, e);
+        } finally {
+            if (resultSet != null) {
+                resultSet.close();
+            }
+            if (statement != null) {
+                statement.close();
+            }
+            ReturnCode closed = ConnectionUtils.closeConnection(sqlconnection.getObject());
+            if (!closed.isOk()) {
+                log.error(closed.getMessage());
+            }
+        }
+
+        try {
+            endQuery();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return dataFromTable;
     }
 }

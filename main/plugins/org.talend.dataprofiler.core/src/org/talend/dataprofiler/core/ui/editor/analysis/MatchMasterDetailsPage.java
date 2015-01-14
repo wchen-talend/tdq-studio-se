@@ -33,6 +33,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.layout.GridData;
@@ -574,38 +575,26 @@ public class MatchMasterDetailsPage extends AbstractAnalysisMetadataPage impleme
                 DefaultMessagesImpl.getString("MatchMasterDetailsPage.SelectDataButton"), SWT.NONE);//$NON-NLS-1$
         GridDataFactory.fillDefaults().align(SWT.LEFT, SWT.TOP).applyTo(selectDataBtn);
 
-        createConnectionBtn.addMouseListener(new MouseListener() {
+        createConnectionBtn.addMouseListener(new MouseAdapter() {
 
-            public void mouseDoubleClick(MouseEvent e) {
-                // no need to implement
-            }
-
+            @Override
             public void mouseDown(MouseEvent e) {
                 ConnectionWizard connectionWizard = new ConnectionWizard(PlatformUI.getWorkbench(), dataSampleparentComposite);
                 connectionWizard.setForcePreviousAndNextButtons(true);
-                WizardDialog dialog = new WizardDialog(null, connectionWizard);
+                WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getDisplay().getActiveShell(), connectionWizard);
                 dialog.setPageSize(500, 200);
                 dialog.open();
             }
 
-            public void mouseUp(MouseEvent e) {
-                // no need to implement
-            }
         });
-        selectDataBtn.addMouseListener(new MouseListener() {
+        selectDataBtn.addMouseListener(new MouseAdapter() {
 
-            public void mouseDoubleClick(MouseEvent e) {
-                // no need to implement
-            }
-
+            @Override
             public void mouseDown(MouseEvent e) {
                 // no need to give the current connection, the called method will find the current selected nodes auto
                 openColumnsSelectionDialog(null);
             }
 
-            public void mouseUp(MouseEvent e) {
-                // no need to implement
-            }
         });
         registerEvents(dataSampleparentComposite);
     }

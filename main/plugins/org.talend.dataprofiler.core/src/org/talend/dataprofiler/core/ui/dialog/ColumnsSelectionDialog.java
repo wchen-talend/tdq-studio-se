@@ -231,6 +231,7 @@ public class ColumnsSelectionDialog extends TwoPartCheckSelectionDialog {
                         checkChildrenElements(selectedNode, event.getChecked());
                     }
                     getTreeViewer().setSubtreeChecked(event.getElement(), event.getChecked());
+                    updateStatusBySelection();
                 } finally {
                     // Added TDQ-8718 20140506 yyin
                     DQDBFolderRepositoryNode.setCallingFromColumnDialog(false);
@@ -261,8 +262,16 @@ public class ColumnsSelectionDialog extends TwoPartCheckSelectionDialog {
 
             public void checkStateChanged(CheckStateChangedEvent event) {
                 handleTableElementsChecked((RepositoryNode) event.getElement(), event.getChecked());
+                updateStatusBySelection();
             }
         });
+    }
+
+    /**
+     * Update the status of dailog by select action
+     */
+    protected void updateStatusBySelection() {
+        // If sub class need update status by selection can implement it
     }
 
     /**

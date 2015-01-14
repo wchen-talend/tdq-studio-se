@@ -267,6 +267,10 @@ public final class ModelElementIndicatorRule {
                 return true;
             }
             break;
+        case RegexpMatchingIndicatorEnum:
+        case SqlPatternMatchingIndicatorEnum:
+        case UserDefinedIndicatorEnum:
+            return true;
         default:
             return false;
         }

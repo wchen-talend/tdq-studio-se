@@ -34,10 +34,14 @@ public interface IIndicatorNode {
      */
     public IndicatorEnum getIndicatorEnum();
 
+    public void setIndicatorEnum(IndicatorEnum indicatorEnum);
+
     public Indicator getIndicatorInstance();
 
     public String getLabel();
 
     public boolean isIndicatorEnumNode();
+
+    public String getImageName();
 
 }

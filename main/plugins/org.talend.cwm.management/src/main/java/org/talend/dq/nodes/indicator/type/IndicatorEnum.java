@@ -348,7 +348,13 @@ public enum IndicatorEnum {
                                      IndicatorsPackage.BENFORD_LAW_FREQUENCY_INDICATOR,
                                      IndicatorsPackage.Literals.BENFORD_LAW_FREQUENCY_INDICATOR,
                                      "Benford Law Frequency", //$NON-NLS-1$
-                                     null);
+                                     null),
+
+    PatternIndicatorEnum(
+                         IndicatorsPackage.PATTERN_MATCHING_INDICATOR,
+                         IndicatorsPackage.Literals.PATTERN_MATCHING_INDICATOR,
+                         "Patterns", //$NON-NLS-1$
+                         null);
 
     private EClass indicatorType;
 
@@ -577,6 +583,11 @@ public enum IndicatorEnum {
     public static boolean isPlainIndicatorEnum(IndicatorEnum indicatorEnumn) {
         return indicatorEnumn != RegexpMatchingIndicatorEnum && indicatorEnumn != SqlPatternMatchingIndicatorEnum
                 && indicatorEnumn != WhereRuleIndicatorEnum && indicatorEnumn != UserDefinedIndicatorEnum;
+    }
+
+    public static boolean isSpecialIndicatorEnum(IndicatorEnum indicatorEnumn) {
+        return indicatorEnumn == RegexpMatchingIndicatorEnum || indicatorEnumn == SqlPatternMatchingIndicatorEnum
+                || indicatorEnumn == UserDefinedIndicatorEnum;
     }
 
     public boolean isAChildOf(IndicatorEnum parent) {

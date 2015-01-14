@@ -130,24 +130,6 @@ public class MatchAnalysisHandler extends AnalysisHandler {
     }
 
     /**
-     * DOC yyin Comment method "changeDefaultRowLoaded".
-     * 
-     * @param text
-     */
-    public void changeDefaultRowLoaded(String text) {
-        analysis.getParameters().setMaxNumberRows(Integer.valueOf(text));
-    }
-
-    /**
-     * find in analysis's parameter if has: DefaultLoadedRowCount".if has:get its value, if not, create one
-     * 
-     * @return
-     */
-    public String getDefaultLoadedRowCount() {
-        return String.valueOf(analysis.getParameters().getMaxNumberRows());
-    }
-
-    /**
      * when the columns is empty, clear all keys.
      */
     public void clearAllKeys() {

@@ -13,7 +13,6 @@
 package org.talend.dataprofiler.core.ui.grid;
 
 import org.eclipse.nebula.widgets.grid.GridColumn;
-import org.eclipse.nebula.widgets.grid.GridHeaderRenderer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -27,7 +26,7 @@ import org.eclipse.swt.widgets.Display;
 /**
  * The column header renderer.
  */
-public class TdColumnHeaderRenderer extends GridHeaderRenderer {
+public class TdColumnHeaderRenderer extends AbstractColumnHerderRenderer {
 
     int leftMargin = 6;
 
@@ -85,10 +84,11 @@ public class TdColumnHeaderRenderer extends GridHeaderRenderer {
             y += gc.stringExtent(column.getText()).x * sinRotation;
         } else {
             int plainTextWidth;
-            if (wHint == SWT.DEFAULT)
+            if (wHint == SWT.DEFAULT) {
                 plainTextWidth = getBounds().width - x - rightMargin;
-            else
+            } else {
                 plainTextWidth = wHint - x - rightMargin;
+            }
 
             getTextLayout(gc, column);
             textLayout.setText(column.getText());
@@ -136,8 +136,7 @@ public class TdColumnHeaderRenderer extends GridHeaderRenderer {
         int width = getBounds().width - x;
         width -= rightMargin;
 
-        float[] cords = { (float) (getBounds().x + width / 2 - leftMargin),
-                (float) (getBounds().y + (float) getBounds().height - topMargin) };
+        float[] cords = { (getBounds().x + width / 2 - leftMargin), (getBounds().y + (float) getBounds().height - topMargin) };
 
         _transformInv.transform(cords);
 
@@ -188,6 +187,7 @@ public class TdColumnHeaderRenderer extends GridHeaderRenderer {
     /**
      * @return the bounds reserved for the control
      */
+    @Override
     protected Rectangle getControlBounds(Object value, boolean preferred) {
         Rectangle bounds = getBounds();
         GridColumn column = (GridColumn) value;

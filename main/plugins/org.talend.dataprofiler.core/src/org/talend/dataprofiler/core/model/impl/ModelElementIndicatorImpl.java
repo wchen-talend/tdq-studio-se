@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.eclipse.emf.ecore.impl.EFactoryImpl;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.model.ModelElementIndicator;
 import org.talend.dataprofiler.core.ui.editor.preview.ColumnIndicatorUnit;
@@ -94,14 +95,18 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
 
     private List<IndicatorEnum> tempIndicatorEnums = new ArrayList<IndicatorEnum>();
 
+    private List<IndicatorUnit> tempSpecialIndicatorUnitList = new ArrayList<IndicatorUnit>();
+
     // the indicatorEnums number equal plat IndicatorEnum(not hierrachy) numbers.
     private List<IndicatorEnum> flatIndicatorEnumList = new ArrayList<IndicatorEnum>();
 
     private Map<IndicatorEnum, IndicatorUnit> plainIndicatorUnitMap = new HashMap<IndicatorEnum, IndicatorUnit>();
 
+    private Map<String, IndicatorUnit> specialIndicatorUnitMap = new HashMap<String, IndicatorUnit>();
+
     private IndicatorUnit[] plainIndicatorUnits;
 
-    private List<IndicatorUnit> specialIndicatorUnitList;
+    private List<IndicatorUnit> specialIndicatorUnitList = new ArrayList<IndicatorUnit>();
 
     public ModelElementIndicatorImpl() {
     }
@@ -116,6 +121,13 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
 
     public boolean tempContains(IndicatorEnum indicatorEnum) {
         return this.tempIndicatorEnums.contains(indicatorEnum);
+    }
+
+    public boolean specialTempContains(Indicator indicator) {
+        if (indicator == null) {
+            return false;
+        }
+        return this.specialIndicatorUnitList.contains(specialIndicatorUnitMap.get(indicator.getName()));
     }
 
     public List<IndicatorEnum> getTempIndicator() {
@@ -186,7 +198,7 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
     }
 
     public boolean hasIndicators() {
-        return !(this.flatIndicatorEnumList.size() == 0 || this.flatIndicatorEnumList.size() == 0);
+        return this.flatIndicatorEnumList.size() != 0 || this.specialIndicatorUnitList.size() != 0;
     }
 
     public Indicator[] getIndicators() {
@@ -424,6 +436,24 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
         return createSpecialIndicatorUnit(indicatorEnum, indicator);
     }
 
+    public IndicatorUnit addTempSpecialIndicator(IndicatorEnum indicatorEnum, Indicator indicator) {
+        return createTempSpecialIndicatorUnit(indicatorEnum, indicator);
+    }
+
+    public void removeSpecialIndicator(Indicator indicator) {
+        IndicatorUnit indicatorUnit = this.specialIndicatorUnitMap.get(indicator.getName());
+        if (indicatorUnit != null) {
+            this.specialIndicatorUnitList.remove(indicatorUnit);
+        }
+    }
+
+    public void removeTempSpecialIndicator(Indicator indicator) {
+        IndicatorUnit indicatorUnit = this.specialIndicatorUnitMap.get(indicator.getName());
+        if (indicatorUnit != null) {
+            this.tempSpecialIndicatorUnitList.remove(indicatorUnit);
+        }
+    }
+
     public void addTempIndicatorEnum(IndicatorEnum indicatorEnum) {
         if (!tempIndicatorEnums.contains(indicatorEnum)) {
             tempIndicatorEnums.add(indicatorEnum);
@@ -448,6 +478,7 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
 
     public void copyOldIndicatorEnum() {
         listCopy(tempIndicatorEnums, flatIndicatorEnumList);
+        listCopy(tempSpecialIndicatorUnitList, specialIndicatorUnitList);
     }
 
     /**
@@ -469,9 +500,19 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
         }
 
         processCategoryIndicator();
-
+        StoreTempSpecialIndicator();
+        // specialIndicatorUnitList = createSpacialIndicatorUnits();
         // clear tempIndicatorEnums
         tempIndicatorEnums.clear();
+        tempSpecialIndicatorUnitList.clear();
+    }
+
+    /**
+     * DOC talend Comment method "StoreTempSpecialIndicator".
+     */
+    private void StoreTempSpecialIndicator() {
+        this.specialIndicatorUnitList.clear();
+        this.specialIndicatorUnitList.addAll(tempSpecialIndicatorUnitList);
     }
 
     /**
@@ -524,6 +565,7 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
             categoryEnumList.remove(IndicatorEnum.TextIndicatorEnum);
         }
         plainIndicatorUnits = createCategoryIndicatorUnits(categoryEnumList.toArray(new IndicatorEnum[categoryEnumList.size()]));
+
     }
 
     /**
@@ -540,27 +582,30 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
                 continue;
             }
             if (!IndicatorEnum.isPlainIndicatorEnum(categoryEnum)) {
+                // if (tempSpecialIndicatorEnumList == null) {
+                // tempSpecialIndicatorEnumList = new ArrayList<IndicatorEnum>();
+                // }
+                // tempSpecialIndicatorEnumList.add(categoryEnum);
                 continue;
             }
-            indicatorUnit = getIndicatorUnit(categoryEnum);
+            indicatorUnit = getPlainIndicatorUnit(categoryEnum);
             switch (categoryEnum) {
             case CountsIndicatorEnum:
                 CountsIndicator countsIndicator = (CountsIndicator) indicatorUnit.getIndicator();
-                countsIndicator.setBlankCountIndicator((BlankCountIndicator) getIndicatorUnit(
+                countsIndicator.setBlankCountIndicator((BlankCountIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.BlankCountIndicatorEnum).getIndicator());
-                countsIndicator.setDistinctCountIndicator((DistinctCountIndicator) getIndicatorUnit(
+                countsIndicator.setDistinctCountIndicator((DistinctCountIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.DistinctCountIndicatorEnum).getIndicator());
-                countsIndicator.setDuplicateCountIndicator((DuplicateCountIndicator) getIndicatorUnit(
+                countsIndicator.setDuplicateCountIndicator((DuplicateCountIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.DuplicateCountIndicatorEnum).getIndicator());
-                countsIndicator.setRowCountIndicator((RowCountIndicator) getIndicatorUnit(IndicatorEnum.RowCountIndicatorEnum)
-                        .getIndicator());
-                countsIndicator.setNullCountIndicator((NullCountIndicator) getIndicatorUnit(IndicatorEnum.NullCountIndicatorEnum)
-                        .getIndicator());
-                countsIndicator
-                        .setUniqueCountIndicator((UniqueCountIndicator) getIndicatorUnit(IndicatorEnum.UniqueIndicatorEnum)
-                                .getIndicator());
+                countsIndicator.setRowCountIndicator((RowCountIndicator) getPlainIndicatorUnit(
+                        IndicatorEnum.RowCountIndicatorEnum).getIndicator());
+                countsIndicator.setNullCountIndicator((NullCountIndicator) getPlainIndicatorUnit(
+                        IndicatorEnum.NullCountIndicatorEnum).getIndicator());
+                countsIndicator.setUniqueCountIndicator((UniqueCountIndicator) getPlainIndicatorUnit(
+                        IndicatorEnum.UniqueIndicatorEnum).getIndicator());
                 // MOD klliu bug 13411 2010-06-03
-                countsIndicator.setDefaultValueIndicator((DefValueCountIndicator) getIndicatorUnit(
+                countsIndicator.setDefaultValueIndicator((DefValueCountIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.DefValueCountIndicatorEnum).getIndicator());
                 indicatorUnit.setChildren(createCategoryIndicatorUnits(IndicatorEnum.CountsIndicatorEnum.getChildren()));
                 indicatorUnitList.add(indicatorUnit);
@@ -568,31 +613,31 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
 
             case TextIndicatorEnum:
                 TextIndicator textIndicator = (TextIndicator) indicatorUnit.getIndicator();
-                textIndicator.setMinLengthIndicator((MinLengthIndicator) getIndicatorUnit(IndicatorEnum.MinLengthIndicatorEnum)
-                        .getIndicator());
-                textIndicator.setMaxLengthIndicator((MaxLengthIndicator) getIndicatorUnit(IndicatorEnum.MaxLengthIndicatorEnum)
-                        .getIndicator());
-                textIndicator.setAverageLengthIndicator((AverageLengthIndicator) getIndicatorUnit(
+                textIndicator.setMinLengthIndicator((MinLengthIndicator) getPlainIndicatorUnit(
+                        IndicatorEnum.MinLengthIndicatorEnum).getIndicator());
+                textIndicator.setMaxLengthIndicator((MaxLengthIndicator) getPlainIndicatorUnit(
+                        IndicatorEnum.MaxLengthIndicatorEnum).getIndicator());
+                textIndicator.setAverageLengthIndicator((AverageLengthIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.AverageLengthIndicatorEnum).getIndicator());
 
                 // MOD yyi 2010-08-05
-                textIndicator.setAvgLengthWithBlankIndicator((AvgLengthWithBlankIndicator) getIndicatorUnit(
+                textIndicator.setAvgLengthWithBlankIndicator((AvgLengthWithBlankIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.AverageLengthWithBlankIndicatorEnum).getIndicator());
-                textIndicator.setAvgLengthWithNullIndicator((AvgLengthWithNullIndicator) getIndicatorUnit(
+                textIndicator.setAvgLengthWithNullIndicator((AvgLengthWithNullIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.AverageLengthWithNullIndicatorEnum).getIndicator());
-                textIndicator.setAvgLengthWithBlankNullIndicator((AvgLengthWithBlankNullIndicator) getIndicatorUnit(
+                textIndicator.setAvgLengthWithBlankNullIndicator((AvgLengthWithBlankNullIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.AverageLengthWithNullBlankIndicatorEnum).getIndicator());
-                textIndicator.setMinLengthWithBlankIndicator((MinLengthWithBlankIndicator) getIndicatorUnit(
+                textIndicator.setMinLengthWithBlankIndicator((MinLengthWithBlankIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.MinLengthWithBlankIndicatorEnum).getIndicator());
-                textIndicator.setMinLengthWithNullIndicator((MinLengthWithNullIndicator) getIndicatorUnit(
+                textIndicator.setMinLengthWithNullIndicator((MinLengthWithNullIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.MinLengthWithNullIndicatorEnum).getIndicator());
-                textIndicator.setMinLengthWithBlankNullIndicator((MinLengthWithBlankNullIndicator) getIndicatorUnit(
+                textIndicator.setMinLengthWithBlankNullIndicator((MinLengthWithBlankNullIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.MinLengthWithBlankNullIndicatorEnum).getIndicator());
-                textIndicator.setMaxLengthWithBlankIndicator((MaxLengthWithBlankIndicator) getIndicatorUnit(
+                textIndicator.setMaxLengthWithBlankIndicator((MaxLengthWithBlankIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.MaxLengthWithBlankIndicatorEnum).getIndicator());
-                textIndicator.setMaxLengthWithNullIndicator((MaxLengthWithNullIndicator) getIndicatorUnit(
+                textIndicator.setMaxLengthWithNullIndicator((MaxLengthWithNullIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.MaxLengthWithNullIndicatorEnum).getIndicator());
-                textIndicator.setMaxLengthWithBlankNullIndicator((MaxLengthWithBlankNullIndicator) getIndicatorUnit(
+                textIndicator.setMaxLengthWithBlankNullIndicator((MaxLengthWithBlankNullIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.MaxLengthWithBlankNullIndicatorEnum).getIndicator());
                 // ~
 
@@ -601,51 +646,53 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
                 break;
             case BoxIIndicatorEnum:
                 BoxIndicator boxtIndicator = (BoxIndicator) indicatorUnit.getIndicator();
-                boxtIndicator.setRangeIndicator((RangeIndicator) getIndicatorUnit(IndicatorEnum.RangeIndicatorEnum)
+                boxtIndicator.setRangeIndicator((RangeIndicator) getPlainIndicatorUnit(IndicatorEnum.RangeIndicatorEnum)
                         .getIndicator());
-                boxtIndicator.setIQR((IQRIndicator) getIndicatorUnit(IndicatorEnum.IQRIndicatorEnum).getIndicator());
-                boxtIndicator.setMeanIndicator((MeanIndicator) getIndicatorUnit(IndicatorEnum.MeanIndicatorEnum).getIndicator());
-                boxtIndicator.setMedianIndicator((MedianIndicator) getIndicatorUnit(IndicatorEnum.MedianIndicatorEnum)
+                boxtIndicator.setIQR((IQRIndicator) getPlainIndicatorUnit(IndicatorEnum.IQRIndicatorEnum).getIndicator());
+                boxtIndicator.setMeanIndicator((MeanIndicator) getPlainIndicatorUnit(IndicatorEnum.MeanIndicatorEnum)
+                        .getIndicator());
+                boxtIndicator.setMedianIndicator((MedianIndicator) getPlainIndicatorUnit(IndicatorEnum.MedianIndicatorEnum)
                         .getIndicator());
                 indicatorUnit.setChildren(createCategoryIndicatorUnits(IndicatorEnum.BoxIIndicatorEnum.getChildren()));
                 indicatorUnitList.add(indicatorUnit);
                 break;
             case IQRIndicatorEnum:
                 IQRIndicator iqrIndicator = (IQRIndicator) indicatorUnit.getIndicator();
-                iqrIndicator.setLowerValue((LowerQuartileIndicator) getIndicatorUnit(IndicatorEnum.LowerQuartileIndicatorEnum)
-                        .getIndicator());
-                iqrIndicator.setUpperValue((UpperQuartileIndicator) getIndicatorUnit(IndicatorEnum.UpperQuartileIndicatorEnum)
-                        .getIndicator());
+                iqrIndicator.setLowerValue((LowerQuartileIndicator) getPlainIndicatorUnit(
+                        IndicatorEnum.LowerQuartileIndicatorEnum).getIndicator());
+                iqrIndicator.setUpperValue((UpperQuartileIndicator) getPlainIndicatorUnit(
+                        IndicatorEnum.UpperQuartileIndicatorEnum).getIndicator());
                 indicatorUnit.setChildren(createCategoryIndicatorUnits(IndicatorEnum.IQRIndicatorEnum.getChildren()));
                 indicatorUnitList.add(indicatorUnit);
                 break;
             case RangeIndicatorEnum:
                 RangeIndicator rangeIndicator = (RangeIndicator) indicatorUnit.getIndicator();
-                rangeIndicator.setLowerValue((MinValueIndicator) getIndicatorUnit(IndicatorEnum.MinValueIndicatorEnum)
+                rangeIndicator.setLowerValue((MinValueIndicator) getPlainIndicatorUnit(IndicatorEnum.MinValueIndicatorEnum)
                         .getIndicator());
-                rangeIndicator.setUpperValue((MaxValueIndicator) getIndicatorUnit(IndicatorEnum.MaxValueIndicatorEnum)
+                rangeIndicator.setUpperValue((MaxValueIndicator) getPlainIndicatorUnit(IndicatorEnum.MaxValueIndicatorEnum)
                         .getIndicator());
                 indicatorUnit.setChildren(createCategoryIndicatorUnits(IndicatorEnum.RangeIndicatorEnum.getChildren()));
                 indicatorUnitList.add(indicatorUnit);
                 break;
             case PhoneNumbStatisticsIndicatorEnum:
                 PhoneNumbStatisticsIndicator phoneNumbIndicator = (PhoneNumbStatisticsIndicator) indicatorUnit.getIndicator();
-                phoneNumbIndicator.setValidPhoneCountIndicator((ValidPhoneCountIndicator) getIndicatorUnit(
+                phoneNumbIndicator.setValidPhoneCountIndicator((ValidPhoneCountIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.ValidPhoneCountIndicatorEnum).getIndicator());
-                phoneNumbIndicator.setPossiblePhoneCountIndicator((PossiblePhoneCountIndicator) getIndicatorUnit(
+                phoneNumbIndicator.setPossiblePhoneCountIndicator((PossiblePhoneCountIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.PossiblePhoneCountIndicatorEnum).getIndicator());
-                phoneNumbIndicator.setValidRegCodeCountIndicator((ValidRegCodeCountIndicator) getIndicatorUnit(
+                phoneNumbIndicator.setValidRegCodeCountIndicator((ValidRegCodeCountIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.ValidRegCodeCountIndicatorEnum).getIndicator());
-                phoneNumbIndicator.setInvalidRegCodeCountIndicator((InvalidRegCodeCountIndicator) getIndicatorUnit(
+                phoneNumbIndicator.setInvalidRegCodeCountIndicator((InvalidRegCodeCountIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.InvalidRegCodeCountIndicatorEnum).getIndicator());
-                phoneNumbIndicator.setWellFormE164PhoneCountIndicator((WellFormE164PhoneCountIndicator) getIndicatorUnit(
+                phoneNumbIndicator.setWellFormE164PhoneCountIndicator((WellFormE164PhoneCountIndicator) getPlainIndicatorUnit(
                         IndicatorEnum.WellFormE164PhoneCountIndicatorEnum).getIndicator());
-                phoneNumbIndicator.setWellFormIntePhoneCountIndicator((WellFormIntePhoneCountIndicatorImpl) getIndicatorUnit(
-                        IndicatorEnum.WellFormIntePhoneCountIndicatorEnum).getIndicator());
                 phoneNumbIndicator
-                        .setWellFormNationalPhoneCountIndicator((WellFormNationalPhoneCountIndicatorImpl) getIndicatorUnit(
+                        .setWellFormIntePhoneCountIndicator((WellFormIntePhoneCountIndicatorImpl) getPlainIndicatorUnit(
+                                IndicatorEnum.WellFormIntePhoneCountIndicatorEnum).getIndicator());
+                phoneNumbIndicator
+                        .setWellFormNationalPhoneCountIndicator((WellFormNationalPhoneCountIndicatorImpl) getPlainIndicatorUnit(
                                 IndicatorEnum.WellFormNationalPhoneCountIndicatorEnum).getIndicator());
-                phoneNumbIndicator.setFormatFreqPieIndicator((FormatFreqPieIndicatorImpl) getIndicatorUnit(
+                phoneNumbIndicator.setFormatFreqPieIndicator((FormatFreqPieIndicatorImpl) getPlainIndicatorUnit(
                         IndicatorEnum.FormatFreqPieIndictorEnum).getIndicator());
                 indicatorUnit.setChildren(createCategoryIndicatorUnits(IndicatorEnum.PhoneNumbStatisticsIndicatorEnum
                         .getChildren()));
@@ -667,10 +714,25 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
      * @param indicatorEnum
      * @return
      */
-    private IndicatorUnit getIndicatorUnit(IndicatorEnum indicatorEnum) {
+    private IndicatorUnit getPlainIndicatorUnit(IndicatorEnum indicatorEnum) {
         IndicatorUnit indicatorUnit = this.plainIndicatorUnitMap.get(indicatorEnum);
         if (indicatorUnit == null) {
             indicatorUnit = createPlainIndicatorUnit(indicatorEnum, null);
+        }
+        return indicatorUnit;
+    }
+
+    /**
+     * This method will get IndicatorUnit from indicatorUnitMap, if can't get exist object, it will be create a new
+     * IndicatorUnit.
+     * 
+     * @param indicatorEnum
+     * @return
+     */
+    private IndicatorUnit getSpecialIndicatorUnit(IndicatorEnum indicatorEnum) {
+        IndicatorUnit indicatorUnit = this.specialIndicatorUnitMap.get(indicatorEnum);
+        if (indicatorUnit == null) {
+            indicatorUnit = createSpecialIndicatorUnit(indicatorEnum, null);
         }
         return indicatorUnit;
     }
@@ -686,7 +748,7 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
     private IndicatorUnit createPlainIndicatorUnit(IndicatorEnum indicatorEnum, Indicator indicator) {
         Indicator tempIndicator = indicator;
         if (tempIndicator == null) {
-            IndicatorsFactory factory = IndicatorsFactory.eINSTANCE;
+            EFactoryImpl factory = (EFactoryImpl) indicatorEnum.getIndicatorType().getEPackage().getEFactoryInstance();
             tempIndicator = (Indicator) factory.create(indicatorEnum.getIndicatorType());
             // MOD scorreia 2008-09-18: bug 5131 fixed: set indicator's definition when the indicator is created.
             if (!DefinitionHandler.getInstance().setDefaultIndicatorDefinition(tempIndicator)) {
@@ -733,28 +795,51 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
     private IndicatorUnit createSpecialIndicatorUnit(IndicatorEnum indicatorEnum, Indicator indicator) {
         Indicator tempIndicator = indicator;
         if (tempIndicator == null) {
-            IndicatorsFactory factory = IndicatorsFactory.eINSTANCE;
+            EFactoryImpl factory = (EFactoryImpl) indicatorEnum.getIndicatorType().getEPackage().getEFactoryInstance();
             tempIndicator = (Indicator) factory.create(indicatorEnum.getIndicatorType());
             // MOD scorreia 2008-09-18: bug 5131 fixed: set indicator's definition when the indicator is created.
             if (!DefinitionHandler.getInstance().setDefaultIndicatorDefinition(tempIndicator)) {
                 log.error(DefaultMessagesImpl.getString("ModelElementIndicatorImpl_COULDNOTSETDEF_GIVEN_IND0") + tempIndicator.getName()); //$NON-NLS-1$
             }
         }
-        if (!flatIndicatorEnumList.contains(indicatorEnum)) {
-            this.flatIndicatorEnumList.add(indicatorEnum);
-        }
+        // if (!flatIndicatorEnumList.contains(indicatorEnum)) {
+        // this.flatIndicatorEnumList.add(indicatorEnum);
+        // }
         if (this.specialIndicatorUnitList == null) {
             this.specialIndicatorUnitList = new ArrayList<IndicatorUnit>();
         }
         IndicatorUnit indicatorUnit = new ColumnIndicatorUnit(indicatorEnum, tempIndicator, this);
         specialIndicatorUnitList.add(indicatorUnit);
+        this.specialIndicatorUnitMap.put(tempIndicator.getName(), indicatorUnit);
         return indicatorUnit;
     }
 
-    private void listCopy(List<IndicatorEnum> dest, List<IndicatorEnum> src) {
+    private IndicatorUnit createTempSpecialIndicatorUnit(IndicatorEnum indicatorEnum, Indicator indicator) {
+        Indicator tempIndicator = indicator;
+        if (tempIndicator == null) {
+            EFactoryImpl factory = (EFactoryImpl) indicatorEnum.getIndicatorType().getEPackage().getEFactoryInstance();
+            tempIndicator = (Indicator) factory.create(indicatorEnum.getIndicatorType());
+            // MOD scorreia 2008-09-18: bug 5131 fixed: set indicator's definition when the indicator is created.
+            if (!DefinitionHandler.getInstance().setDefaultIndicatorDefinition(tempIndicator)) {
+                log.error(DefaultMessagesImpl.getString("ModelElementIndicatorImpl_COULDNOTSETDEF_GIVEN_IND0") + tempIndicator.getName()); //$NON-NLS-1$
+            }
+        }
+        // if (!flatIndicatorEnumList.contains(indicatorEnum)) {
+        // this.flatIndicatorEnumList.add(indicatorEnum);
+        // }
+        if (this.specialIndicatorUnitList == null) {
+            this.specialIndicatorUnitList = new ArrayList<IndicatorUnit>();
+        }
+        IndicatorUnit indicatorUnit = new ColumnIndicatorUnit(indicatorEnum, tempIndicator, this);
+        tempSpecialIndicatorUnitList.add(indicatorUnit);
+        this.specialIndicatorUnitMap.put(tempIndicator.getName(), indicatorUnit);
+        return indicatorUnit;
+    }
+
+    private <T> void listCopy(List<T> dest, List<T> src) {
         dest.clear();
-        for (IndicatorEnum indicatorEnum : src) {
-            dest.add(indicatorEnum);
+        for (T element : src) {
+            dest.add(element);
         }
     }
 

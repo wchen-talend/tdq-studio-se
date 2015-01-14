@@ -12,7 +12,6 @@
 // ============================================================================
 package org.talend.dataquality.record.linkage.ui.i18n.internal;
 
-
 import java.util.ResourceBundle;
 
 import org.talend.commons.i18n.MessagesCore;
@@ -28,6 +27,7 @@ import org.talend.commons.i18n.MessagesCore;
  * $Id: DefaultMessagesImpl.java 3351 2007-05-04 12:14:00 +0000 (星期五, 04 五月 2007) plegall $
  *
  */
+
 public class DefaultMessagesImpl extends MessagesCore {
 
     private static final String BUNDLE_NAME = "messages"; //$NON-NLS-1$
@@ -59,4 +59,3 @@ public class DefaultMessagesImpl extends MessagesCore {
         return getString(key, PLUGIN_ID, resourceBundle, args);
     }
 }
-

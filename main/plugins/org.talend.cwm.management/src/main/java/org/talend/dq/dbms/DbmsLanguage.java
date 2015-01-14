@@ -29,10 +29,12 @@ import org.talend.core.model.metadata.builder.connection.DatabaseConnection;
 import org.talend.core.model.metadata.builder.database.dburl.SupportDBUrlType;
 import org.talend.core.runtime.CoreRuntimePlugin;
 import org.talend.cwm.db.connection.ConnectionUtils;
+import org.talend.cwm.helper.CatalogHelper;
 import org.talend.cwm.helper.ColumnHelper;
 import org.talend.cwm.helper.ColumnSetHelper;
 import org.talend.cwm.helper.ConnectionHelper;
 import org.talend.cwm.helper.ResourceHelper;
+import org.talend.cwm.helper.SchemaHelper;
 import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.cwm.relational.TdColumn;
 import org.talend.cwm.relational.TdExpression;
@@ -57,6 +59,7 @@ import org.talend.dataquality.rules.JoinElement;
 import org.talend.metadata.managment.ui.i18n.Messages;
 import org.talend.utils.ProductVersion;
 import org.talend.utils.sql.Java2SqlType;
+import orgomg.cwm.objectmodel.core.CoreFactory;
 import orgomg.cwm.objectmodel.core.Expression;
 import orgomg.cwm.objectmodel.core.ModelElement;
 import orgomg.cwm.objectmodel.core.Package;
@@ -123,6 +126,8 @@ public class DbmsLanguage {
     public static final String SQL = "SQL"; //$NON-NLS-1$
 
     private static final String DOT = "."; //$NON-NLS-1$
+
+    private static final String ASTERISK = "*"; //$NON-NLS-1$
 
     /**
      * End of Statement: ";".
@@ -728,6 +733,72 @@ public class DbmsLanguage {
         return getSqlExpression(indicatorDefinition, dbms, sqlGenericExpression, this.getDbVersion());
         // ~11201
 
+    }
+
+    /**
+     * 
+     * Get the query Expression for one column
+     * 
+     * @param column
+     * @param where
+     * @return
+     */
+    public Expression getColumnQueryExpression(TdColumn column, String where) {
+        ModelElement columnSet = ColumnHelper.getColumnOwnerAsColumnSet(column);
+        Schema parentSchema = SchemaHelper.getParentSchema(columnSet);
+        Catalog parentCatalog = CatalogHelper.getParentCatalog(columnSet);
+        if (parentSchema != null) {
+            parentCatalog = CatalogHelper.getParentCatalog(parentSchema);
+        }
+        String schemaName = parentSchema == null ? null : parentSchema.getName();
+        String catalogName = parentCatalog == null ? null : parentCatalog.getName();
+        String qualifiedName = this.toQualifiedName(catalogName, schemaName, columnSet.getName());
+        Expression queryExpression = CoreFactory.eINSTANCE.createExpression();
+        String expressionBody = getQuerySql(column.getName(), qualifiedName, where);
+        queryExpression.setBody(expressionBody);
+        queryExpression.setLanguage(this.getDbmsName());
+        return queryExpression;
+
+    }
+
+    /**
+     * 
+     * Get the query Expression for one table of column
+     * 
+     * @param column
+     * @param where
+     * @return
+     */
+    public Expression getTableQueryExpression(TdColumn column, String where) {
+        ModelElement columnSet = ColumnHelper.getColumnOwnerAsColumnSet(column);
+        Schema parentSchema = SchemaHelper.getParentSchema(columnSet);
+        Catalog parentCatalog = CatalogHelper.getParentCatalog(columnSet);
+        if (parentSchema != null) {
+            parentCatalog = CatalogHelper.getParentCatalog(parentSchema);
+        }
+        String schemaName = parentSchema == null ? null : parentSchema.getName();
+        String catalogName = parentCatalog == null ? null : parentCatalog.getName();
+        String qualifiedName = this.toQualifiedName(catalogName, schemaName, columnSet.getName());
+        Expression queryExpression = CoreFactory.eINSTANCE.createExpression();
+        String expressionBody = getQuerySql(ASTERISK, qualifiedName, where);
+        queryExpression.setBody(expressionBody);
+        queryExpression.setLanguage(this.getDbmsName());
+        return queryExpression;
+
+    }
+
+    /**
+     * DOC talend Comment method "getQuerySql".
+     * 
+     * @param name
+     * @param qualifiedName
+     */
+    protected String getQuerySql(String name, String qualifiedName, String where) {
+        String returnStr = "select " + name + " from " + qualifiedName;//$NON-NLS-1$ //$NON-NLS-2$
+        if (where != null && where.length() > 0) {
+            returnStr += where() + where;
+        }
+        return returnStr;
     }
 
     /**

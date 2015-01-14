@@ -13,7 +13,8 @@
 package org.talend.dq.nodes.indicator.impl;
 
 import org.apache.commons.lang.StringUtils;
-import org.talend.dq.nodes.indicator.AbstractIndicatorNode;
+import org.talend.dq.nodes.indicator.AbstractNode;
+import org.talend.dq.nodes.indicator.ICategoryNode;
 import org.talend.dq.nodes.indicator.IIndicatorNode;
 import org.talend.dq.nodes.indicator.type.IndicatorEnum;
 
@@ -21,7 +22,11 @@ import org.talend.dq.nodes.indicator.type.IndicatorEnum;
  * @author rli
  * 
  */
-public class IndicatorCategoryNode extends AbstractIndicatorNode {
+public class IndicatorCategoryNode extends AbstractNode implements ICategoryNode {
+
+    public IndicatorCategoryNode(String label) {
+        super(label);
+    }
 
     public IndicatorCategoryNode(IndicatorEnum indicatorEnum) {
         super(indicatorEnum);
@@ -35,13 +40,12 @@ public class IndicatorCategoryNode extends AbstractIndicatorNode {
     }
 
     public IndicatorCategoryNode(String label, IndicatorEnum[] indicatorEnums) {
-        super(null);
-        this.label = label;
+        super(label);
         this.creatChildren(indicatorEnums);
     }
 
-    private void createChildren(IndicatorEnum indicatorEnum) {
-        this.creatChildren(indicatorEnum.getChildren());
+    private void createChildren(IndicatorEnum childIndicatorEnum) {
+        this.creatChildren(childIndicatorEnum.getChildren());
 
     }
 
@@ -101,6 +105,25 @@ public class IndicatorCategoryNode extends AbstractIndicatorNode {
      */
     public IIndicatorNode[] getChildren() {
         return children;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dq.nodes.indicator.AbstractIndicatorNode#hasChildren()
+     */
+    @Override
+    public boolean hasChildren() {
+        return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dq.nodes.indicator.IIndicatorNode#getImageName()
+     */
+    public String getImageName() {
+        return "folder.gif"; //$NON-NLS-1$
     }
 
 }

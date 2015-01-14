@@ -61,13 +61,17 @@ import org.eclipse.nebula.widgets.nattable.style.Style;
 import org.eclipse.nebula.widgets.nattable.util.GUIHelper;
 import org.eclipse.nebula.widgets.nattable.viewport.ViewportLayer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.talend.cwm.helper.ColumnHelper;
 import org.talend.dataquality.PluginConstant;
 import org.talend.dataquality.record.linkage.ui.composite.ListObjectDataProvider;
 import org.talend.dataquality.record.linkage.ui.composite.utils.ImageLib;
@@ -80,7 +84,7 @@ import orgomg.cwm.objectmodel.core.ModelElement;
  * data of the table changed, need only to call createTableControl. TODO: refresh the table with new data(column not
  * changed), and no need to create the table for every refresh; or give all the data to the table at one time?
  */
-public class DataSampleTable {
+public class DataSampleTable implements TDQObserver<ModelElement[]> {
 
     private BodyLayerStack bodyLayer;
 
@@ -131,6 +135,16 @@ public class DataSampleTable {
 
     private ColumnPosition additionalColumnPosition;
 
+    protected ScrolledComposite tablePanel = null;
+
+    private Composite drawCanvas = null;
+
+    private boolean needLoadData = false;
+
+    private int limitNumber = 0;
+
+    private boolean isSameTable = true;
+
     public DataSampleTable() {
     }
 
@@ -147,12 +161,38 @@ public class DataSampleTable {
 
         // initial the data if it is empty
         List<Object[]> results = listOfData == null ? new ArrayList<Object[]>() : listOfData;
+        results = handleEmptyRow(columns, results);
+        TControl handleGID = handleGID(parentContainer, results);
+        if (handleGID != null) {
+            return handleGID;
+        }
+        return createTableControl(parentContainer, results);
+
+    }
+
+    /**
+     * DOC talend Comment method "handleEmptyRow".
+     * 
+     * @param columns
+     * @param results
+     */
+    protected List<Object[]> handleEmptyRow(ModelElement[] columns, List<Object[]> results) {
         if (results.size() < 1) {
             results.add(getEmptyRow(columns.length));
         }
+        return results;
+    }
+
+    /**
+     * DOC talend Comment method "handleGID".
+     * 
+     * @param parentContainer
+     * @param results
+     */
+    protected TControl handleGID(Composite parentContainer, List<Object[]> results) {
         // Two kinds of result for listOfData : 1) is coming from match: the result contains GID
         // 2) is coming from the query without match/or from block:the result did not contain GID
-        isContainGID = results.get(0).length > additionalColumnPosition.GIDindex;
+        isContainGID = isContainGID(results);
 
         if (isContainGID) {
             initGIDMap(results);
@@ -160,8 +200,17 @@ public class DataSampleTable {
                 return hideGroup(parentContainer, results);
             }
         }
-        return createTableControl(parentContainer, results);
+        return null;
+    }
 
+    /**
+     * DOC talend Comment method "isContainGID".
+     * 
+     * @param results
+     * @return
+     */
+    protected boolean isContainGID(List<Object[]> results) {
+        return results.get(0).length > additionalColumnPosition.GIDindex;
     }
 
     /**
@@ -181,32 +230,51 @@ public class DataSampleTable {
     }
 
     private String[] createColumnLabel(ModelElement[] columns) {
-        int columnCount = MatchAnalysisConstant.DEFAULT_COLUMN_COUNT;
+        int columnCount = getFixedColumnCount();
         if (columns != null) {
             columnCount = columns.length + columnCount;
         }
-        String[] columnsName = new String[columnCount];
+        List<String> columnsName = new ArrayList<String>();
 
         int i = 0;
         if (columns != null) {
             for (ModelElement column : columns) {
-                columnsName[i++] = column.getName();
+                columnsName.add(column.getName());
             }
         }
-        columnsName[i++] = MatchAnalysisConstant.BLOCK_KEY;
-        // remember the index of the GID;
-        additionalColumnPosition = new ColumnPosition(i);
-        columnsName[i++] = MatchAnalysisConstant.GID;
-        // record the index of the GRP_SIZE
-        sortState = new SortState(i);
-        columnsName[i++] = MatchAnalysisConstant.GRP_SIZE;
-        this.masterColumn = i;
+        columnsName.addAll(createFixedColumns());
 
-        columnsName[i++] = MatchAnalysisConstant.MASTER;
-        columnsName[i++] = MatchAnalysisConstant.SCORE;
-        columnsName[i++] = MatchAnalysisConstant.GRP_QUALITY;
-        columnsName[i++] = MatchAnalysisConstant.ATTRIBUTE_SCORES;
-        return columnsName;
+        return columnsName.toArray(new String[columnsName.size()]);
+    }
+
+    /**
+     * DOC talend Comment method "createFixedColumns".
+     * 
+     * @return
+     */
+    protected Collection<? extends String> createFixedColumns() {
+        List<String> columnNames = new ArrayList<String>();
+        columnNames.add(MatchAnalysisConstant.BLOCK_KEY);
+        // remember the index of the GID;
+        additionalColumnPosition = new ColumnPosition(columnNames.size());
+        columnNames.add(MatchAnalysisConstant.GID);
+        // record the index of the GRP_SIZE
+        sortState = new SortState(columnNames.size());
+        columnNames.add(MatchAnalysisConstant.GRP_SIZE);
+        this.masterColumn = columnNames.size();
+
+        columnNames.add(MatchAnalysisConstant.MASTER);
+        columnNames.add(MatchAnalysisConstant.SCORE);
+        columnNames.add(MatchAnalysisConstant.GRP_QUALITY);
+        columnNames.add(MatchAnalysisConstant.ATTRIBUTE_SCORES);
+        return columnNames;
+    }
+
+    /**
+     * DOC talend Comment method "getFixedColumnCount".
+     */
+    protected int getFixedColumnCount() {
+        return 7;
     }
 
     /**
@@ -405,7 +473,7 @@ public class DataSampleTable {
      * @return
      */
     public String getUserColumnNameByPosition(int position) {
-        if (position > propertyNames.length - MatchAnalysisConstant.DEFAULT_COLUMN_COUNT) {
+        if (position > propertyNames.length - getFixedColumnCount()) {
             return null;
         }
         return propertyNames[position - 1];
@@ -808,4 +876,156 @@ public class DataSampleTable {
             GIDindex = GIDIndex;
         }
     }
+
+    public void reDrawTable(ModelElement[] columns) {
+        reDrawTable(columns, needLoadData);
+    }
+
+    public void reDrawTable(ModelElement[] columns, boolean withData) {
+        if (tablePanel != null && !tablePanel.isDisposed()) {
+            tablePanel.dispose();
+        }
+        needLoadData = withData;
+        createNatTable(columns, withData);
+        drawCanvas.layout();
+    }
+
+    /**
+     * DOC talend Comment method "createNatTable".
+     * 
+     * @param listOfData
+     * @param dataTableComp
+     */
+    public void createNatTable(ModelElement[] columns, boolean withData) {
+        List<Object[]> listOfData = getPreviewData(columns, withData);
+        createNatTable(listOfData, drawCanvas, columns);
+    }
+
+    /**
+     * DOC talend Comment method "getPreviewData".
+     * 
+     * @return
+     */
+    private List<Object[]> getPreviewData(ModelElement[] columns, boolean withData) {
+        if (withData && isSameTable) {
+            return createPreviewData(columns);
+        } else {
+            return new ArrayList<Object[]>();
+        }
+    }
+
+    /**
+     * DOC talend Comment method "createPreviewData".
+     * 
+     * @param columns
+     */
+    protected List<Object[]> createPreviewData(ModelElement[] columns) {
+        return new ArrayList<Object[]>();
+
+    }
+
+    /**
+     * DOC talend Comment method "createNatTable".
+     * 
+     * @param listOfData
+     * @param dataTableComp
+     */
+    public void createNatTable(List<Object[]> listOfData, Composite dataTableComp, ModelElement[] columns) {
+        checkSameTableConstraint(columns);
+        List<Object[]> previewData = null;
+        drawCanvas = dataTableComp;
+        tablePanel = new ScrolledComposite(drawCanvas, SWT.NONE | SWT.V_SCROLL | SWT.H_SCROLL);
+        GridDataFactory.fillDefaults().align(SWT.LEFT, SWT.TOP).applyTo(tablePanel);
+        tablePanel.setLayout(new GridLayout(1, Boolean.FALSE));
+        tablePanel.setExpandHorizontal(true);
+        tablePanel.setExpandVertical(true);
+
+        GridData layoutDataFillBoth = new GridData(GridData.FILL_BOTH);
+        Composite subPanel = new Composite(tablePanel, SWT.NONE);
+        subPanel.setLayoutData(layoutDataFillBoth);
+        subPanel.setLayout(new GridLayout(1, true));
+        if (listOfData == null || listOfData.size() == 0) {
+            previewData = getPreviewData(columns, false);
+        } else {
+            previewData = listOfData;
+        }
+        DataSampleTable.TControl tControl = this.createTable(subPanel, columns, previewData);
+        GridDataFactory.fillDefaults().grab(true, true).applyTo(tControl.getControl());
+
+        // when refresh the data, the dataSampleSection's width is not 0
+        initTablePanelLayoutPanel(drawCanvas, layoutDataFillBoth, tControl);
+
+        tablePanel.setContent(subPanel);
+    }
+
+    /**
+     * DOC talend Comment method "checkSameTableConstraint".
+     * 
+     * @param columns
+     */
+    private void checkSameTableConstraint(ModelElement[] columns) {
+        isSameTable = ColumnHelper.checkSameTable(columns);
+    }
+
+    /**
+     * Getter for isSameTable.
+     * 
+     * @return the isSameTable
+     */
+    public boolean isSameTable() {
+        return this.isSameTable;
+    }
+
+    /**
+     * DOC talend Comment method "initTablePanelLayoutPanel".
+     * 
+     * @param dataPreviewSection
+     * @param layoutDataFillBoth
+     * @param tControl
+     */
+    protected void initTablePanelLayoutPanel(Composite dataTableComp, GridData layoutDataFillBoth,
+            DataSampleTable.TControl tControl) {
+        if (dataTableComp.getBounds().width > 0) {
+            GridData gridData = new GridData(GridData.FILL_VERTICAL);
+            // get the min value between the NatTable's width and dataSampleSection's width
+            // if the NatTable's width larger than dataSampleSection's width, should minus 40 to let the vertical scroll
+            // bar show
+            int width = Math.min(tControl.getWidth(), dataTableComp.getBounds().width - 40);
+            // the width must langer than 0
+            width = width > 0 ? width : dataTableComp.getBounds().width - 40;
+            gridData.widthHint = width;
+            tablePanel.setLayoutData(gridData);
+        } else { // when open the editor, the dataSampleSection's width is 0, just set the layout fill both.
+            tablePanel.setLayoutData(layoutDataFillBoth);
+        }
+    }
+
+    /**
+     * Sets the limitNumber.
+     * 
+     * @param limitNumber the limitNumber to set
+     */
+    public void setLimitNumber(int limitNumber) {
+        this.limitNumber = limitNumber;
+    }
+
+    /**
+     * Getter for limitNumber.
+     * 
+     * @return the limitNumber
+     */
+    protected int getLimitNumber() {
+        return this.limitNumber;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.core.ui.grid.utils.TDQObserver#update(java.lang.Object)
+     */
+    @Override
+    public void update(ModelElement[] columns) {
+        this.reDrawTable(columns);
+    }
+
 }

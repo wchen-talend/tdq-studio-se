@@ -325,4 +325,22 @@ public class AnalysisHandler {
         }
         return String.valueOf(num);
     }
+
+    /**
+     * find in analysis's parameter if has: DefaultLoadedRowCount".if has:get its value, if not, create one
+     * 
+     * @return
+     */
+    public String getDefaultLoadedRowCount() {
+        return String.valueOf(analysis.getParameters().getMaxNumberRows());
+    }
+
+    /**
+     * Comment method "changeDefaultRowLoaded".
+     * 
+     * @param text
+     */
+    public void changeDefaultRowLoaded(String text) {
+        analysis.getParameters().setMaxNumberRows(Integer.valueOf(text));
+    }
 }

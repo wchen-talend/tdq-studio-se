@@ -75,7 +75,9 @@ import org.talend.dataprofiler.core.ui.editor.AbstractMetadataFormPage;
 import org.talend.dataprofiler.core.ui.editor.analysis.AbstractAnalysisMetadataPage;
 import org.talend.dataprofiler.core.ui.editor.analysis.ColumnMasterDetailsPage;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
-import org.talend.dataprofiler.core.ui.grid.IndicatorSelectDialog2;
+import org.talend.dataprofiler.core.ui.grid.IndicatorSelectDialog3;
+import org.talend.dataprofiler.core.ui.grid.utils.Observerable;
+import org.talend.dataprofiler.core.ui.grid.utils.TDQObserver;
 import org.talend.dataprofiler.core.ui.utils.UDIUtils;
 import org.talend.dataprofiler.core.ui.views.ColumnViewerDND;
 import org.talend.dataprofiler.help.HelpPlugin;
@@ -104,7 +106,7 @@ import orgomg.cwm.objectmodel.core.ModelElement;
  * @author rli
  * 
  */
-public class AnalysisColumnTreeViewer extends AbstractColumnDropTree {
+public class AnalysisColumnTreeViewer extends AbstractColumnDropTree implements Observerable<ModelElement[]> {
 
     protected static Logger log = Logger.getLogger(AnalysisColumnTreeViewer.class);
 
@@ -118,6 +120,8 @@ public class AnalysisColumnTreeViewer extends AbstractColumnDropTree {
     private ExecutionLanguage language;
 
     private Composite buttonsComp;
+
+    private List<TDQObserver<ModelElement[]>> Observers = null;
 
     public ExecutionLanguage getLanguage() {
         return language;
@@ -439,6 +443,7 @@ public class AnalysisColumnTreeViewer extends AbstractColumnDropTree {
         // MOD mzhao 2009-05-5, bug 6587.
         updateBindConnection(masterPage, modelElementIndicators, tree);
         masterPage.refreshTheTree(newsArray);
+        masterPage.refreshPreviewTable(newsArray);
         masterPage.goLastPage();
         if (elements != null && elements.length > 0) {
             selectElement(tree.getItems(), elements[0]);
@@ -559,7 +564,7 @@ public class AnalysisColumnTreeViewer extends AbstractColumnDropTree {
                     // of
                     TreeItem currentTreeItem = (TreeItem) e.widget.getData();
                     removeSelectedElements(new TreeItem[] { currentTreeItem });
-
+                    notifyObservers();
                 }
 
             });
@@ -738,12 +743,13 @@ public class AnalysisColumnTreeViewer extends AbstractColumnDropTree {
             }
 
         } else {
-
-            final IndicatorSelectDialog2 dialog = new IndicatorSelectDialog2(
+            String whereExpression = this.getAnalysis().getParameters().getDataFilter().get(0).getRanges().get(0)
+                    .getExpressions().getExpression().getBody();
+            final IndicatorSelectDialog3 dialog = new IndicatorSelectDialog3(
                     shell,
-                    DefaultMessagesImpl.getString("AnalysisColumnTreeViewer.indicatorSelection"), masterPage.getCurrentModelElementIndicators()); //$NON-NLS-1$
+                    DefaultMessagesImpl.getString("AnalysisColumnTreeViewer.indicatorSelection"), masterPage.getCurrentModelElementIndicators(), whereExpression); //$NON-NLS-1$
+            dialog.setLimitNumber(this.masterPage.getPreviewLimit());
             dialog.create();
-
             if (!DQPreferenceManager.isBlockWeb()) {
                 dialog.getShell().addShellListener(new ShellAdapter() {
 
@@ -1051,6 +1057,71 @@ public class AnalysisColumnTreeViewer extends AbstractColumnDropTree {
     @Override
     protected ModelElementIndicator[] getAllTheElementIndicator() {
         return masterPage.getCurrentModelElementIndicators();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.talend.dataprofiler.core.ui.grid.utils.Observerable#addObserver(org.talend.dataprofiler.core.ui.grid.utils
+     * .TalendObserver)
+     */
+    public boolean addObserver(TDQObserver<ModelElement[]> observer) {
+        initObserverable();
+        return Observers.add(observer);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.talend.dataprofiler.core.ui.grid.utils.Observerable#removeObserver(org.talend.dataprofiler.core.ui.grid.utils
+     * .TalendObserver)
+     */
+    public boolean removeObserver(TDQObserver<ModelElement[]> observer) {
+        if (Observers == null) {
+            return false;
+        }
+        return Observers.remove(observer);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.core.ui.grid.utils.Observerable#clearObserver()
+     */
+    public void clearObserver() {
+        if (Observers == null) {
+            return;
+        }
+        Observers.clear();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.core.ui.grid.utils.Observerable#notifyObservers()
+     */
+    public void notifyObservers() {
+        if (Observers == null) {
+            return;
+        }
+        for (TDQObserver<ModelElement[]> observer : Observers) {
+            observer.update(ModelElementIndicatorHelper.getModelElementFromMEIndicator(getAllTheElementIndicator()));
+        }
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.core.ui.grid.utils.Observerable#initObserverable()
+     */
+    public void initObserverable() {
+        if (Observers == null) {
+            Observers = new ArrayList<TDQObserver<ModelElement[]>>();
+        }
+
     }
 
 }

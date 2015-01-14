@@ -14,6 +14,7 @@ package org.talend.cwm.db.connection;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -53,36 +54,8 @@ public class DelimitedFileSQLExecutor extends SQLExecutor {
      * 
      * @see org.talend.cwm.db.connection.ISQLExecutor#executeQuery(org.talend.dataquality.analysis.Analysis)
      */
-    public List<Object[]> executeQuery(DataManager connection, List<ModelElement> analysedElements) {
-        dataFromTable.clear();
-        try {
-            beginQuery();
-        } catch (Exception e1) {
-            log.error(e1.getMessage(), e1);
-            return dataFromTable;
-        }
-        DelimitedFileConnection delimitedFileconnection = (DelimitedFileConnection) connection;
-        String path = JavaSqlFactory.getURL(delimitedFileconnection);
-        IPath iPath = new Path(path);
-
-        try {
-            File file = iPath.toFile();
-            if (!file.exists()) {
-                return null;
-            }
-
-            if (Escape.CSV.equals(delimitedFileconnection.getEscapeType())) {
-                useCsvReader(file, delimitedFileconnection, analysedElements);
-            } else {
-                useFileInputDelimited(analysedElements, delimitedFileconnection);
-            }
-            endQuery();
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-        return dataFromTable;
+    public List<Object[]> executeQuery(DataManager connection, List<ModelElement> analysedElements) throws SQLException {
+        return executeQuery(connection, analysedElements, null);
     }
 
     /**
@@ -199,6 +172,45 @@ public class DelimitedFileSQLExecutor extends SQLExecutor {
     public Iterator<Record> getResultSetIterator(DataManager connection, List<ModelElement> analysedElements) {
 
         return new DelimitedFileIterator((DelimitedFileConnection) connection, analysedElements);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.cwm.db.connection.ISQLExecutor#executeQuery(orgomg.cwm.foundation.softwaredeployment.DataManager,
+     * java.util.List, java.lang.String)
+     */
+    public List<Object[]> executeQuery(DataManager connection, List<ModelElement> analysedElements, String where)
+            throws SQLException {
+        dataFromTable.clear();
+        try {
+            beginQuery();
+        } catch (Exception e1) {
+            log.error(e1.getMessage(), e1);
+            return dataFromTable;
+        }
+        DelimitedFileConnection delimitedFileconnection = (DelimitedFileConnection) connection;
+        String path = JavaSqlFactory.getURL(delimitedFileconnection);
+        IPath iPath = new Path(path);
+
+        try {
+            File file = iPath.toFile();
+            if (!file.exists()) {
+                return null;
+            }
+
+            if (Escape.CSV.equals(delimitedFileconnection.getEscapeType())) {
+                useCsvReader(file, delimitedFileconnection, analysedElements);
+            } else {
+                useFileInputDelimited(analysedElements, delimitedFileconnection);
+            }
+            endQuery();
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return dataFromTable;
     }
 
 }

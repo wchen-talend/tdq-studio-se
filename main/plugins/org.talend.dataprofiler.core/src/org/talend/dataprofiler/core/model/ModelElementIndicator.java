@@ -20,13 +20,15 @@ import org.talend.dq.nodes.indicator.type.IndicatorEnum;
 import org.talend.repository.model.IRepositoryNode;
 
 /**
- * DOC xqliu  class global comment. Detailled comment
+ * DOC xqliu class global comment. Detailled comment
  */
 public interface ModelElementIndicator {
 
     public boolean contains(IndicatorEnum indicatorEnum);
 
     public boolean tempContains(IndicatorEnum indicatorEnum);
+
+    public boolean specialTempContains(Indicator indicator);
 
     public List<IndicatorEnum> getTempIndicator();
 
@@ -48,6 +50,12 @@ public interface ModelElementIndicator {
     public void setIndicators(Indicator[] indicators);
 
     public IndicatorUnit addSpecialIndicator(IndicatorEnum indicatorEnum, Indicator indicator);
+
+    public IndicatorUnit addTempSpecialIndicator(IndicatorEnum indicatorEnum, Indicator indicator);
+
+    public void removeSpecialIndicator(Indicator indicator);
+
+    public void removeTempSpecialIndicator(Indicator indicator);
 
     public void addTempIndicatorEnum(IndicatorEnum indicatorEnum);
 

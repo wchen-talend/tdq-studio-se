@@ -93,6 +93,8 @@ import org.talend.dataquality.indicators.schema.SchemaIndicator;
 import org.talend.dataquality.indicators.schema.TableIndicator;
 import org.talend.dataquality.indicators.schema.ViewIndicator;
 import org.talend.dataquality.indicators.schema.util.SchemaSwitch;
+import org.talend.dataquality.indicators.sql.UserDefIndicator;
+import org.talend.dataquality.indicators.sql.util.IndicatorSqlSwitch;
 import org.talend.dataquality.indicators.util.IndicatorsSwitch;
 import org.talend.dq.nodes.indicator.type.IndicatorEnum;
 
@@ -119,6 +121,14 @@ class IndcatorSwitchImp extends IndicatorsSwitch<Boolean> {
         indicator.setIndicatorDefinition(indicatorDefinition);
         return true;
     }
+
+    private IndicatorSqlSwitch<Boolean> userDefIndSwitch = new IndicatorSqlSwitch<Boolean>() {
+
+        @Override
+        public Boolean caseUserDefIndicator(UserDefIndicator object) {
+            return setIndicatorDefinition(object, object.getName());
+        }
+    };
 
     private final SchemaSwitch<Boolean> schemaIndicatorSwitch = new SchemaSwitch<Boolean>() {
 
@@ -220,6 +230,7 @@ class IndcatorSwitchImp extends IndicatorsSwitch<Boolean> {
          * @see org.talend.dataquality.indicators.columnset.util.ColumnsetSwitch
          * #caseAllMatchIndicator(org.talend.dataquality .indicators .columnset.AllMatchIndicator)
          */
+        @Override
         public Boolean caseAllMatchIndicator(org.talend.dataquality.indicators.columnset.AllMatchIndicator object) {
             return setIndicatorDefinition(object, "All Match"); //$NON-NLS-1$
         };
@@ -261,12 +272,16 @@ class IndcatorSwitchImp extends IndicatorsSwitch<Boolean> {
     @Override
     public Boolean defaultCase(EObject object) {
         // try with columnSetSwitch
-        return columnIndicatorSwitch.doSwitch(object);
+        Boolean result = columnIndicatorSwitch.doSwitch(object);
+        if (result == false) {
+            result = userDefIndSwitch.doSwitch(object);
+        }
+        return result;
     }
 
     @Override
     public Boolean caseDefValueCountIndicator(DefValueCountIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.DefValueCountIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.DefValueCountIndicatorEnum.getLabel());
     }
 
     /*
@@ -277,52 +292,52 @@ class IndcatorSwitchImp extends IndicatorsSwitch<Boolean> {
      */
     @Override
     public Boolean caseLowFrequencyIndicator(LowFrequencyIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.LowFrequencyIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.LowFrequencyIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseDateLowFrequencyIndicator(DateLowFrequencyIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.DateLowFrequencyIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.DateLowFrequencyIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseWeekLowFrequencyIndicator(WeekLowFrequencyIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.WeekLowFrequencyIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.WeekLowFrequencyIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseMonthLowFrequencyIndicator(MonthLowFrequencyIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.MonthLowFrequencyIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.MonthLowFrequencyIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseQuarterLowFrequencyIndicator(QuarterLowFrequencyIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.QuarterLowFrequencyIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.QuarterLowFrequencyIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseYearLowFrequencyIndicator(YearLowFrequencyIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.YearLowFrequencyIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.YearLowFrequencyIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseBinLowFrequencyIndicator(BinLowFrequencyIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.BinLowFrequencyIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.BinLowFrequencyIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean casePatternFreqIndicator(PatternFreqIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.PatternFreqIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.PatternFreqIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean casePatternLowFreqIndicator(PatternLowFreqIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.PatternLowFreqIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.PatternLowFreqIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseDatePatternFreqIndicator(DatePatternFreqIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.DatePatternFreqIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.DatePatternFreqIndicatorEnum.getLabel());
     }
 
     @Override
@@ -332,7 +347,7 @@ class IndcatorSwitchImp extends IndicatorsSwitch<Boolean> {
 
     @Override
     public Boolean caseSqlPatternMatchingIndicator(SqlPatternMatchingIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.SqlPatternMatchingIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.SqlPatternMatchingIndicatorEnum.getLabel());
     }
 
     @Override
@@ -342,17 +357,17 @@ class IndcatorSwitchImp extends IndicatorsSwitch<Boolean> {
 
     @Override
     public Boolean caseCountsIndicator(CountsIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.CountsIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.CountsIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseTextIndicator(TextIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.TextIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.TextIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseUniqueCountIndicator(UniqueCountIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.UniqueIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.UniqueIndicatorEnum.getLabel());
     }
 
     @Override
@@ -362,37 +377,37 @@ class IndcatorSwitchImp extends IndicatorsSwitch<Boolean> {
 
     @Override
     public Boolean caseRowCountIndicator(RowCountIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.RowCountIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.RowCountIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseRangeIndicator(RangeIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.RangeIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.RangeIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseNullCountIndicator(NullCountIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.NullCountIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.NullCountIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseModeIndicator(ModeIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.ModeIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.ModeIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseMinValueIndicator(MinValueIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.MinValueIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.MinValueIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseMinLengthIndicator(MinLengthIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.MinLengthIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.MinLengthIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseMinLengthWithNullIndicator(MinLengthWithNullIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.MinLengthWithNullIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.MinLengthWithNullIndicatorEnum.getLabel());
     }
 
     @Override
@@ -407,17 +422,17 @@ class IndcatorSwitchImp extends IndicatorsSwitch<Boolean> {
 
     @Override
     public Boolean caseMedianIndicator(MedianIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.MedianIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.MedianIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseMeanIndicator(MeanIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.MeanIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.MeanIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseMaxValueIndicator(MaxValueIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.MaxValueIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.MaxValueIndicatorEnum.getLabel());
     }
 
     @Override
@@ -437,7 +452,7 @@ class IndcatorSwitchImp extends IndicatorsSwitch<Boolean> {
 
     @Override
     public Boolean caseMaxLengthIndicator(MaxLengthIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.MaxLengthIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.MaxLengthIndicatorEnum.getLabel());
     }
 
     @Override
@@ -452,37 +467,37 @@ class IndcatorSwitchImp extends IndicatorsSwitch<Boolean> {
 
     @Override
     public Boolean caseFrequencyIndicator(FrequencyIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.FrequencyIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.FrequencyIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseDateFrequencyIndicator(DateFrequencyIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.DateFrequencyIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.DateFrequencyIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseWeekFrequencyIndicator(WeekFrequencyIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.WeekFrequencyIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.WeekFrequencyIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseMonthFrequencyIndicator(MonthFrequencyIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.MonthFrequencyIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.MonthFrequencyIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseQuarterFrequencyIndicator(QuarterFrequencyIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.QuarterFrequencyIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.QuarterFrequencyIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseYearFrequencyIndicator(YearFrequencyIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.YearFrequencyIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.YearFrequencyIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseBinFrequencyIndicator(BinFrequencyIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.BinFrequencyIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.BinFrequencyIndicatorEnum.getLabel());
     }
 
     /*
@@ -493,7 +508,7 @@ class IndcatorSwitchImp extends IndicatorsSwitch<Boolean> {
      */
     @Override
     public Boolean caseSoundexFreqIndicator(SoundexFreqIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.SoundexIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.SoundexIndicatorEnum.getLabel());
     }
 
     /*
@@ -504,32 +519,32 @@ class IndcatorSwitchImp extends IndicatorsSwitch<Boolean> {
      */
     @Override
     public Boolean caseSoundexLowFreqIndicator(SoundexLowFreqIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.SoundexLowIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.SoundexLowIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseDuplicateCountIndicator(DuplicateCountIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.DuplicateCountIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.DuplicateCountIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseDistinctCountIndicator(DistinctCountIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.DistinctCountIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.DistinctCountIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseBoxIndicator(BoxIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.BoxIIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.BoxIIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseBlankCountIndicator(BlankCountIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.BlankCountIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.BlankCountIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseAverageLengthIndicator(AverageLengthIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.AverageLengthIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.AverageLengthIndicatorEnum.getLabel());
     }
 
     @Override
@@ -549,52 +564,52 @@ class IndcatorSwitchImp extends IndicatorsSwitch<Boolean> {
 
     @Override
     public Boolean caseLowerQuartileIndicator(LowerQuartileIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.LowerQuartileIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.LowerQuartileIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseUpperQuartileIndicator(UpperQuartileIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.UpperQuartileIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.UpperQuartileIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseValidPhoneCountIndicator(ValidPhoneCountIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.ValidPhoneCountIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.ValidPhoneCountIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean casePossiblePhoneCountIndicator(PossiblePhoneCountIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.PossiblePhoneCountIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.PossiblePhoneCountIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseValidRegCodeCountIndicator(ValidRegCodeCountIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.ValidRegCodeCountIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.ValidRegCodeCountIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseInvalidRegCodeCountIndicator(InvalidRegCodeCountIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.InvalidRegCodeCountIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.InvalidRegCodeCountIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseWellFormNationalPhoneCountIndicator(WellFormNationalPhoneCountIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.WellFormNationalPhoneCountIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.WellFormNationalPhoneCountIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseWellFormIntePhoneCountIndicator(WellFormIntePhoneCountIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.WellFormIntePhoneCountIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.WellFormIntePhoneCountIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean caseWellFormE164PhoneCountIndicator(WellFormE164PhoneCountIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.WellFormE164PhoneCountIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.WellFormE164PhoneCountIndicatorEnum.getLabel());
     }
 
     @Override
     public Boolean casePhoneNumbStatisticsIndicator(PhoneNumbStatisticsIndicator object) {
-        return setIndicatorDefinition(object, IndicatorEnum.PhoneNumbStatisticsIndicatorEnum.getLabel()); //$NON-NLS-1$
+        return setIndicatorDefinition(object, IndicatorEnum.PhoneNumbStatisticsIndicatorEnum.getLabel());
     }
 
     @Override

@@ -43,6 +43,8 @@ import org.talend.core.repository.model.repositoryObject.MetadataTableRepository
 import org.talend.cwm.helper.TaggedValueHelper;
 import org.talend.cwm.relational.TdColumn;
 import org.talend.cwm.relational.TdTable;
+import org.talend.dataprofiler.core.PluginConstant;
+import org.talend.dataprofiler.core.helper.ModelElementIndicatorHelper;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.model.ColumnIndicator;
 import org.talend.dataprofiler.core.model.ModelElementIndicator;
@@ -390,6 +392,7 @@ public class ColumnViewerDND {
             StructuredSelection selection = (StructuredSelection) localSelection.getSelection();
             Iterator it = selection.iterator();
             List<IRepositoryNode> selectedColumn = new ArrayList<IRepositoryNode>();
+            StringBuffer inValidColumnNames = null;
             while (it.hasNext()) {
                 // MOD mzhao 9848 2010-01-14, Allowing drag table.
                 RepositoryNode next = (RepositoryNode) it.next();
@@ -398,13 +401,24 @@ public class ColumnViewerDND {
                     // Get column nodes.
                     List<IRepositoryNode> columns = next.getChildren().get(0).getChildren();
                     if (isAnalysisColumnTreeViewer) {
-                        for (ModelElementIndicator modelElementIndicator : ((AnalysisColumnTreeViewer) viewer)
-                                .getModelElementIndicator()) {
-                            // if (columns.contains(modelElementIndicator.getModelElementRepositoryNode())) {
-                            if (RepositoryNodeHelper.containsModelElementNode(columns,
-                                    modelElementIndicator.getModelElementRepositoryNode())) {
-                                columns.remove(modelElementIndicator.getModelElementRepositoryNode());
+                        // check wheter all of columns are come from same table
+                        ModelElementIndicator[] modelElementIndicators = ((AnalysisColumnTreeViewer) viewer)
+                                .getModelElementIndicator();
+                        if (ModelElementIndicatorHelper.checkSameTable(modelElementIndicators)) {
+                            for (ModelElementIndicator modelElementIndicator : modelElementIndicators) {
+                                if (RepositoryNodeHelper.containsModelElementNode(columns,
+                                        modelElementIndicator.getModelElementRepositoryNode())) {
+                                    columns.remove(modelElementIndicator.getModelElementRepositoryNode());
+                                }
                             }
+                        } else {
+                            MessageDialog
+                                    .openError(
+                                            control.getShell(),
+                                            DefaultMessagesImpl.getString("ColumnsComparisonMasterDetailsPage.error"), DefaultMessagesImpl.getString( //$NON-NLS-1$
+                                                            "ColumnMasterDetailsPage.noSameTableWarning",
+                                                            PluginConstant.SPACE_STRING));
+                            return;
                         }
                     } else if (isAnalysisColumnNominalIntervalTreeViewer) {
                         List<RepositoryNode> oriColumns = ((AnalysisColumnNominalIntervalTreeViewer) viewer)
@@ -424,13 +438,52 @@ public class ColumnViewerDND {
                         }
                     }
                     selectedColumn.addAll(columns);
+                } else if (repViewObj instanceof MetadataColumnRepositoryObject) {
+
+                    if (isAnalysisColumnTreeViewer) {
+                        // check wheter all of columns are come from same table
+                        ModelElementIndicator[] modelElementIndicators = ((AnalysisColumnTreeViewer) viewer)
+                                .getModelElementIndicator();
+                        if (ModelElementIndicatorHelper.checkSameTable(modelElementIndicators)) {
+                            if (modelElementIndicators.length > 0
+                                    && !ModelElementIndicatorHelper.checkSameTable((MetadataColumnRepositoryObject) repViewObj,
+                                            modelElementIndicators[0])) {
+                                if (inValidColumnNames == null) {
+                                    inValidColumnNames = new StringBuffer();
+                                    inValidColumnNames.append(PluginConstant.PARENTHESIS_LEFT);
+                                } else {
+                                    inValidColumnNames.append(PluginConstant.COMMA_STRING);
+                                }
+                                inValidColumnNames.append(((MetadataColumnRepositoryObject) repViewObj).getModelElement()
+                                        .getName());
+                                continue;
+                            }
+
+                        } else {
+                            MessageDialog
+                                    .openError(
+                                            control.getShell(),
+                                            DefaultMessagesImpl.getString("ColumnsComparisonMasterDetailsPage.error"), DefaultMessagesImpl.getString( //$NON-NLS-1$
+                                                            "ColumnMasterDetailsPage.noSameTableWarning", //$NON-NLS-1$
+                                                            PluginConstant.SPACE_STRING));
+                            return;
+                        }
+                    }
+
+                    RepositoryNode column = next;
+                    selectedColumn.add(column);
                 } else {
                     RepositoryNode column = next;
                     selectedColumn.add(column);
                 }
 
             }
-
+            if (inValidColumnNames != null) {
+                MessageDialog.openError(control.getShell(), DefaultMessagesImpl
+                        .getString("ColumnsComparisonMasterDetailsPage.error"), DefaultMessagesImpl.getString( //$NON-NLS-1$
+                        "ColumnMasterDetailsPage.selectDataNoSameTableWarning", //$NON-NLS-1$
+                        inValidColumnNames.append(PluginConstant.PARENTHESIS_RIGHT).toString(), PluginConstant.SPACE_STRING));
+            }
             // int size1 = selection.size();
             // int size2 = selectedColumn.size();
             //

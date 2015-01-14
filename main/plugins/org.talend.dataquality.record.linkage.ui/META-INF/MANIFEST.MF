@@ -19,7 +19,8 @@ Require-Bundle: org.eclipse.swt,
  org.talend.dataprofiler.common.ui,
  org.talend.libraries.mapdb,
  org.talend.dataprofiler.service
-Import-Package: org.eclipse.ui.views.properties.tabbed
+Import-Package: org.eclipse.ui.views.properties.tabbed,
+ org.talend.dataprofiler.core.ui.grid.utils
 Export-Package: org.talend.dataquality.record.linkage.ui.action,
  org.talend.dataquality.record.linkage.ui.composite.chart,
  org.talend.dataquality.record.linkage.ui.composite.table,

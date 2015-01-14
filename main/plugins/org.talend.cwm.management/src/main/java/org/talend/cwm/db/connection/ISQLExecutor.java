@@ -31,6 +31,9 @@ public interface ISQLExecutor {
 
     public List<Object[]> executeQuery(DataManager connection, List<ModelElement> analysedElements) throws SQLException;
 
+    public List<Object[]> executeQuery(DataManager connection, List<ModelElement> analysedElements, String where)
+            throws SQLException;
+
     void setLimit(int limit);
 
     public void setStoreOnDisk(Boolean storeOnDisk);

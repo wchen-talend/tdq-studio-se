@@ -32,6 +32,8 @@ public final class PluginConstant {
 
     public static final String EMPTY_STRING = ""; //$NON-NLS-1$
 
+    public static final String ENTER_STRING = "\n"; //$NON-NLS-1$
+
     public static final int DEFAULT_INT_VALUE = 0;
 
     public static final String SEMICOLON_STRING = ";";//$NON-NLS-1$

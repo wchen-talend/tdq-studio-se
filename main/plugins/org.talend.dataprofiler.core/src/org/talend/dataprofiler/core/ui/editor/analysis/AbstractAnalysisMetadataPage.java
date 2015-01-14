@@ -277,7 +277,7 @@ public abstract class AbstractAnalysisMetadataPage extends AbstractMetadataFormP
      */
     public void createConnBindWidget(Composite parentComp) {
         // ~ MOD mzhao 2009-05-05,Bug 6587.
-        Composite labelButtonClient = toolkit.createComposite(parentComp);
+        Composite labelButtonClient = toolkit.createComposite(parentComp, SWT.NONE);
         GridLayout labelButtonClientLayout = new GridLayout();
         labelButtonClientLayout.numColumns = 4;
         labelButtonClient.setLayout(labelButtonClientLayout);
@@ -589,7 +589,7 @@ public abstract class AbstractAnalysisMetadataPage extends AbstractMetadataFormP
      * @param parentComp
      */
     private void createConnDeletedLabel(Composite parentComp) {
-        this.labelConnDeleted = toolkit.createLabel(parentComp, PluginConstant.EMPTY_STRING);
+        this.labelConnDeleted = toolkit.createLabel(parentComp, PluginConstant.EMPTY_STRING, SWT.NONE);
         labelConnDeleted.setVisible(false);
         labelConnDeleted.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
     }
