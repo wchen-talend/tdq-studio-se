@@ -110,4 +110,5 @@ Export-Package: org.talend.dataprofiler.core,
 Eclipse-RegisterBuddy: org.apache.log4j, org.talend.testutils
 Bundle-Localization: plugin
 Bundle-ClassPath: .
-Import-Package: org.talend.dataprofiler.service
+Import-Package: org.talend.dataprofiler.common.ui.dialog,
+ org.talend.dataprofiler.service
