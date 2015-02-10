@@ -31,6 +31,7 @@ import org.talend.dataquality.matchmerge.Record;
 import org.talend.dataquality.record.linkage.iterator.ResultSetIterator;
 import org.talend.dq.dbms.DbmsLanguage;
 import org.talend.dq.dbms.DbmsLanguageFactory;
+import org.talend.utils.sql.ResultSetUtils;
 import org.talend.utils.sugars.ReturnCode;
 import org.talend.utils.sugars.TypedReturnCode;
 import orgomg.cwm.foundation.softwaredeployment.DataManager;
@@ -184,12 +185,15 @@ public class DatabaseSQLExecutor extends SQLExecutor {
                 // --- for each column
                 for (int i = 0; i < columnListSize; i++) {
                     // --- get content of column
-                    oneRow[i] = resultSet.getObject(i + 1);
+                    oneRow[i] = ResultSetUtils.getObject(resultSet, i + 1);
                 }
                 handleRow(oneRow);
             }
         } catch (Exception e) {
             log.error(e, e);
+            if (SQLException.class.isInstance(e)) {
+                throw (SQLException) e;
+            }
         } finally {
             if (resultSet != null) {
                 resultSet.close();

@@ -15,14 +15,18 @@ package org.talend.dataprofiler.core.ui.grid;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.nebula.widgets.grid.GridCellRenderer;
 import org.eclipse.nebula.widgets.grid.GridColumn;
 import org.eclipse.nebula.widgets.grid.GridItem;
+import org.eclipse.nebula.widgets.grid.TalendGridItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.talend.core.model.metadata.IMetadataConnection;
 import org.talend.core.model.metadata.builder.ConvertionHelper;
 import org.talend.core.model.metadata.builder.connection.Connection;
@@ -33,20 +37,25 @@ import org.talend.dataprofiler.core.helper.ModelElementIndicatorHelper;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.model.ColumnIndicator;
 import org.talend.dataprofiler.core.model.ModelElementIndicator;
+import org.talend.dataprofiler.core.ui.grid.utils.Observerable;
 import org.talend.dataprofiler.core.ui.grid.utils.TDQObserver;
+import org.talend.dataprofiler.core.ui.grid.utils.events.ObserverEvent;
+import org.talend.dataprofiler.core.ui.grid.utils.events.ObserverEventEnum;
 import org.talend.dataquality.PluginConstant;
 import org.talend.dq.dbms.DbmsLanguage;
 import org.talend.dq.dbms.DbmsLanguageFactory;
 import org.talend.metadata.managment.utils.MetadataConnectionUtils;
+import org.talend.utils.sql.ResultSetUtils;
 import org.talend.utils.sugars.TypedReturnCode;
 import orgomg.cwm.objectmodel.core.Expression;
 import orgomg.cwm.objectmodel.core.ModelElement;
 
 /**
- * created by talend on Dec 25, 2014 Detailled comment
+ * The table which is used be preivew data
  * 
  */
-public class ColumnPreviewGrid extends AbstractIndicatorSelectGrid implements TDQObserver<AbstractIndicatorSelectGrid> {
+public class ColumnPreviewGrid extends AbstractIndicatorSelectGrid implements TDQObserver<ObserverEvent>,
+        Observerable<ObserverEvent> {
 
     private Statement createStatement = null;
 
@@ -54,18 +63,19 @@ public class ColumnPreviewGrid extends AbstractIndicatorSelectGrid implements TD
 
     private final String COLUMN_RESULT_KEY = "columnResult"; //$NON-NLS-1$
 
+    private List<TDQObserver<ObserverEvent>> observers = null;
+
     /**
-     * DOC talend ColumnPreviewGrid constructor comment.
+     * ColumnPreviewGrid constructor comment.
      * 
      * @param dialog
      * @param parent
      * @param style
      * @param modelElementIndicators
      */
-    public ColumnPreviewGrid(IndicatorSelectDialog3 dialog, Composite parent, int style,
+    public ColumnPreviewGrid(IndicatorSelectDialog dialog, Composite parent, int style,
             ModelElementIndicator[] modelElementIndicators, int limit) {
         super(dialog, parent, style, modelElementIndicators, limit);
-
     }
 
     /*
@@ -76,12 +86,13 @@ public class ColumnPreviewGrid extends AbstractIndicatorSelectGrid implements TD
     @Override
     protected void createTableContent() {
         try {
-            GridItem PreviewItem = new GridItem(this, SWT.NONE);
+            TalendGridItem PreviewItem = new TalendGridItem(this, SWT.NONE);
             for (int i = 0; i < this.getColumnCount(); i++) {
                 PreviewItem.setCheckable(i, false);
             }
             PreviewItem.setText(DefaultMessagesImpl.getString("ColumnPreviewGrid.PreviewItemLabel")); //$NON-NLS-1$
             processNodePrivew(null, PreviewItem);
+            PreviewItem.setExpanded(true);
         } catch (SQLException e) {
 
         } finally {
@@ -107,7 +118,7 @@ public class ColumnPreviewGrid extends AbstractIndicatorSelectGrid implements TD
             return;
         }
         for (int j = 0; j < limitNumber; j++) {
-            GridItem currentItem = new GridItem(parentItem, SWT.NONE);
+            TalendGridItem currentItem = new TalendGridItem(parentItem, SWT.NONE);
             currentItem.setCheckable(0, false);
             currentItem.setCheckable(1, false);
             for (int i = 2; i < this.getColumnCount(); i++) {
@@ -154,23 +165,38 @@ public class ColumnPreviewGrid extends AbstractIndicatorSelectGrid implements TD
         // modelElementIndicator.getModelElementRepositoryNode()
         // .getObject()).getTdColumn();
         TdColumn tdColumn = columnIndicator.getTdColumn();
-        // row index
-        int indexOfRow = this.indexOf(currentItem);
+
         if (rs == null) {
 
-            DbmsLanguage dbmsLanguage = DbmsLanguageFactory.createDbmsLanguage(tdDataProvider);
-            Expression columnQueryExpression = dbmsLanguage.getTableQueryExpression(tdColumn, _dialog.getWhereExpression());
-            IMetadataConnection metadataBean = ConvertionHelper.convert(tdDataProvider);
-
-            createStatement = initStatement(metadataBean);
-            rs = createStatement.executeQuery(columnQueryExpression.getBody());
+            rs = getResultSet(tdDataProvider, tdColumn);
             this.setData(COLUMN_RESULT_KEY, rs);
         }
+        // row index
+        int indexOfRow = this.indexOf(currentItem);
         while (rs.absolute(indexOfRow)) {
-            Object columnValue = rs.getObject(tdColumn.getName());
+            Object columnValue = ResultSetUtils.getObject(rs, tdColumn.getName());
             return columnValue == null ? PluginConstant.NULL_STRING : columnValue.toString();
         }
         return null;
+    }
+
+    /**
+     * DOC talend Comment method "getResultSet".
+     * 
+     * @param tdDataProvider
+     * @param tdColumn
+     * @return
+     * @throws SQLException
+     */
+    private ResultSet getResultSet(Connection tdDataProvider, TdColumn tdColumn) throws SQLException {
+        ResultSet rs = null;
+        DbmsLanguage dbmsLanguage = DbmsLanguageFactory.createDbmsLanguage(tdDataProvider);
+        Expression columnQueryExpression = dbmsLanguage.getTableQueryExpression(tdColumn, _dialog.getWhereExpression());
+        IMetadataConnection metadataBean = ConvertionHelper.convert(tdDataProvider);
+
+        createStatement = initStatement(metadataBean);
+        rs = createStatement.executeQuery(columnQueryExpression.getBody());
+        return rs;
     }
 
     /**
@@ -192,12 +218,7 @@ public class ColumnPreviewGrid extends AbstractIndicatorSelectGrid implements TD
         int indexOfRow = rowNumber;
         if (rs == null) {
 
-            DbmsLanguage dbmsLanguage = DbmsLanguageFactory.createDbmsLanguage(tdDataProvider);
-            Expression columnQueryExpression = dbmsLanguage.getTableQueryExpression(tdColumn, _dialog.getWhereExpression());
-            IMetadataConnection metadataBean = ConvertionHelper.convert(tdDataProvider);
-
-            createStatement = initStatement(metadataBean);
-            rs = createStatement.executeQuery(columnQueryExpression.getBody());
+            rs = getResultSet(tdDataProvider, tdColumn);
             this.setData(COLUMN_RESULT_KEY, rs);
         }
         while (rs.absolute(indexOfRow + 1)) {
@@ -253,8 +274,52 @@ public class ColumnPreviewGrid extends AbstractIndicatorSelectGrid implements TD
      * @see org.talend.dataprofiler.core.ui.grid.utils.TalendObserver#Update(org.talend.dataprofiler.core.ui.grid.utils.
      * Observerable)
      */
-    public void update(AbstractIndicatorSelectGrid observer) {
-        this.setItemHeaderWidth(observer.getItemHeaderWidth());
+    public void update(ObserverEvent observer) {
+        switch (observer.getEventType()) {
+        case ItemHeaderWidth:
+            Object width = observer.getData(ObserverEvent.ITEM_HEADER_WIDTH);
+            if (width == null) {
+                return;
+            }
+            this.setItemHeaderWidth(Integer.parseInt(width.toString()));
+            break;
+        case HSrcollMove:
+            Object selection = observer.getData(ObserverEvent.HORIZONTAL_SCROLLBAR_MOVE);
+            if (selection == null) {
+                return;
+            }
+            this.getHorizontalBar().setSelection(Integer.parseInt(selection.toString()));
+            redraw(getClientArea().x, getClientArea().y, getClientArea().width, getClientArea().height, false);
+            break;
+        case VSrcollVisible:
+            Object show = observer.getData(ObserverEvent.VERTICAL_SRCOLL_VISABLE);
+
+            if (show == null || getVerticalBar() == null) {
+                return;
+            }
+            if (!getVerticalBar().isVisible() && Boolean.parseBoolean(show.toString())) {
+                // make current table bounds change to small
+                GridData previewGridData = (GridData) this.getLayoutData();
+                previewGridData.widthHint = this.getBounds().width - 70;
+                previewGridData.minimumWidth = this.getBounds().width - 70;
+                previewGridData.horizontalAlignment = SWT.BEGINNING;
+                this.getParent().layout();
+            }
+            if (!getVerticalBar().isVisible() && !Boolean.parseBoolean(show.toString())) {
+                // make current table bounds change to big
+                GridData previewGridData = (GridData) this.getLayoutData();
+                if (previewGridData.horizontalAlignment == SWT.FILL) {
+                    return;
+                }
+                previewGridData.minimumWidth = 650;
+                previewGridData.horizontalAlignment = SWT.FILL;
+                notifyVerticalBarShown(false);
+                this.getParent().layout();
+            }
+
+            break;
+        }
+
     }
 
     /*
@@ -273,14 +338,185 @@ public class ColumnPreviewGrid extends AbstractIndicatorSelectGrid implements TD
      * @see org.talend.dataprofiler.core.ui.grid.AbstractIndicatorSelectGrid#redrawTable()
      */
     @Override
-    protected void redrawTable(IIndicatorSelectDialog dialog) {
+    protected void redrawTable() {
         GridData previewGridData = (GridData) this.getLayoutData();
-        if (previewGridData.minimumHeight == this.getItemHeight()) {
-            previewGridData.minimumHeight = this.getItemHeight() * 10;
+        if (previewGridData.minimumHeight == this.getHeaderHeight() + this.getItemHeight() * 2) {
+            previewGridData.minimumHeight = this.getHeaderHeight() + this.getItemHeight() * 10;
+            previewGridData.heightHint = this.getHeaderHeight() + this.getItemHeight() * 10;
         } else {
-            previewGridData.minimumHeight = this.getItemHeight();
+            previewGridData.minimumHeight = this.getHeaderHeight() + this.getItemHeight() * 2;
+            previewGridData.heightHint = this.getHeaderHeight() + this.getItemHeight() * 2;
         }
-        dialog.getDialogComposite().layout();
+        this.getParent().layout();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.talend.dataprofiler.core.ui.grid.utils.Observerable#addObserver(org.talend.dataprofiler.core.ui.grid.utils
+     * .TDQObserver)
+     */
+    public boolean addObserver(TDQObserver<ObserverEvent> observer) {
+        initObserverable();
+        return observers.add(observer);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.talend.dataprofiler.core.ui.grid.utils.Observerable#removeObserver(org.talend.dataprofiler.core.ui.grid.utils
+     * .TDQObserver)
+     */
+    public boolean removeObserver(TDQObserver<ObserverEvent> observer) {
+        if (observers == null) {
+            return false;
+        }
+        return observers.remove(observer);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.core.ui.grid.utils.Observerable#clearObserver()
+     */
+    public void clearObserver() {
+        if (observers == null) {
+            return;
+        }
+        observers.clear();
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.core.ui.grid.utils.Observerable#notifyObservers()
+     */
+    public void notifyObservers() {
+        // no need to implement
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.core.ui.grid.utils.Observerable#initObserverable()
+     */
+    public void initObserverable() {
+        if (observers == null) {
+            observers = new ArrayList<TDQObserver<ObserverEvent>>();
+        }
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.talend.dataprofiler.core.ui.grid.AbstractIndicatorSelectGrid#notifyObservers(org.eclipse.nebula.widgets.grid
+     * .GridColumn)
+     */
+    @Override
+    protected void notifyObservers(Event event) {
+        if (observers == null) {
+            return;
+        }
+        GridColumn sourceColumn = null;
+        if (GridColumn.class.isInstance(event.item)) {
+            sourceColumn = (GridColumn) event.item;
+        } else {
+            return;
+        }
+
+        for (TDQObserver<ObserverEvent> observer : observers) {
+            ObserverEvent observerEvent = null;
+            if (SWT.Resize == event.type) {
+                observerEvent = new ObserverEvent(ObserverEventEnum.ColumnResize);
+                observerEvent.putData(ObserverEvent.COLUMN_HEADER_RESIZE, sourceColumn);
+            } else if (SWT.Move == event.type) {
+                observerEvent = new ObserverEvent(ObserverEventEnum.MoveColumn);
+                observerEvent.putData(ObserverEvent.COLUMN_HEADER_MOVE, this.getColumnOrder());
+            } else {
+                continue;
+            }
+            observer.update(observerEvent);
+        }
+
+    }
+
+    /**
+     * DOC talend Comment method "notifyVerticalBarVisible".
+     * 
+     * @param observer
+     */
+    @Override
+    protected void notifyVerticalBarShown(boolean show) {
+        if (observers == null) {
+            return;
+        }
+        for (TDQObserver<ObserverEvent> observer : observers) {
+            ObserverEvent observerEvent = new ObserverEvent(ObserverEventEnum.VSrcollVisible);
+            observerEvent.putData(ObserverEvent.VERTICAL_SRCOLL_VISABLE, show);
+            observer.update(observerEvent);
+        }
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.core.ui.grid.AbstractIndicatorSelectGrid#notifyHscrollSelectionChange()
+     */
+    @Override
+    protected void notifyHscrollSelectionChange() {
+        if (observers == null) {
+            return;
+        }
+        for (TDQObserver<ObserverEvent> observer : observers) {
+            ObserverEvent observerEvent = new ObserverEvent(ObserverEventEnum.HSrcollMove);
+            observerEvent.putData(ObserverEvent.HORIZONTAL_SCROLLBAR_MOVE, this.getHorizontalBar().getSelection());
+            observer.update(observerEvent);
+        }
+    }
+
+    /**
+     * Check whether the where clause is valid
+     * 
+     * @return true if the where clause is valid else return false
+     */
+    public boolean checkWhereClause() {
+        // no column be selected case
+        if (this.getColumnCount() <= 2) {
+            return true;
+        }
+
+        GridColumn column = getColumn(2);
+        ModelElementIndicator modelElementIndicator = (ModelElementIndicator) column.getData();
+        // connection
+        Connection tdDataProvider = ModelElementIndicatorHelper.getTdDataProvider(modelElementIndicator);
+        ColumnIndicator columnIndicator = ModelElementIndicatorHelper.switchColumnIndicator(modelElementIndicator);
+        // proxy issue or some others it is not case about where clause
+        if (columnIndicator == null) {
+            return true;
+        }
+        TdColumn tdColumn = columnIndicator.getTdColumn();
+        try {
+            getResultSet(tdDataProvider, tdColumn);
+        } catch (SQLException e) {
+            MessageDialog.openWarning(null, DefaultMessagesImpl.getString("ColumnPreviewGrid.InValidWhereClause"), //$NON-NLS-1$
+                    e.getMessage());
+            try {
+                if (sqlConn != null) {
+                    sqlConn.close();
+                }
+            } catch (SQLException e1) {
+                // no need to implement
+            }
+            return false;
+        }
+        return true;
     }
 
 }

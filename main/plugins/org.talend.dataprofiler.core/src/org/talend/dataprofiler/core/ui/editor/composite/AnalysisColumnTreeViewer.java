@@ -15,6 +15,7 @@ package org.talend.dataprofiler.core.ui.editor.composite;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -68,14 +69,13 @@ import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.manager.DQPreferenceManager;
 import org.talend.dataprofiler.core.model.DelimitedFileIndicator;
 import org.talend.dataprofiler.core.model.ModelElementIndicator;
-import org.talend.dataprofiler.core.ui.dialog.IndicatorSelectDialog;
 import org.talend.dataprofiler.core.ui.dialog.composite.TooltipTree;
 import org.talend.dataprofiler.core.ui.editor.AbstractAnalysisActionHandler;
 import org.talend.dataprofiler.core.ui.editor.AbstractMetadataFormPage;
 import org.talend.dataprofiler.core.ui.editor.analysis.AbstractAnalysisMetadataPage;
 import org.talend.dataprofiler.core.ui.editor.analysis.ColumnMasterDetailsPage;
 import org.talend.dataprofiler.core.ui.editor.preview.IndicatorUnit;
-import org.talend.dataprofiler.core.ui.grid.IndicatorSelectDialog3;
+import org.talend.dataprofiler.core.ui.grid.IndicatorSelectDialog;
 import org.talend.dataprofiler.core.ui.grid.utils.Observerable;
 import org.talend.dataprofiler.core.ui.grid.utils.TDQObserver;
 import org.talend.dataprofiler.core.ui.utils.UDIUtils;
@@ -83,6 +83,7 @@ import org.talend.dataprofiler.core.ui.views.ColumnViewerDND;
 import org.talend.dataprofiler.help.HelpPlugin;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.analysis.ExecutionLanguage;
+import org.talend.dataquality.helpers.AnalysisHelper;
 import org.talend.dataquality.helpers.MetadataHelper;
 import org.talend.dataquality.indicators.CompositeIndicator;
 import org.talend.dataquality.indicators.DataminingType;
@@ -106,7 +107,8 @@ import orgomg.cwm.objectmodel.core.ModelElement;
  * @author rli
  * 
  */
-public class AnalysisColumnTreeViewer extends AbstractColumnDropTree implements Observerable<ModelElement[]> {
+public class AnalysisColumnTreeViewer extends AbstractColumnDropTree implements Observerable<ModelElement[]>,
+        TDQObserver<Map<String, Integer>> {
 
     protected static Logger log = Logger.getLogger(AnalysisColumnTreeViewer.class);
 
@@ -230,6 +232,7 @@ public class AnalysisColumnTreeViewer extends AbstractColumnDropTree implements 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 removeSelectedElements(tree);
+                notifyObservers();
             }
         });
 
@@ -241,6 +244,7 @@ public class AnalysisColumnTreeViewer extends AbstractColumnDropTree implements 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 moveSelectedElements(tree, -1);
+                notifyObservers();
             }
         });
 
@@ -252,6 +256,7 @@ public class AnalysisColumnTreeViewer extends AbstractColumnDropTree implements 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 moveSelectedElements(tree, 1);
+                notifyObservers();
             }
         });
 
@@ -706,86 +711,45 @@ public class AnalysisColumnTreeViewer extends AbstractColumnDropTree implements 
     }
 
     public ModelElementIndicator[] openIndicatorSelectDialog(Shell shell) {
-        String oldgrid = System.getProperty("talend.profiler.oldgrid"); //$NON-NLS-1$
-        if ("true".equals(oldgrid)) { //$NON-NLS-1$
+        String whereExpression = AnalysisHelper.getStringDataFilter(this.getAnalysis());
+        final IndicatorSelectDialog dialog = new IndicatorSelectDialog(
+                shell,
+                DefaultMessagesImpl.getString("AnalysisColumnTreeViewer.indicatorSelection"), masterPage.getCurrentModelElementIndicators(), whereExpression); //$NON-NLS-1$
+        dialog.setLimitNumber(this.masterPage.getPreviewLimit());
+        dialog.create();
+        if (!DQPreferenceManager.isBlockWeb()) {
+            dialog.getShell().addShellListener(new ShellAdapter() {
 
-            final IndicatorSelectDialog dialog = new IndicatorSelectDialog(
-                    shell,
-                    DefaultMessagesImpl.getString("AnalysisColumnTreeViewer.indicatorSelection"), masterPage.getCurrentModelElementIndicators()); //$NON-NLS-1$
-            dialog.create();
+                @Override
+                public void shellActivated(ShellEvent e) {
+                    dialog.getShell().setFocus();
+                    IContext context = HelpSystem.getContext(HelpPlugin.getDefault().getIndicatorSelectorHelpContextID());
+                    PlatformUI.getWorkbench().getHelpSystem().displayHelp(context);
+                }
+            });
 
-            if (!DQPreferenceManager.isBlockWeb()) {
-                dialog.getShell().addShellListener(new ShellAdapter() {
+            dialog.getShell().addHelpListener(new HelpListener() {
 
-                    @Override
-                    public void shellActivated(ShellEvent e) {
-                        dialog.getShell().setFocus();
-                        IContext context = HelpSystem.getContext(HelpPlugin.getDefault().getIndicatorSelectorHelpContextID());
-                        PlatformUI.getWorkbench().getHelpSystem().displayHelp(context);
-                    }
-                });
+                public void helpRequested(HelpEvent e) {
+                    IContext context = HelpSystem.getContext(HelpPlugin.getDefault().getIndicatorSelectorHelpContextID());
+                    PlatformUI.getWorkbench().getHelpSystem().displayHelp(context);
+                }
+            });
+        }
+        if (dialog.checkWhereClause() && dialog.open() == Window.OK) {
+            ModelElementIndicator[] result = dialog.getResult();
+            for (ModelElementIndicator modelElementIndicator : result) {
+                modelElementIndicator.storeTempIndicator();
             }
 
-            if (dialog.open() == Window.OK) {
-                ModelElementIndicator[] result = dialog.getResult();
-                for (ModelElementIndicator modelElementIndicator : result) {
-                    modelElementIndicator.storeTempIndicator();
-                }
-
-                // this.setElements(result);
-                return result;
-            } else {
-                ModelElementIndicator[] result = dialog.getResult();
-                for (ModelElementIndicator modelElementIndicator : result) {
-                    modelElementIndicator.getTempIndicator().clear();
-                }
-                return new ModelElementIndicator[0];
-            }
-
+            // this.setElements(result);
+            return result;
         } else {
-            String whereExpression = this.getAnalysis().getParameters().getDataFilter().get(0).getRanges().get(0)
-                    .getExpressions().getExpression().getBody();
-            final IndicatorSelectDialog3 dialog = new IndicatorSelectDialog3(
-                    shell,
-                    DefaultMessagesImpl.getString("AnalysisColumnTreeViewer.indicatorSelection"), masterPage.getCurrentModelElementIndicators(), whereExpression); //$NON-NLS-1$
-            dialog.setLimitNumber(this.masterPage.getPreviewLimit());
-            dialog.create();
-            if (!DQPreferenceManager.isBlockWeb()) {
-                dialog.getShell().addShellListener(new ShellAdapter() {
-
-                    @Override
-                    public void shellActivated(ShellEvent e) {
-                        dialog.getShell().setFocus();
-                        IContext context = HelpSystem.getContext(HelpPlugin.getDefault().getIndicatorSelectorHelpContextID());
-                        PlatformUI.getWorkbench().getHelpSystem().displayHelp(context);
-                    }
-                });
-
-                dialog.getShell().addHelpListener(new HelpListener() {
-
-                    public void helpRequested(HelpEvent e) {
-                        IContext context = HelpSystem.getContext(HelpPlugin.getDefault().getIndicatorSelectorHelpContextID());
-                        PlatformUI.getWorkbench().getHelpSystem().displayHelp(context);
-                    }
-                });
+            ModelElementIndicator[] result = dialog.getResult();
+            for (ModelElementIndicator modelElementIndicator : result) {
+                modelElementIndicator.getTempIndicator().clear();
             }
-
-            if (dialog.open() == Window.OK) {
-                ModelElementIndicator[] result = dialog.getResult();
-                for (ModelElementIndicator modelElementIndicator : result) {
-                    modelElementIndicator.storeTempIndicator();
-                }
-
-                // this.setElements(result);
-                return result;
-            } else {
-                ModelElementIndicator[] result = dialog.getResult();
-                for (ModelElementIndicator modelElementIndicator : result) {
-                    modelElementIndicator.getTempIndicator().clear();
-                }
-                return new ModelElementIndicator[0];
-            }
-
+            return new ModelElementIndicator[0];
         }
 
     }
@@ -1117,11 +1081,49 @@ public class AnalysisColumnTreeViewer extends AbstractColumnDropTree implements 
      * 
      * @see org.talend.dataprofiler.core.ui.grid.utils.Observerable#initObserverable()
      */
-    public void initObserverable() {
+    private void initObserverable() {
         if (Observers == null) {
             Observers = new ArrayList<TDQObserver<ModelElement[]>>();
         }
 
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.core.ui.grid.utils.TDQObserver#update(java.lang.Object)
+     */
+    public void update(Map<String, Integer> columnIndexMap) {
+
+        ModelElementIndicator[] reorderModelElement = reorderModelElement(masterPage.getCurrentModelElementIndicators(),
+                columnIndexMap);
+        masterPage.refreshTheTree(reorderModelElement);
+        masterPage.restorePage();
+    }
+
+    /**
+     * DOC talend Comment method "reorderModelElement".
+     * 
+     * @param currentModelElementIndicators
+     */
+    private ModelElementIndicator[] reorderModelElement(ModelElementIndicator[] currentModelElementIndicators,
+            Map<String, Integer> columnIndexMap) {
+        ModelElementIndicator[] sortedModelElements = new ModelElementIndicator[currentModelElementIndicators.length];
+        for (ModelElementIndicator currModelElement : currentModelElementIndicators) {
+            String columnName = currModelElement.getElementName();
+            sortedModelElements[columnIndexMap.get(columnName)] = currModelElement;
+        }
+        return sortedModelElements;
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.core.ui.grid.utils.TDQObserver#update(int)
+     */
+    public void update(int EventType) {
+        // TODO Auto-generated method stub
+
+    }
 }

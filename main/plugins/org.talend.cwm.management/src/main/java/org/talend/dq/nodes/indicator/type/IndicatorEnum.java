@@ -580,11 +580,25 @@ public enum IndicatorEnum {
 
     }
 
+    /**
+     * 
+     * Judge the enum is plainIndicatorEnum
+     * 
+     * @param indicatorEnumn
+     * @return True if indicatorEnumn is plainIndicatorEnum
+     */
     public static boolean isPlainIndicatorEnum(IndicatorEnum indicatorEnumn) {
         return indicatorEnumn != RegexpMatchingIndicatorEnum && indicatorEnumn != SqlPatternMatchingIndicatorEnum
                 && indicatorEnumn != WhereRuleIndicatorEnum && indicatorEnumn != UserDefinedIndicatorEnum;
     }
 
+    /**
+     * 
+     * Judge the enum is SpecialIndicatorEnum
+     * 
+     * @param indicatorEnumn
+     * @return True if indicatorEnumn is SpecialIndicatorEnum
+     */
     public static boolean isSpecialIndicatorEnum(IndicatorEnum indicatorEnumn) {
         return indicatorEnumn == RegexpMatchingIndicatorEnum || indicatorEnumn == SqlPatternMatchingIndicatorEnum
                 || indicatorEnumn == UserDefinedIndicatorEnum;

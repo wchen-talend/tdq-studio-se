@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2014 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2015 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -16,7 +16,7 @@ import org.talend.dataquality.PluginConstant;
 import org.talend.dq.nodes.indicator.IIndicatorNode;
 
 /**
- * created by talend on Dec 30, 2014 Detailled comment
+ * The User Definition node
  * 
  */
 public class UDINode extends IndicatorNode {

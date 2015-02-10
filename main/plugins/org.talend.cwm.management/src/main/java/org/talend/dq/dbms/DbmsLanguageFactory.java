@@ -28,9 +28,7 @@ import org.talend.dataquality.PluginConstant;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.analysis.AnalysisContext;
 import org.talend.dataquality.analysis.ExecutionLanguage;
-import org.talend.metadata.managment.utils.DatabaseConstant;
 import org.talend.utils.ProductVersion;
-
 import orgomg.cwm.foundation.softwaredeployment.DataManager;
 import orgomg.cwm.foundation.softwaredeployment.SoftwareSystem;
 
@@ -53,7 +51,10 @@ public final class DbmsLanguageFactory {
      * @param dataManager a data manager used for initializing the correct language in the created DbmsLanguage
      * @return a new DbmsLanguage even if the data manager did not allow to get the correct language
      */
-    public static DbmsLanguage createDbmsLanguage(DataManager dataManager) {
+    public static DbmsLanguage createDbmsLanguage(DataManager dataManager, ExecutionLanguage... exeLanguage) {
+        if (exeLanguage.length > 0 && exeLanguage[0] == ExecutionLanguage.JAVA) {
+            return createDbmsLanguage(SupportDBUrlType.JAVADEFAULTURL);
+        }
         DbmsLanguage dbmsLanguage = new DbmsLanguage();
         if (dataManager == null) {
             return dbmsLanguage;

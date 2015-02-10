@@ -20,9 +20,15 @@ import org.talend.cwm.helper.ConnectionHelper;
 import org.talend.cwm.relational.TdColumn;
 import org.talend.dataprofiler.core.model.ModelElementIndicator;
 import org.talend.dataquality.analysis.ExecutionLanguage;
+import org.talend.dataquality.domain.pattern.Pattern;
+import org.talend.dataquality.helpers.IndicatorHelper;
 import org.talend.dataquality.helpers.MetadataHelper;
 import org.talend.dataquality.indicators.DataminingType;
+import org.talend.dataquality.indicators.Indicator;
+import org.talend.dq.dbms.DbmsLanguage;
+import org.talend.dq.dbms.DbmsLanguageFactory;
 import org.talend.dq.helper.RepositoryNodeHelper;
+import org.talend.dq.helper.UDIHelper;
 import org.talend.dq.nodes.indicator.IIndicatorNode;
 import org.talend.dq.nodes.indicator.type.IndicatorEnum;
 import org.talend.repository.model.IRepositoryNode;
@@ -54,10 +60,15 @@ public final class ModelElementIndicatorRule {
         IRepositoryNode rd = meIndicator.getModelElementRepositoryNode();
 
         // return patternRule(indicatorType, ((MetadataColumnRepositoryObject) rd.getObject()).getTdColumn(), language);
-        return patternRule(indicatorType, RepositoryNodeHelper.getSubModelElement(rd), language);
+        return patternRule(indicatorType, RepositoryNodeHelper.getSubModelElement(rd), language, node);
     }
 
     public static boolean patternRule(IndicatorEnum indicatorType, ModelElement me, ExecutionLanguage language) {
+        return patternRule(indicatorType, me, language, null);
+    }
+
+    public static boolean patternRule(IndicatorEnum indicatorType, ModelElement me, ExecutionLanguage language,
+            IIndicatorNode node) {
         int javaType = 0;
         boolean isDeliFileColumn = !(me instanceof TdColumn) && me instanceof MetadataColumn;
         int isTeradataInterval = -1;
@@ -77,8 +88,17 @@ public final class ModelElementIndicatorRule {
         Connection connection = null;
         if (me instanceof TdColumn) {
             connection = ConnectionHelper.getTdDataProvider((TdColumn) me);
+        } else if (me instanceof MetadataColumn) {
+            connection = ConnectionHelper.getTdDataProvider((MetadataColumn) me);
+        }
+
+        Indicator indicator = null;
+        if (node != null) {
+            indicator = node.getIndicatorInstance();
         }
         boolean isSQLEngine = ExecutionLanguage.SQL.equals(language);
+        boolean isJavaEngine = ExecutionLanguage.JAVA.equals(language);
+        DbmsLanguage dbmsLanguage = DbmsLanguageFactory.createDbmsLanguage(connection, language);
         if (javaType == Types.LONGVARCHAR && isSQLEngine) {
             if (connection != null && ConnectionHelper.isDb2(connection)) {
                 return enableLongVarchar(indicatorType, dataminingType, me);
@@ -179,8 +199,7 @@ public final class ModelElementIndicatorRule {
             break;
         // MOD zshen 2010-01-27 Date Pattern frequency indicator
         case DatePatternFreqIndicatorEnum:
-            if (ExecutionLanguage.JAVA.equals(language)
-                    && (Java2SqlType.isDateInSQL(javaType) || Java2SqlType.isTextInSQL(javaType))) {
+            if (isJavaEngine && (Java2SqlType.isDateInSQL(javaType) || Java2SqlType.isTextInSQL(javaType))) {
                 return true;
             }
             break;
@@ -262,14 +281,53 @@ public final class ModelElementIndicatorRule {
         case WellFormNationalPhoneCountIndicatorEnum:
         case PhoneNumbStatisticsIndicatorEnum:
         case FormatFreqPieIndictorEnum:
-            if (ExecutionLanguage.JAVA.equals(language)
-                    && (dataminingType == DataminingType.NOMINAL || dataminingType == DataminingType.INTERVAL)) {
+            if (isJavaEngine && (dataminingType == DataminingType.NOMINAL || dataminingType == DataminingType.INTERVAL)) {
+                return true;
+            }
+            break;
+
+        case SqlPatternMatchingIndicatorEnum:
+            if (node == null) {
+                return false;
+            }
+            if (!isSQLEngine) {
+                return false;
+            }
+            Pattern pattern = IndicatorHelper.getPattern(indicator);
+            Expression returnExpression = dbmsLanguage.getRegexp(pattern);
+            if (returnExpression != null) {
                 return true;
             }
             break;
         case RegexpMatchingIndicatorEnum:
-        case SqlPatternMatchingIndicatorEnum:
+            if (node == null) {
+                return false;
+            }
+            pattern = IndicatorHelper.getPattern(indicator);
+            returnExpression = dbmsLanguage.getRegexp(pattern);
+            if (returnExpression != null) {
+                return true;
+            }
+            break;
         case UserDefinedIndicatorEnum:
+            // judge language
+            if (node == null) {
+                return false;
+            }
+            Indicator judi = null;
+            try {
+                judi = UDIHelper.adaptToJavaUDI(indicator);
+            } catch (Throwable e) {
+                return false;
+            }
+            if (judi != null) {
+                indicator = judi;
+            }
+
+            returnExpression = dbmsLanguage.getExpression(indicator);
+            if (isJavaEngine && judi == null || isSQLEngine && returnExpression == null) {
+                return false;
+            }
             return true;
         default:
             return false;

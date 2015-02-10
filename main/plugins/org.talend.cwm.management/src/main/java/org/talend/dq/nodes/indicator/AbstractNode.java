@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2014 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2015 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -65,6 +65,9 @@ public abstract class AbstractNode implements IIndicatorNode {
      */
     public abstract boolean hasChildren();
 
+    /**
+     * Get the label of current node
+     */
     public String getLabel() {
         if (label == null) {
             return PluginConstant.EMPTY_STRING;

@@ -140,6 +140,8 @@ public class ColumnMasterDetailsPage extends DynamicAnalysisMasterPage implement
 
     private Label warningLabel = null;
 
+    private int lastTimePageNumber = 1;
+
     public ColumnMasterDetailsPage(FormEditor editor, String id, String title) {
         super(editor, id, title);
         currentEditor = (AnalysisEditor) editor;
@@ -274,9 +276,6 @@ public class ColumnMasterDetailsPage extends DynamicAnalysisMasterPage implement
 
             public void mouseDown(MouseEvent e) {
                 if (isValidateRowCount()) {
-                    sampleTable.setLimitNumber(Integer.parseInt(rowLoadedText.getText()));
-                    sampleTable.setDataFilter(dataFilterComp.getDataFilterString());
-
                     refreshPreviewTable(true);
                 } else {
                     MessageDialog.openWarning(null, DefaultMessagesImpl.getString("MatchMasterDetailsPage.NotValidate"), //$NON-NLS-1$
@@ -347,13 +346,15 @@ public class ColumnMasterDetailsPage extends DynamicAnalysisMasterPage implement
              */
             @Override
             public void mouseDown(MouseEvent e) {
-                if (isValidateRowCount()) {
+                if (!isValidateRowCount()) {
+                    MessageDialog.openWarning(null, DefaultMessagesImpl.getString("MatchMasterDetailsPage.NotValidate"), //$NON-NLS-1$
+                            DefaultMessagesImpl.getString("MatchMasterDetailsPage.LoadedRowCountError")); //$NON-NLS-1$
+                } else {
+
                     ModelElementIndicator[] result = treeViewer.openIndicatorSelectDialog(ColumnMasterDetailsPage.this.getSite()
                             .getShell());
                     refreshCurrentTreeViewer(result);
-                } else {
-                    MessageDialog.openWarning(null, DefaultMessagesImpl.getString("MatchMasterDetailsPage.NotValidate"), //$NON-NLS-1$
-                            DefaultMessagesImpl.getString("MatchMasterDetailsPage.LoadedRowCountError")); //$NON-NLS-1$
+                    refreshPreviewTable();
                 }
 
             }
@@ -421,6 +422,7 @@ public class ColumnMasterDetailsPage extends DynamicAnalysisMasterPage implement
         createWarningLabel();
         redrawNatTableComposite();
         sampleTable.addPropertyChangeListener(this);
+
     }
 
     /**
@@ -461,12 +463,22 @@ public class ColumnMasterDetailsPage extends DynamicAnalysisMasterPage implement
     }
 
     private void refreshPreviewTable() {
+        initSampleTableParameter();
         sampleTable.reDrawTable(getSelectedColumns());
         redrawWarningLabel();
 
     }
 
+    /**
+     * Init limitNumber and data filter
+     */
+    private void initSampleTableParameter() {
+        sampleTable.setLimitNumber(Integer.parseInt(rowLoadedText.getText()));
+        sampleTable.setDataFilter(dataFilterComp.getDataFilterString());
+    }
+
     private void refreshPreviewTable(boolean loadData) {
+        initSampleTableParameter();
         sampleTable.reDrawTable(getSelectedColumns(), loadData);
         redrawWarningLabel();
     }
@@ -499,35 +511,6 @@ public class ColumnMasterDetailsPage extends DynamicAnalysisMasterPage implement
 
         Composite topComp1 = toolkit.createComposite(analysisColumnSection, SWT.NONE);
         topComp1.setLayout(new GridLayout());
-        // // ~ MOD mzhao 2009-05-05,Bug 6587.
-        // createConnBindWidget(topComp1);
-        // // ~
-        //
-        // Hyperlink clmnBtn = toolkit.createHyperlink(topComp1,
-        //                DefaultMessagesImpl.getString("ColumnMasterDetailsPage.selectColumn"), SWT.NONE); //$NON-NLS-1$
-        // GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP).applyTo(clmnBtn);
-        // clmnBtn.addHyperlinkListener(new HyperlinkAdapter() {
-        //
-        // @Override
-        // public void linkActivated(HyperlinkEvent e) {
-        // openColumnsSelectionDialog();
-        // }
-        //
-        // });
-        //
-        // Hyperlink indcBtn = toolkit.createHyperlink(topComp1,
-        //                DefaultMessagesImpl.getString("ColumnMasterDetailsPage.selectIndicator"), SWT.NONE); //$NON-NLS-1$
-        // GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP).applyTo(indcBtn);
-        // indcBtn.addHyperlinkListener(new HyperlinkAdapter() {
-        //
-        // @Override
-        // public void linkActivated(HyperlinkEvent e) {
-        // ModelElementIndicator[] result = treeViewer.openIndicatorSelectDialog(ColumnMasterDetailsPage.this.getSite()
-        // .getShell());
-        // refreshCurrentTreeViewer(result);
-        // }
-        //
-        // });
 
         Composite actionBarComp = toolkit.createComposite(topComp1, SWT.NONE);
         GridLayout gdLayout = new GridLayout();
@@ -586,6 +569,7 @@ public class ColumnMasterDetailsPage extends DynamicAnalysisMasterPage implement
 
         treeViewer = new AnalysisColumnTreeViewer(tree, this);
         treeViewer.addObserver(sampleTable);
+        sampleTable.addObserver(treeViewer);
         treeViewer.setDirty(false);
         treeViewer.addPropertyChangeListener(this);
 
@@ -605,6 +589,13 @@ public class ColumnMasterDetailsPage extends DynamicAnalysisMasterPage implement
     }
 
     /**
+     * Restore last time of page.
+     */
+    public void restorePage() {
+        uiPagination.goToPage(lastTimePageNumber + 1);
+    }
+
+    /**
      * DOC zshen Comment method "computePagination".
      */
     private void computePagination() {
@@ -614,6 +605,7 @@ public class ColumnMasterDetailsPage extends DynamicAnalysisMasterPage implement
             uiPagination = new UIPagination(toolkit);
             uiPagination.setComposite(navigationComposite);
         } else {
+            lastTimePageNumber = uiPagination.getCurrentPage();
             uiPagination.reset();
         }
 
@@ -712,13 +704,14 @@ public class ColumnMasterDetailsPage extends DynamicAnalysisMasterPage implement
     public void setTreeViewInput(Object[] modelElements) {
         // MOD yyi 2012-02-29 TDQ-3605 Empty column table.
         treeViewer.filterInputData(modelElements);
-        refreshTheTree(treeViewer.getModelElementIndicator());
+        // RefreshPreviewTable should be first then the tree can be refresh
         refreshPreviewTable(treeViewer.getModelElementIndicator());
+        refreshTheTree(treeViewer.getModelElementIndicator());
         this.setDirty(true);
     }
 
     /**
-     * DOC talend Comment method "refreshTheTable".
+     * Refresh the preview Table
      * 
      * @param modelElementIndicator
      */
@@ -728,9 +721,16 @@ public class ColumnMasterDetailsPage extends DynamicAnalysisMasterPage implement
 
     }
 
+    /**
+     * 
+     * Refresh the column tree
+     * 
+     * @param modelElements
+     */
     public void refreshTheTree(ModelElementIndicator[] modelElements) {
         this.currentModelElementIndicators = modelElements;
         this.computePagination();
+
     }
 
     @Override
@@ -1193,7 +1193,7 @@ public class ColumnMasterDetailsPage extends DynamicAnalysisMasterPage implement
      */
     public void refreshCurrentTreeViewer(ModelElementIndicator[] result) {
         if (result.length > 0) {
-            int lastTimePageNumber = uiPagination.getCurrentPage();
+            lastTimePageNumber = uiPagination.getCurrentPage();
             refreshTheTree(result);
             // the number of current page is from 0 to n so need to add one when we use it.
             uiPagination.goToPage(lastTimePageNumber + 1);
@@ -1354,6 +1354,12 @@ public class ColumnMasterDetailsPage extends DynamicAnalysisMasterPage implement
         });
     }
 
+    /**
+     * 
+     * Get the limit of preivew table
+     * 
+     * @return
+     */
     public int getPreviewLimit() {
         return Integer.parseInt(rowLoadedText.getText());
     }

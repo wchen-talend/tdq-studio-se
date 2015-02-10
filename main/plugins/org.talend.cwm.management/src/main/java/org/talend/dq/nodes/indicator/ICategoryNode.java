@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2014 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2015 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -18,9 +18,26 @@ package org.talend.dq.nodes.indicator;
  */
 public interface ICategoryNode extends IIndicatorNode {
 
+    /**
+     * 
+     * Add child for current node
+     * 
+     * @param node the child node
+     */
     public void addChildren(IIndicatorNode node);
 
+    /**
+     * 
+     * Set children array to current node
+     * 
+     * @param children the array of children
+     */
     public void setChildren(IIndicatorNode[] children);
 
+    /**
+     * Get the children of current node
+     * 
+     * @return The array of children
+     */
     public IIndicatorNode[] getChildren();
 }

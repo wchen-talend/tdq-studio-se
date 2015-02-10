@@ -47,10 +47,12 @@ import org.eclipse.nebula.widgets.nattable.layer.ILayerListener;
 import org.eclipse.nebula.widgets.nattable.layer.LabelStack;
 import org.eclipse.nebula.widgets.nattable.layer.cell.ILayerCell;
 import org.eclipse.nebula.widgets.nattable.layer.event.ILayerEvent;
+import org.eclipse.nebula.widgets.nattable.layer.event.StructuralDiff;
 import org.eclipse.nebula.widgets.nattable.painter.cell.BackgroundPainter;
 import org.eclipse.nebula.widgets.nattable.painter.cell.ICellPainter;
 import org.eclipse.nebula.widgets.nattable.painter.cell.TextPainter;
 import org.eclipse.nebula.widgets.nattable.reorder.ColumnReorderLayer;
+import org.eclipse.nebula.widgets.nattable.reorder.event.ColumnReorderEvent;
 import org.eclipse.nebula.widgets.nattable.selection.SelectionLayer;
 import org.eclipse.nebula.widgets.nattable.sort.SortDirectionEnum;
 import org.eclipse.nebula.widgets.nattable.sort.config.DefaultSortConfiguration;
@@ -61,7 +63,6 @@ import org.eclipse.nebula.widgets.nattable.style.Style;
 import org.eclipse.nebula.widgets.nattable.util.GUIHelper;
 import org.eclipse.nebula.widgets.nattable.viewport.ViewportLayer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -72,6 +73,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.talend.cwm.helper.ColumnHelper;
+import org.talend.dataprofiler.core.ui.grid.utils.Observerable;
 import org.talend.dataprofiler.core.ui.grid.utils.TDQObserver;
 import org.talend.dataquality.PluginConstant;
 import org.talend.dataquality.record.linkage.ui.composite.ListObjectDataProvider;
@@ -85,7 +87,7 @@ import orgomg.cwm.objectmodel.core.ModelElement;
  * data of the table changed, need only to call createTableControl. TODO: refresh the table with new data(column not
  * changed), and no need to create the table for every refresh; or give all the data to the table at one time?
  */
-public class DataSampleTable implements TDQObserver<ModelElement[]> {
+public class DataSampleTable implements TDQObserver<ModelElement[]>, Observerable<Map<String, Integer>> {
 
     private BodyLayerStack bodyLayer;
 
@@ -136,7 +138,7 @@ public class DataSampleTable implements TDQObserver<ModelElement[]> {
 
     private ColumnPosition additionalColumnPosition;
 
-    protected ScrolledComposite tablePanel = null;
+    protected Composite tablePanel = null;
 
     private Composite drawCanvas = null;
 
@@ -145,6 +147,10 @@ public class DataSampleTable implements TDQObserver<ModelElement[]> {
     private int limitNumber = 0;
 
     private boolean isSameTable = true;
+
+    private List<TDQObserver<Map<String, Integer>>> Observers = null;
+
+    Map<String, Integer> ColumnIndexMap = null;
 
     public DataSampleTable() {
     }
@@ -340,14 +346,54 @@ public class DataSampleTable implements TDQObserver<ModelElement[]> {
 
             @Override
             public void handleLayerEvent(ILayerEvent event) {
-                if ((event instanceof ColumnHeaderSelectionEvent)) {
+                if (event instanceof ColumnHeaderSelectionEvent) {
                     ColumnHeaderSelectionEvent columnEvent = (ColumnHeaderSelectionEvent) event;
                     Collection<Range> ranges = columnEvent.getColumnPositionRanges();
                     if (ranges.size() > 0) {
                         Range range = ranges.iterator().next();
                         handleColumnSelectionChange(range.start);
                     }
+                } else if (event instanceof ColumnReorderEvent) {
+                    ColumnReorderEvent columnReorderEvent = (ColumnReorderEvent) event;
+                    Collection<StructuralDiff> columnDiffs = columnReorderEvent.getColumnDiffs();
+                    ColumnIndexMap = new HashMap<String, Integer>();
+                    fillPreElement(propertyNames[natTable.getColumnIndexByPosition(1)]);
+                    for (int index = 1; index < natTable.getColumnCount(); index++) {
+                        int columnIndexByPosition = natTable.getColumnIndexByPosition(index);
+
+                        ColumnIndexMap.put(propertyNames[columnIndexByPosition], ColumnIndexMap.size());
+
+                    }
+                    fillEndElement();
+                    notifyObservers();
                 }
+            }
+
+            private void fillEndElement() {
+
+                for (int index = ColumnIndexMap.size(); index < propertyNames.length; index++) {
+                    if (index < ColumnIndexMap.size()) {
+                        index++;
+                        continue;
+                    }
+                    ColumnIndexMap.put(propertyNames[index], index);
+                }
+
+            }
+
+            private void fillPreElement(String endName) {
+                int index = 0;
+                String tempStr = endName;
+                if (tempStr.equals(propertyNames[propertyNames.length - 1])) {
+                    tempStr = propertyNames[natTable.getColumnCount() - 2];
+                }
+                for (String propertyName : propertyNames) {
+                    if (tempStr.equals(propertyName)) {
+                        break;
+                    }
+                    ColumnIndexMap.put(propertyName, index++);
+                }
+
             }
         });
     }
@@ -512,7 +558,7 @@ public class DataSampleTable implements TDQObserver<ModelElement[]> {
         if (natTable != null) {
             clearTable();
         }
-        natTable = new NatTable(parent, gridLayer, false);
+        natTable = new NatTable(parent, NatTable.DEFAULT_STYLE_OPTIONS | SWT.BORDER, gridLayer, false);
         natTable.addConfiguration(new DefaultNatTableStyleConfiguration() {
 
             {// use the own painter to paint the group color
@@ -877,10 +923,23 @@ public class DataSampleTable implements TDQObserver<ModelElement[]> {
         }
     }
 
+    /**
+     * 
+     * Redraw the table by special columns
+     * 
+     * @param columns
+     */
     public void reDrawTable(ModelElement[] columns) {
         reDrawTable(columns, needLoadData);
     }
 
+    /**
+     * 
+     * Redraw the table by special columns and reload the data if needed
+     * 
+     * @param columns New input columns
+     * @param withData where need to reload data with same time
+     */
     public void reDrawTable(ModelElement[] columns, boolean withData) {
         if (tablePanel != null && !tablePanel.isDisposed()) {
             tablePanel.dispose();
@@ -934,11 +993,11 @@ public class DataSampleTable implements TDQObserver<ModelElement[]> {
         checkSameTableConstraint(columns);
         List<Object[]> previewData = null;
         drawCanvas = dataTableComp;
-        tablePanel = new ScrolledComposite(drawCanvas, SWT.NONE | SWT.V_SCROLL | SWT.H_SCROLL);
+        tablePanel = new Composite(drawCanvas, SWT.NONE);
         GridDataFactory.fillDefaults().align(SWT.LEFT, SWT.TOP).applyTo(tablePanel);
         tablePanel.setLayout(new GridLayout(1, Boolean.FALSE));
-        tablePanel.setExpandHorizontal(true);
-        tablePanel.setExpandVertical(true);
+        // tablePanel.setExpandHorizontal(true);
+        // tablePanel.setExpandVertical(true);
 
         GridData layoutDataFillBoth = new GridData(GridData.FILL_BOTH);
         Composite subPanel = new Composite(tablePanel, SWT.NONE);
@@ -955,7 +1014,8 @@ public class DataSampleTable implements TDQObserver<ModelElement[]> {
         // when refresh the data, the dataSampleSection's width is not 0
         initTablePanelLayoutPanel(drawCanvas, layoutDataFillBoth, tControl);
 
-        tablePanel.setContent(subPanel);
+        // tablePanel.setContent(subPanel);
+        tablePanel.layout();
     }
 
     /**
@@ -1026,6 +1086,71 @@ public class DataSampleTable implements TDQObserver<ModelElement[]> {
     @Override
     public void update(ModelElement[] columns) {
         this.reDrawTable(columns);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.talend.dataprofiler.core.ui.grid.utils.Observerable#addObserver(org.talend.dataprofiler.core.ui.grid.utils
+     * .TDQObserver)
+     */
+    @Override
+    public boolean addObserver(TDQObserver<Map<String, Integer>> observer) {
+        initObserverable();
+        return Observers.add(observer);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.talend.dataprofiler.core.ui.grid.utils.Observerable#removeObserver(org.talend.dataprofiler.core.ui.grid.utils
+     * .TDQObserver)
+     */
+    @Override
+    public boolean removeObserver(TDQObserver<Map<String, Integer>> observer) {
+        if (Observers == null) {
+            return false;
+        }
+        return Observers.remove(observer);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.core.ui.grid.utils.Observerable#clearObserver()
+     */
+    @Override
+    public void clearObserver() {
+        if (Observers == null) {
+            return;
+        }
+        Observers.clear();
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.core.ui.grid.utils.Observerable#notifyObservers()
+     */
+    @Override
+    public void notifyObservers() {
+        if (Observers == null) {
+            return;
+        }
+        for (TDQObserver<Map<String, Integer>> observer : Observers) {
+            observer.update(ColumnIndexMap);
+        }
+
+    }
+
+    private void initObserverable() {
+        if (Observers == null) {
+            Observers = new ArrayList<TDQObserver<Map<String, Integer>>>();
+        }
+
     }
 
 }

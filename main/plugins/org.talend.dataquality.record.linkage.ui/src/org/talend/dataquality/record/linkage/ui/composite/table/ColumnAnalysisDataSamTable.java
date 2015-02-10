@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2014 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2015 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.talend.core.model.metadata.builder.connection.MetadataColumn;
@@ -33,7 +34,7 @@ import orgomg.cwm.foundation.softwaredeployment.DataManager;
 import orgomg.cwm.objectmodel.core.ModelElement;
 
 /**
- * created by talend on Jan 4, 2015 Detailled comment
+ * The data sample table on the column analysis
  *
  */
 public class ColumnAnalysisDataSamTable extends DataSampleTable {
@@ -83,19 +84,8 @@ public class ColumnAnalysisDataSamTable extends DataSampleTable {
      */
     @Override
     protected void initTablePanelLayoutPanel(Composite dataTableComp, GridData layoutDataFillBoth, TControl tControl) {
-        // if (dataTableComp.getBounds().width > 0) {
-        // GridData gridData = new GridData(GridData.FILL_VERTICAL);
-        // // get the min value between the NatTable's width and dataSampleSection's width
-        // // if the NatTable's width larger than dataSampleSection's width, should minus 40 to let the vertical scroll
-        // // bar show
-        // int width = Math.min(tControl.getWidth(), dataTableComp.getBounds().width - 10);
-        // // the width must langer than 0
-        // width = width > 0 ? width : dataTableComp.getBounds().width - 10;
-        // gridData.widthHint = width;
-        // tablePanel.setLayoutData(gridData);
-        // } else { // when open the editor, the dataSampleSection's width is 0, just set the layout fill both.
+        // when open the editor, the dataSampleSection's width is 0, just set the layout fill both.
         tablePanel.setLayoutData(layoutDataFillBoth);
-        // }
     }
 
     /*
@@ -108,21 +98,23 @@ public class ColumnAnalysisDataSamTable extends DataSampleTable {
         List<Object[]> previewData = new ArrayList<Object[]>();
         DataManager connection = null;
         boolean isDelimitedFile = false;
-        if (columns != null && columns.length > 0) {
-            // use ModelElement instead of node to get the data source type directly.
-            // get connection from column[0]
-            ModelElement modelElement = columns[0];
-            if (modelElement instanceof MetadataColumn && !(modelElement instanceof TdColumn)) {
-                isDelimitedFile = true;
-                connection = ConnectionHelper.getTdDataProvider((MetadataColumn) modelElement);
-            } else if (modelElement instanceof TdColumn) {
-                connection = ConnectionHelper.getTdDataProvider((TdColumn) modelElement);
-            } else {// other case it is not support by now
-                log.warn(DefaultMessagesImpl.getString("ColumnAnalysisDataSamTable.UnSupportType")); //$NON-NLS-1$
-                return previewData;
-            }
-
+        // no columns be selected so that no data can be read
+        if (columns == null || columns.length == 0) {
+            return previewData;
         }
+        // use ModelElement instead of node to get the data source type directly.
+        // get connection from column[0]
+        ModelElement modelElement = columns[0];
+        if (modelElement instanceof MetadataColumn && !(modelElement instanceof TdColumn)) {
+            isDelimitedFile = true;
+            connection = ConnectionHelper.getTdDataProvider((MetadataColumn) modelElement);
+        } else if (modelElement instanceof TdColumn) {
+            connection = ConnectionHelper.getTdDataProvider((TdColumn) modelElement);
+        } else {// other case it is not support by now
+            log.warn(DefaultMessagesImpl.getString("ColumnAnalysisDataSamTable.UnSupportType")); //$NON-NLS-1$
+            return previewData;
+        }
+
         ISQLExecutor sqlExecutor = null;
         if (isDelimitedFile) {
             sqlExecutor = new DelimitedFileSQLExecutor();
@@ -134,7 +126,8 @@ public class ColumnAnalysisDataSamTable extends DataSampleTable {
             sqlExecutor.setLimit(getLimitNumber());
             return sqlExecutor.executeQuery(connection, Arrays.asList(columns), dataFilter);
         } catch (SQLException e) {
-            log.error(e, e);
+            MessageDialog.openWarning(null, DefaultMessagesImpl.getString("ColumnAnalysisDataSamTable.InValidWhereClause"), //$NON-NLS-1$
+                    e.getMessage());
             return previewData;
         }
     }

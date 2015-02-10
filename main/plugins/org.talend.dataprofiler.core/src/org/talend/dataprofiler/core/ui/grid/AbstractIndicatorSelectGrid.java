@@ -15,10 +15,11 @@ package org.talend.dataprofiler.core.ui.grid;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.nebula.widgets.grid.Grid;
 import org.eclipse.nebula.widgets.grid.GridCellRenderer;
 import org.eclipse.nebula.widgets.grid.GridColumn;
 import org.eclipse.nebula.widgets.grid.GridItem;
+import org.eclipse.nebula.widgets.grid.TalendGrid;
+import org.eclipse.nebula.widgets.grid.TalendGridItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -31,8 +32,11 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.talend.dataprofiler.core.ImageLib;
 import org.talend.dataprofiler.core.helper.ModelElementIndicatorHelper;
@@ -44,10 +48,10 @@ import org.talend.dq.nodes.indicator.type.IndicatorEnum;
 import org.talend.repository.model.IRepositoryNode;
 
 /**
- * created by talend on Dec 25, 2014 Detailled comment
+ * Abstract class for Grid control
  * 
  */
-public class AbstractIndicatorSelectGrid extends Grid {
+public class AbstractIndicatorSelectGrid extends TalendGrid {
 
     protected ModelElementIndicator[] _modelElementIndicators;
 
@@ -77,15 +81,19 @@ public class AbstractIndicatorSelectGrid extends Grid {
 
     static final int COLUMN_HEADER_ROTATION = 35;
 
+    static final int LIMIT_NUMBER_DEFAULT = 20;
+
     private double tanRotation;
 
-    private ModelElementIndicator[] result;
+    protected ModelElementIndicator[] result;
 
     private HoverScrollThread thread;
 
     private boolean isScrolling;
 
-    protected int limitNumber = 20;
+    protected int limitNumber = LIMIT_NUMBER_DEFAULT;
+
+    private int lastHScrollSelectionLocation = 0;
 
     /**
      * IndicatorSelectionGrid constructor.
@@ -95,7 +103,7 @@ public class AbstractIndicatorSelectGrid extends Grid {
      * @param modelElementIndicators
      * @param modelElementIndicators
      */
-    public AbstractIndicatorSelectGrid(IndicatorSelectDialog3 dialog, Composite parent, int style,
+    public AbstractIndicatorSelectGrid(IndicatorSelectDialog dialog, Composite parent, int style,
             ModelElementIndicator[] modelElementIndicators, int limit) {
         super(parent, style);
         limitNumber = limit;
@@ -104,6 +112,64 @@ public class AbstractIndicatorSelectGrid extends Grid {
         addExtraListeners();
         initializeGrid();
         tanRotation = Math.tan(Math.PI * COLUMN_HEADER_ROTATION / 180);
+        addVscrollBarListener();
+    }
+
+    /**
+     * DOC talend Comment method "addVscrollBarListener".
+     */
+    private void addVscrollBarListener() {
+        getVerticalBar().addListener(SWT.Show, new Listener() {
+
+            public void handleEvent(Event event) {
+                fillWidth();
+                if (getVerticalBar().isVisible()) {
+                    notifyVerticalBarShown(true);
+                }
+                // notify the gridIndicator vScrollBar has shown
+
+            }
+
+        });
+        getVerticalBar().addListener(SWT.Hide, new Listener() {
+
+            public void handleEvent(Event event) {
+                beginningWidth();
+                if (!getVerticalBar().isVisible()) {
+                    notifyVerticalBarShown(false);
+                }
+                // notify the gridIndicator vScrollBar has shown
+
+            }
+
+        });
+
+    }
+
+    /**
+     * DOC talend Comment method "fillWidth".
+     */
+    protected void fillWidth() {
+        GridData previewGridData = (GridData) this.getLayoutData();
+        previewGridData.horizontalAlignment = SWT.FILL;
+        previewGridData.minimumWidth = 650;
+        this.getParent().layout();
+
+    }
+
+    /**
+     * DOC talend Comment method "fillWidth".
+     */
+    protected void beginningWidth() {
+        GridData previewGridData = (GridData) this.getLayoutData();
+        previewGridData.widthHint = this.getBounds().width - 70;
+        previewGridData.minimumWidth = this.getBounds().width - 70;
+        previewGridData.horizontalAlignment = SWT.BEGINNING;
+        this.getParent().layout();
+    }
+
+    protected void notifyVerticalBarShown(boolean b) {
+
     }
 
     /**
@@ -114,14 +180,10 @@ public class AbstractIndicatorSelectGrid extends Grid {
      * @param modelElementIndicators
      * @param modelElementIndicators
      */
-    public AbstractIndicatorSelectGrid(IndicatorSelectDialog3 dialog, Composite parent, int style,
+    public AbstractIndicatorSelectGrid(IndicatorSelectDialog dialog, Composite parent, int style,
             ModelElementIndicator[] modelElementIndicators) {
-        super(parent, style);
-        _dialog = dialog;
-        _modelElementIndicators = modelElementIndicators;
-        addExtraListeners();
-        initializeGrid();
-        tanRotation = Math.tan(Math.PI * COLUMN_HEADER_ROTATION / 180);
+        this(dialog, parent, style, modelElementIndicators, LIMIT_NUMBER_DEFAULT);
+
     }
 
     private void initializeGrid() {
@@ -133,24 +195,37 @@ public class AbstractIndicatorSelectGrid extends Grid {
         // select all column
         createRowSelectColumn();
 
-        GridCellRenderer cellRenderer = getCellRenderer();
         // database columns
         for (ModelElementIndicator _modelElementIndicator : _modelElementIndicators) {
-            GridColumn newCol = new GridColumn(this, SWT.CHECK);
+            final GridColumn newCol = new GridColumn(this, SWT.CHECK);
             AbstractColumnHerderRenderer headerRenderer = getColumnHeaderRenderer();
             headerRenderer.setRotation(COLUMN_HEADER_ROTATION);
             newCol.setHeaderRenderer(headerRenderer);
-            newCol.setCellRenderer(cellRenderer);
+            newCol.setCellRenderer(getCellRenderer());
             newCol.setText(ModelElementIndicatorHelper.getModelElementDisplayName(_modelElementIndicator));
             newCol.setWidth(COLUMN_WIDTH);
             newCol.setData(_modelElementIndicator);
             newCol.setMoveable(true);
-            newCol.setResizeable(false);
+            newCol.setResizeable(true);
             newCol.setHeaderFont(font);
             IRepositoryNode repNode = _modelElementIndicator.getModelElementRepositoryNode();
             if (repNode instanceof DBColumnRepNode && ((DBColumnRepNode) repNode).isKey()) {
                 newCol.setImage(pkImage);
             }
+            newCol.addListener(SWT.Resize, new Listener() {
+
+                public void handleEvent(Event event) {
+                    notifyObservers(event);
+                }
+
+            });
+            newCol.addListener(SWT.Move, new Listener() {
+
+                public void handleEvent(Event event) {
+                    notifyObservers(event);
+                }
+
+            });
         }
         recalculateHeader();
         // initialize grid contents
@@ -188,6 +263,16 @@ public class AbstractIndicatorSelectGrid extends Grid {
     }
 
     /**
+     * 
+     * Notify the column has been resized
+     * 
+     * @param newCol
+     */
+    protected void notifyObservers(Event event) {
+        // Implement it in the sub class
+    }
+
+    /**
      * DOC talend Comment method "getCellRenderer".
      * 
      * @return
@@ -197,12 +282,12 @@ public class AbstractIndicatorSelectGrid extends Grid {
     }
 
     /**
-     * DOC talend Comment method "createTableContent".
+     * Create the Content of table
      */
     protected void createTableContent() {
         IIndicatorNode[] branchNodes = IndicatorTreeModelBuilder.buildIndicatorCategory();
         for (IIndicatorNode indicatorNode : branchNodes) {
-            GridItem item = new GridItem(this, SWT.NONE);
+            TalendGridItem item = new TalendGridItem(this, SWT.NONE);
             item.setText(indicatorNode.getLabel());
             item.setData(indicatorNode);
             createChildNodes(null, item, indicatorNode);
@@ -249,7 +334,8 @@ public class AbstractIndicatorSelectGrid extends Grid {
      * DOC root Comment method "addExtraListener".
      */
     private void addExtraListeners() {
-
+        // remove double click event from parent class
+        this.removeListener(SWT.MouseDoubleClick, this.getListeners(SWT.MouseDoubleClick)[0]);
         addMouseTrackListener(new MouseTrackListener() {
 
             public void mouseEnter(MouseEvent e) {
@@ -335,7 +421,7 @@ public class AbstractIndicatorSelectGrid extends Grid {
                     onMouseMove(e);
                     _dialog.updateIndicatorInfo(item);
                     if (item.getParentItem() == null) {
-                        redrawTable(_dialog);
+                        redrawTable();
                     }
                 }
             }
@@ -345,8 +431,8 @@ public class AbstractIndicatorSelectGrid extends Grid {
     /**
      * DOC talend Comment method "redrawPreviewTable".
      */
-    protected void redrawTable(IIndicatorSelectDialog dialog) {
-        // TODO Auto-generated method stub
+    protected void redrawTable() {
+        this.getParent().layout();
 
     }
 
@@ -385,6 +471,7 @@ public class AbstractIndicatorSelectGrid extends Grid {
         @Override
         public void run() {
             _hScrollBar.setSelection(_hScrollBar.getSelection() + _step);
+            notifyHscrollSelectionChange();
             redraw();
             Display.getDefault().timerExec(delay - accelaration * 2, this);
         }
@@ -610,7 +697,7 @@ public class AbstractIndicatorSelectGrid extends Grid {
 
         for (int i = 0; i < indicatorNode.getChildren().length; i++) {
             IIndicatorNode childNode = indicatorNode.getChildren()[i];
-            GridItem childItem = new GridItem(currentItem, SWT.NONE);
+            TalendGridItem childItem = new TalendGridItem(currentItem, SWT.NONE);
             childItem.setImage(ImageLib.getImage(childNode.getImageName()));
 
             if (childNode.hasChildren()) {
@@ -828,4 +915,34 @@ public class AbstractIndicatorSelectGrid extends Grid {
         return result;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.eclipse.nebula.widgets.grid.Grid#refreshHoverState()
+     */
+    @Override
+    protected void refreshHoverState() {
+        super.refreshHoverState();
+        if (IsHScrollInUsed()) {
+            notifyHscrollSelectionChange();
+        }
+        this.lastHScrollSelectionLocation = this.getHorizontalBar().getSelection();
+    }
+
+    /**
+     * DOC talend Comment method "notifyHscrollSelectionChange".
+     */
+    protected void notifyHscrollSelectionChange() {
+        // no need to implement
+
+    }
+
+    /**
+     * Judge whether is HScroll is in used
+     * 
+     * @return
+     */
+    private boolean IsHScrollInUsed() {
+        return lastHScrollSelectionLocation != this.getHorizontalBar().getSelection();
+    }
 }

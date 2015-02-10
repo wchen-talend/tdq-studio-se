@@ -123,6 +123,9 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
         return this.tempIndicatorEnums.contains(indicatorEnum);
     }
 
+    /**
+     * Judge special indicator whether belong to temp list
+     */
     public boolean specialTempContains(Indicator indicator) {
         if (indicator == null) {
             return false;
@@ -436,10 +439,16 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
         return createSpecialIndicatorUnit(indicatorEnum, indicator);
     }
 
+    /**
+     * Add indicator into temp Special indicator list
+     */
     public IndicatorUnit addTempSpecialIndicator(IndicatorEnum indicatorEnum, Indicator indicator) {
         return createTempSpecialIndicatorUnit(indicatorEnum, indicator);
     }
 
+    /**
+     * Remove indicator from special indicator list
+     */
     public void removeSpecialIndicator(Indicator indicator) {
         IndicatorUnit indicatorUnit = this.specialIndicatorUnitMap.get(indicator.getName());
         if (indicatorUnit != null) {
@@ -447,6 +456,9 @@ public abstract class ModelElementIndicatorImpl implements ModelElementIndicator
         }
     }
 
+    /**
+     * Remove indicator from temp special indicator list
+     */
     public void removeTempSpecialIndicator(Indicator indicator) {
         IndicatorUnit indicatorUnit = this.specialIndicatorUnitMap.get(indicator.getName());
         if (indicatorUnit != null) {

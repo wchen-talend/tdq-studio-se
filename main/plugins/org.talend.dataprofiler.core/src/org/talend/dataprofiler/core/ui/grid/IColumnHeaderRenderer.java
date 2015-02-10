@@ -15,11 +15,17 @@ package org.talend.dataprofiler.core.ui.grid;
 import org.eclipse.nebula.widgets.grid.IRenderer;
 
 /**
- * created by talend on Dec 26, 2014 Detailled comment
+ * The interface for the renderer of Column Header.
  * 
  */
 public interface IColumnHeaderRenderer extends IRenderer {
 
+    /**
+     * Set the rotation of the header text. Please note that you have to call <code>redraw()</code> on the table
+     * yourself if you change the rotation while the table is showing.
+     * 
+     * @param rotation rotation in degrees anti clockwise between 0 and 90 degrees.
+     */
     public void setRotation(int rotation);
 
 }

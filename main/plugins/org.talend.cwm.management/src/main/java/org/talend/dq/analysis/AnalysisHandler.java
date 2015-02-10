@@ -336,7 +336,7 @@ public class AnalysisHandler {
     }
 
     /**
-     * Comment method "changeDefaultRowLoaded".
+     * Change the max number of rows
      * 
      * @param text
      */

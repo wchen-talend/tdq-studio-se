@@ -20,10 +20,11 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 
 /**
- * created by talend on Dec 29, 2014 Detailled comment
+ * Abstract class for TdCellRenderer this renderer is fouse on cell of item
  * 
  */
 public class AbstractTdCellRenderer extends GridCellRenderer {
@@ -137,6 +138,40 @@ public class AbstractTdCellRenderer extends GridCellRenderer {
         }
 
         return new Point(x, y);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.eclipse.nebula.widgets.grid.GridCellRenderer#getTextBounds(org.eclipse.nebula.widgets.grid.GridItem,
+     * boolean)
+     */
+    @Override
+    public Rectangle getTextBounds(GridItem item, boolean preferred) {
+        int x = leftMargin;
+
+        Image image = item.getImage(getColumn());
+        if (image != null) {
+            x += image.getBounds().width + insideMargin;
+        }
+
+        Rectangle bounds = new Rectangle(x, topMargin + textTopMargin, 0, 0);
+
+        GC gc = new GC(item.getParent());
+        gc.setFont(item.getFont(getColumn()));
+        Point size = gc.stringExtent(item.getText(getColumn()));
+
+        bounds.height = size.y;
+
+        if (preferred) {
+            bounds.width = size.x - 1;
+        } else {
+            bounds.width = getBounds().width - x - rightMargin;
+        }
+
+        gc.dispose();
+
+        return bounds;
     }
 
 }

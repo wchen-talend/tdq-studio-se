@@ -77,8 +77,10 @@ public class TdCellRenderer extends AbstractTdCellRenderer {
                     gc.setForeground(systemBackColor);
                 }
                 gc.setLineWidth(3);
-                gc.drawLine(originX + 18, getBounds().y + 11, originX + 23, getBounds().y + 16);
-                gc.drawLine(originX + 21, getBounds().y + 16, originX + 31, getBounds().y + 6);
+                gc.drawLine(originX + offset / 2 + 4, getBounds().y + 11, originX + offset / 2 + getBounds().height - 12,
+                        getBounds().y + 16);
+                gc.drawLine(originX + offset / 2 + 7, getBounds().y + 16, originX + offset / 2 + getBounds().height - 4,
+                        getBounds().y + 6);
                 gc.setLineWidth(1);
             }
         }

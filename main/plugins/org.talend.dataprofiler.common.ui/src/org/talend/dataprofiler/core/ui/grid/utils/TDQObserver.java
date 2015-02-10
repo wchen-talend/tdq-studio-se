@@ -12,12 +12,17 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.grid.utils;
 
-
 /**
- * created by talend on Dec 26, 2014 Detailled comment
+ * The interface for TDQObserver
  * 
  */
 public interface TDQObserver<T> {
 
+    /**
+     * 
+     * Execute update action
+     * 
+     * @param observerable
+     */
     public void update(T observerable);
 }

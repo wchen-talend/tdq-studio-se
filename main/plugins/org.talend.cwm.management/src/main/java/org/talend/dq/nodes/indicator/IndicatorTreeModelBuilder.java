@@ -68,8 +68,14 @@ public final class IndicatorTreeModelBuilder {
 
     private static IndicatorCategoryNode[] indicatorCategoryNodes;
 
+    /**
+     * 
+     * Get the root node
+     * 
+     * @return
+     */
     public static IIndicatorNode getRootNode() {
-        IndicatorCategoryNode rootNode = new IndicatorCategoryNode("root");
+        IndicatorCategoryNode rootNode = new IndicatorCategoryNode("root"); //$NON-NLS-1$
         rootNode.setChildren(buildIndicatorCategory());
 
         return rootNode;

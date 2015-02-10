@@ -34,6 +34,12 @@ public interface IIndicatorNode {
      */
     public IndicatorEnum getIndicatorEnum();
 
+    /**
+     * 
+     * Set the indicatorEnum for current node
+     * 
+     * @param indicatorEnum The enum which will be setting
+     */
     public void setIndicatorEnum(IndicatorEnum indicatorEnum);
 
     public Indicator getIndicatorInstance();
@@ -42,6 +48,12 @@ public interface IIndicatorNode {
 
     public boolean isIndicatorEnumNode();
 
+    /**
+     * 
+     * Get the name of image
+     * 
+     * @return The name of image
+     */
     public String getImageName();
 
 }

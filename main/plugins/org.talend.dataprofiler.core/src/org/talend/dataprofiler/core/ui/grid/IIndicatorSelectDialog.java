@@ -20,18 +20,50 @@ import org.talend.dataprofiler.core.model.ModelElementIndicator;
 import org.talend.dq.nodes.indicator.IIndicatorNode;
 
 /**
- * created by talend on Dec 25, 2014 Detailled comment
+ * The interface of indicator select Dialog
  * 
  */
 public interface IIndicatorSelectDialog extends IShellProvider {
 
+    /**
+     * 
+     * Update the Purpose label and description label
+     * 
+     * @param item which item has been selected
+     */
     public void updateIndicatorInfo(GridItem item);
 
+    /**
+     * 
+     * Get the area of dialog
+     * 
+     * @return the area of dialog
+     */
     public Control getDialogControl();
 
+    /**
+     * 
+     * Get the root composite of dialog
+     * 
+     * @return The root composite of dialog
+     */
     public Composite getDialogComposite();
 
+    /**
+     * 
+     * Get the expression of where clause
+     * 
+     * @return The expression of where clause
+     */
     public String getWhereExpression();
 
+    /**
+     * 
+     * Judge whether currentIndicator can be checked for the column
+     * 
+     * @param currentIndicator current indicator
+     * @param indicatorNode the model of current tree item
+     * @return true if current indicator can be checked else return false
+     */
     public boolean isMatchCurrentIndicator(ModelElementIndicator currentIndicator, IIndicatorNode indicatorNode);
 }

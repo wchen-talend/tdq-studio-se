@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2014 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2015 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -13,16 +13,38 @@
 package org.talend.dataprofiler.core.ui.grid.utils;
 
 /**
- * created by talend on Dec 26, 2014 Detailled comment
+ * The interface of Observerable
  * 
  */
 public interface Observerable<T> {
 
+    /**
+     * 
+     * Add one observer
+     * 
+     * @param observer
+     * @return
+     */
     boolean addObserver(TDQObserver<T> observer);
 
+    /**
+     * 
+     * Remove special observer
+     * 
+     * @param observer
+     * @return
+     */
     boolean removeObserver(TDQObserver<T> observer);
 
+    /**
+     * 
+     * Clear all of observer
+     */
     void clearObserver();
 
+    /**
+     * 
+     * Notify all of Observers for current update
+     */
     void notifyObservers();
 }

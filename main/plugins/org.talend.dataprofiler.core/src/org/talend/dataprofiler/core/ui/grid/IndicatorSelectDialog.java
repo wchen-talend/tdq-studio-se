@@ -17,8 +17,13 @@ import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.nebula.widgets.grid.GridItem;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -39,10 +44,10 @@ import org.talend.dataquality.indicators.definition.IndicatorDefinition;
 import org.talend.dq.nodes.indicator.IIndicatorNode;
 
 /**
- * created by talend on Dec 25, 2014 Detailled comment
+ * The indicator select dialog
  * 
  */
-public class IndicatorSelectDialog3 extends TrayDialog implements IIndicatorSelectDialog {
+public class IndicatorSelectDialog extends TrayDialog implements IIndicatorSelectDialog {
 
     private static final String DESCRIPTION = DefaultMessagesImpl.getString("IndicatorSelectDialog.description"); //$NON-NLS-1$
 
@@ -70,13 +75,13 @@ public class IndicatorSelectDialog3 extends TrayDialog implements IIndicatorSele
     private int limitNumber = 20;
 
     /**
-     * IndicatorSelectDialog2 constructor.
+     * IndicatorSelectDialog constructor.
      * 
      * @param parentShell
      * @param title
      * @param modelElementIndicators
      */
-    public IndicatorSelectDialog3(Shell parentShell, String title, ModelElementIndicator[] modelElementIndicators,
+    public IndicatorSelectDialog(Shell parentShell, String title, ModelElementIndicator[] modelElementIndicators,
             String whereExpression) {
         super(parentShell);
         this.whereExpression = whereExpression;
@@ -122,38 +127,97 @@ public class IndicatorSelectDialog3 extends TrayDialog implements IIndicatorSele
         gridIndicator = new IndicatorSelectGrid(this, redrewComp, style, modelElementIndicators);
         gridIndicator.setHeaderVisible(false);
         gridIndicator.addObserver(gridPrview);
-        // GridTreeViewer gridTreeViewer = new GridTreeViewer(grid);
-        // gridTreeViewer.setLabelProvider(new GridTreeLabelProvider());
-        // gridTreeViewer.setContentProvider(new GridTreeContentProvider());
-        // gridTreeViewer.setRowHeaderLabelProvider(new GridTreeRowHeaderLabelProvider());
-        // gridTreeViewer.setInput(IndicatorTreeModelBuilder.getRootNode());
-        GridData indicatorGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-        indicatorGridData.minimumWidth = 650;
-        indicatorGridData.minimumHeight = 470;
-        indicatorGridData.widthHint = Math.min(IndicatorSelectGrid.COLUMN_WIDTH * modelElementIndicators.length + 400,
-                getParentShell().getClientArea().width - 350);
-        indicatorGridData.heightHint = getParentShell().getClientArea().height - 150;
+        gridPrview.addObserver(gridIndicator);
+        gridPrview.getParent().addControlListener(new ControlAdapter() {
+
+            /*
+             * (non-Javadoc)
+             * 
+             * @see org.eclipse.swt.events.ControlAdapter#controlResized(org.eclipse.swt.events.ControlEvent)
+             */
+            @Override
+            public void controlResized(ControlEvent e) {
+                GridData indicatorGridData = (GridData) gridIndicator.getLayoutData();
+                GridData previewGridData = (GridData) gridPrview.getLayoutData();
+                previewGridData.horizontalAlignment = SWT.FILL;
+                previewGridData.minimumWidth = 650;
+                indicatorGridData.horizontalAlignment = SWT.FILL;
+                indicatorGridData.minimumWidth = 650;
+                gridPrview.getParent().layout();
+
+                if (gridIndicator.getVerticalBar().isVisible() ^ gridPrview.getVerticalBar().isVisible()) {
+                    if (gridPrview.getVerticalBar().isVisible()) {
+                        indicatorGridData.widthHint = gridPrview.getBounds().width - 70;
+                        indicatorGridData.minimumWidth = gridPrview.getBounds().width - 70;
+                        indicatorGridData.horizontalAlignment = SWT.BEGINNING;
+                    } else {
+                        previewGridData.widthHint = gridIndicator.getBounds().width - 70;
+                        previewGridData.minimumWidth = gridIndicator.getBounds().width - 70;
+                        previewGridData.horizontalAlignment = SWT.BEGINNING;
+                    }
+                    gridPrview.getParent().layout();
+                }
+            }
+
+        });
 
         GridData previewGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
         previewGridData.minimumWidth = 650;
-        previewGridData.minimumHeight = gridPrview.getItemHeight();
+        previewGridData.minimumHeight = gridPrview.getItemHeight() * 10 + gridPrview.getHeaderHeight();
         previewGridData.widthHint = Math.min(IndicatorSelectGrid.COLUMN_WIDTH * modelElementIndicators.length + 400,
                 getParentShell().getClientArea().width - 350);
-        previewGridData.heightHint = gridPrview.getItemHeight() * 10;
+        previewGridData.heightHint = gridPrview.getHeaderHeight() + gridPrview.getItemHeight() * 10;
+
+        GridData indicatorGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        indicatorGridData.minimumWidth = 650;
+        indicatorGridData.minimumHeight = gridIndicator.getItemHeight() * 10;
+        indicatorGridData.widthHint = Math.min(IndicatorSelectGrid.COLUMN_WIDTH * modelElementIndicators.length + 400,
+                getParentShell().getClientArea().width - 350);
+        indicatorGridData.heightHint = getParentShell().getClientArea().height - previewGridData.heightHint;
 
         gridIndicator.setLayoutData(indicatorGridData);
         gridPrview.setLayoutData(previewGridData);
 
-        Composite buttomComp = new Composite(redrewComp, SWT.NONE);
+        Composite buttomComp = new Composite(redrewComp, SWT.BORDER);
         buttomComp.setLayout(new GridLayout());
         buttomComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+        // added one checkbox to hide invalid item
+
+        createHideInvalidItemButton(buttomComp);
         purposeLabel = new Label(buttomComp, SWT.WRAP);
         GridDataFactory.fillDefaults().grab(true, true).applyTo(purposeLabel);
         descriptionLabel = new Label(buttomComp, SWT.WRAP);
         GridDataFactory.fillDefaults().minSize(400, 30).grab(true, true).applyTo(descriptionLabel);
+        // redraw gridIndicator so that gridPreview will syn width of column
         gridIndicator.redraw();
         return redrewComp;
+    }
+
+    /**
+     * DOC talend Comment method "createHideInvalidItemButton".
+     * 
+     * @param buttomComp
+     */
+    private void createHideInvalidItemButton(Composite buttomComp) {
+        Button hideInvalidButton = new Button(buttomComp, SWT.CHECK);
+        hideInvalidButton.setText(DefaultMessagesImpl.getString("IndicatorSelectDialog.hideIndicatorCheckBoxLabel")); //$NON-NLS-1$
+        hideInvalidButton.setEnabled(hasColumnSelected());
+        hideInvalidButton.addSelectionListener(new SelectionAdapter() {
+
+            /*
+             * (non-Javadoc)
+             * 
+             * @see org.eclipse.swt.events.SelectionAdapter#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+             */
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+
+                gridIndicator.hideInvalidItem(((Button) e.getSource()).getSelection());
+            }
+
+        });
+
     }
 
     public boolean isMatchCurrentIndicator(ModelElementIndicator currentIndicator, IIndicatorNode indicatorNode) {
@@ -180,6 +244,7 @@ public class IndicatorSelectDialog3 extends TrayDialog implements IIndicatorSele
         parent.setLayout(new GridLayout(4, false));
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+        getButton(IDialogConstants.OK_ID).setEnabled(hasColumnSelected());
     }
 
     public ModelElementIndicator[] getResult() {
@@ -244,5 +309,18 @@ public class IndicatorSelectDialog3 extends TrayDialog implements IIndicatorSele
 
     public void setLimitNumber(int limit) {
         limitNumber = limit;
+    }
+
+    /**
+     * DOC talend Comment method "checkPreviewData".
+     * 
+     * @return
+     */
+    public boolean checkWhereClause() {
+        return gridPrview.checkWhereClause();
+    }
+
+    private boolean hasColumnSelected() {
+        return this.modelElementIndicators != null && this.modelElementIndicators.length > 0;
     }
 }
