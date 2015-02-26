@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.PlatformUI;
 import org.talend.commons.utils.platform.PluginChecker;
+import org.talend.core.database.EDatabaseTypeName;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.DatabaseConnection;
 import org.talend.cwm.db.connection.ConnectionUtils;
@@ -589,7 +590,9 @@ public final class ChartTableFactory {
             return false;
         }
         // only support 3 kinds of db: mysql, oracle, postgressql
-        String[] supportDB = { "MySQL", "Oracle with SID", "PostgreSQL" }; //$NON-NLS-2$ //$NON-NLS-3$
+        String[] supportDB = { EDatabaseTypeName.MYSQL.getDisplayName(), EDatabaseTypeName.PSQL.getDisplayName(),
+                EDatabaseTypeName.ORACLEFORSID.getDisplayName(), EDatabaseTypeName.ORACLESN.getDisplayName(),
+                EDatabaseTypeName.ORACLE_OCI.getDisplayName() };
         TdTable table = SwitchHelpers.TABLE_SWITCH.doSwitch(indicator.getAnalyzedElement());
         if (table == null) {
             return false;
