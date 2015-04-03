@@ -234,7 +234,11 @@ public class FieldModifier {
                                 replaceList.add(syn);
                             }
                         }
-                        return replaceList.get(random.nextInt(replaceList.size()));
+                        if (replaceList.isEmpty()) {
+                            return str;
+                        } else {
+                            return replaceList.get(random.nextInt(replaceList.size()));
+                        }
                     }
                 } catch (ParseException e) {
                     e.printStackTrace();
