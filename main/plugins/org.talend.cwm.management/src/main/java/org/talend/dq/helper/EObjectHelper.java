@@ -12,6 +12,7 @@
 // ============================================================================
 package org.talend.dq.helper;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -31,6 +32,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.talend.commons.emf.EMFUtil;
+import org.talend.commons.utils.WorkspaceUtils;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.MetadataColumn;
 import org.talend.core.model.metadata.builder.connection.MetadataTable;
@@ -508,5 +510,16 @@ public final class EObjectHelper {
         collection = copier.copyAll(collection);
         copier.copyReferences();
 
+    }
+
+    public static File modelElement2File(ModelElement mElement) {
+        URI uri = getURI(mElement);
+        if (uri != null) {
+            String uriString = WorkspaceUtils.toFile(uri);
+            if (uriString != null) {
+                return new File(uriString);
+            }
+        }
+        return null;
     }
 }

@@ -304,7 +304,8 @@ public class ExportWizardPage extends WizardPage {
                     // dependency.
                     boolean checked = item.getChecked();
                     if (checked) {
-                        for (File file : record.getDependencyMap().keySet()) {
+                        // for (File file : record.getDependencyMap().keySet()) {
+                        for (File file : record.getDependencySet()) {
                             ItemRecord findRecord = ItemRecord.findRecord(file);
                             if (findRecord != null) {
                                 repositoryTree.setChecked(findRecord, checked);
@@ -353,10 +354,10 @@ public class ExportWizardPage extends WizardPage {
 
         ItemRecord[] elements = getElements();
         for (ItemRecord record : elements) {
-            Map<File, ModelElement> dependencyMap = record.getDependencyMap();
-            for (File depFile : dependencyMap.keySet()) {
+            // Map<File, ModelElement> dependencyMap = record.getDependencyMap();
+            for (File depFile : record.getDependencySet()) {
                 if (!repositoryTree.getChecked(ItemRecord.findRecord(depFile))) {
-                    ModelElement element = dependencyMap.get(depFile);
+                    ModelElement element = ItemRecord.getElement(depFile);
                     // MOD qiongli 2012-12-13 TDQ-5356 use itself file name for jrxml
                     boolean isJrxmlDepFile = depFile.getName().endsWith(FactoriesUtil.JRXML);
                     // MOD msjian TDQ-5909: modify to displayName
@@ -504,8 +505,8 @@ public class ExportWizardPage extends WizardPage {
 
                 ItemRecord[] records = getElements();
                 for (ItemRecord record : records) {
-                    Map<File, ModelElement> dependencyMap = record.getDependencyMap();
-                    for (File depFile : dependencyMap.keySet()) {
+                    // Map<File, ModelElement> dependencyMap = record.getDependencyMap();
+                    for (File depFile : record.getDependencySet()) {
                         ItemRecord depRecord = ItemRecord.findRecord(depFile);
                         if (!repositoryTree.getChecked(depRecord)) {
                             repositoryTree.setChecked(depRecord, true);

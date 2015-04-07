@@ -229,7 +229,7 @@ public class ImportWizardPage extends WizardPage {
                     // dependency.
                     boolean checked = item.getChecked();
                     if (checked) {
-                        for (File file : record.getDependencyMap().keySet()) {
+                        for (File file : record.getDependencySet()) {
                             ItemRecord findRecord = ItemRecord.findRecord(file);
                             if (findRecord != null) {
                                 repositoryTree.setChecked(findRecord, checked);
@@ -375,8 +375,8 @@ public class ImportWizardPage extends WizardPage {
         ItemRecord[] elements = getElements();
         for (ItemRecord record : elements) {
             dErrors.addAll(record.getErrors());
-            for (File depFile : record.getDependencyMap().keySet()) {
-                ModelElement element = record.getDependencyMap().get(depFile);
+            for (File depFile : record.getDependencySet()) {
+                ModelElement element = ItemRecord.getElement(depFile);
 
                 ItemRecord findRecord = ItemRecord.findRecord(depFile);
                 // MOD qiongli 2012-12-13 TDQ-5356 use itself file name for jrxml

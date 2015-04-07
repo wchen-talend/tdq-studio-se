@@ -36,7 +36,6 @@ import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.talend.commons.emf.EMFUtil;
 import org.talend.commons.emf.FactoriesUtil;
 import org.talend.commons.exception.LoginException;
 import org.talend.commons.exception.PersistenceException;
@@ -45,6 +44,7 @@ import org.talend.commons.utils.WorkspaceUtils;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.DatabaseConnection;
 import org.talend.core.model.metadata.builder.database.JavaSqlFactory;
+import org.talend.core.model.properties.DatabaseConnectionItem;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.Project;
 import org.talend.core.model.properties.PropertiesPackage;
@@ -105,7 +105,6 @@ import org.talend.resource.EResourceConstant;
 import org.talend.resource.ResourceManager;
 import org.talend.resource.ResourceService;
 import org.talend.utils.ProductVersion;
-
 import orgomg.cwm.objectmodel.core.Dependency;
 import orgomg.cwm.objectmodel.core.ModelElement;
 
@@ -298,7 +297,8 @@ public class FileSystemImportWriter implements IImportWriter {
      * @param record
      */
     private void checkDependency(ItemRecord record) {
-        for (ModelElement melement : record.getDependencyMap().values()) {
+        for (File file : record.getDependencySet()) {
+            ModelElement melement = ItemRecord.getElement(file);
             if (melement != null && melement.eIsProxy()) {
                 // if the element is IndicatorDefinition and it exist in the current project and don't include any
                 // sql and java templates and the AggregatedDefinitions is not empty or TableOverview/ViewOverview
@@ -414,6 +414,11 @@ public class FileSystemImportWriter implements IImportWriter {
                     if (user != null && property.getAuthor() == null) {
                         property.setAuthor(user);
                         EMFSharedResources.getInstance().saveResource(property.eResource());
+                        Item item = property.getItem();
+                        if (item != null && item instanceof DatabaseConnectionItem) {
+                            Connection connection = ((DatabaseConnectionItem) item).getConnection();
+                            log.error("11111111111111111111111111111:" + connection.getId() + "||" + connection.getName());
+                        }
                     }
 
                     if (log.isDebugEnabled()) {
@@ -748,7 +753,11 @@ public class FileSystemImportWriter implements IImportWriter {
         // siDef.setName(record.getElement().getName());
 
         if (isModified) {
-            ElementWriterFactory.getInstance().createIndicatorDefinitionWriter().save(siDefItem, false);
+            try {
+                ElementWriterFactory.getInstance().createIndicatorDefinitionWriter().save(siDefItem, false);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -1255,7 +1264,8 @@ public class FileSystemImportWriter implements IImportWriter {
         }
         Resource modEResource = modelElement.eResource();
         if (!clientDependencys.isEmpty() && modEResource != null) {
-            EMFUtil.saveSingleResource(modEResource);
+            // EMFUtil.saveSingleResource(modEResource);
+            EMFSharedResources.getInstance().saveResource(modEResource);
         }
     }
 

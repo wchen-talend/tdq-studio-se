@@ -30,7 +30,6 @@ import org.eclipse.emf.ecore.xmi.impl.XMLResourceImpl;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
-import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.rule.PowerMockRule;
@@ -44,22 +43,10 @@ import org.talend.cwm.management.i18n.Messages;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.analysis.AnalysisContext;
 import org.talend.dataquality.analysis.AnalysisFactory;
-import org.talend.dataquality.analysis.AnalysisResult;
 import org.talend.dataquality.helpers.AnalysisHelper;
 import org.talend.dataquality.helpers.IndicatorHelper;
-import org.talend.dataquality.indicators.BlankCountIndicator;
-import org.talend.dataquality.indicators.CompositeIndicator;
-import org.talend.dataquality.indicators.CountsIndicator;
-import org.talend.dataquality.indicators.IndicatorsFactory;
-import org.talend.dataquality.indicators.definition.DefinitionFactory;
-import org.talend.dataquality.indicators.definition.IndicatorDefinition;
-import org.talend.dataquality.properties.PropertiesFactory;
 import org.talend.dataquality.properties.TDQAnalysisItem;
-import org.talend.dataquality.properties.TDQIndicatorDefinitionItem;
-import org.talend.dataquality.properties.TDQReportItem;
 import org.talend.dataquality.properties.impl.PropertiesFactoryImpl;
-import org.talend.dataquality.reports.ReportsFactory;
-import org.talend.dataquality.reports.TdReport;
 import org.talend.dq.helper.PropertyHelper;
 import org.talend.dq.writer.impl.AnalysisWriter;
 import org.talend.dq.writer.impl.DataProviderWriter;
@@ -80,145 +67,151 @@ public class DependenciesHandlerTest {
     @Rule
     public PowerMockRule powerMockRule = new PowerMockRule();
 
-    /**
-     * Test method for {@link org.talend.cwm.dependencies.DependenciesHandler#getClintDependencyForExport(ModelElement)}
-     * .
-     * 
-     * case1 for analysis
-     */
-    @Test
-    public void testGetClintDependencyExportModelElementCase1() {
-        // DependenciesHandler is a final class we can not mock it. so test this method need to call really
-        // getAnaDependency method that we must to create so many element
-        // countIndicator
-        Property countIndicatorProperty = org.talend.core.model.properties.PropertiesFactory.eINSTANCE.createProperty();
-        TDQIndicatorDefinitionItem countIndicatorItem = PropertiesFactory.eINSTANCE.createTDQIndicatorDefinitionItem();
-        countIndicatorProperty.setItem(countIndicatorItem);
-        countIndicatorItem.setProperty(countIndicatorProperty);
-        // Analysis
-        Property anaProperty = org.talend.core.model.properties.PropertiesFactory.eINSTANCE.createProperty();
-        TDQAnalysisItem createItem = PropertiesFactory.eINSTANCE.createTDQAnalysisItem();
+    // TODO need to move this test method into ItemRecordTest
+    // /**
+    // * Test method for {@link
+    // org.talend.cwm.dependencies.DependenciesHandler#getClintDependencyForExport(ModelElement)}
+    // * .
+    // *
+    // * case1 for analysis
+    // */
+    // @Test
+    // public void testGetClintDependencyExportModelElementCase1() {
+    // // DependenciesHandler is a final class we can not mock it. so test this method need to call really
+    // // getAnaDependency method that we must to create so many element
+    // // countIndicator
+    // Property countIndicatorProperty = org.talend.core.model.properties.PropertiesFactory.eINSTANCE.createProperty();
+    // TDQIndicatorDefinitionItem countIndicatorItem = PropertiesFactory.eINSTANCE.createTDQIndicatorDefinitionItem();
+    // countIndicatorProperty.setItem(countIndicatorItem);
+    // countIndicatorItem.setProperty(countIndicatorProperty);
+    // // Analysis
+    // Property anaProperty = org.talend.core.model.properties.PropertiesFactory.eINSTANCE.createProperty();
+    // TDQAnalysisItem createItem = PropertiesFactory.eINSTANCE.createTDQAnalysisItem();
+    //
+    // Analysis createAnalysis = AnalysisFactory.eINSTANCE.createAnalysis();
+    //
+    // // create analysisResult
+    // AnalysisResult createAnalysisResult = AnalysisFactory.eINSTANCE.createAnalysisResult();
+    // // for getAnaDependency method
+    // CountsIndicator createCountsIndicator = IndicatorsFactory.eINSTANCE.createCountsIndicator();
+    //
+    // BlankCountIndicator createBlankCountIndicator = IndicatorsFactory.eINSTANCE.createBlankCountIndicator();
+    // IndicatorDefinition createIndicatorDefinition = DefinitionFactory.eINSTANCE.createIndicatorDefinition();
+    // createCountsIndicator.setIndicatorDefinition(createIndicatorDefinition);
+    // countIndicatorItem.setIndicatorDefinition(createIndicatorDefinition);
+    // createBlankCountIndicator.setIndicatorDefinition(createIndicatorDefinition);
+    // createCountsIndicator.getAllChildIndicators().add(createBlankCountIndicator);
+    // createAnalysisResult.getIndicators().add(createCountsIndicator);
+    //
+    // // two different Indicator use same IndicatorDefinition the second one will be filter out.
+    // CompositeIndicator createCompositeIndicator = IndicatorsFactory.eINSTANCE.createTextIndicator();
+    // createAnalysisResult.getIndicators().add(createCompositeIndicator);
+    // createIndicatorDefinition = DefinitionFactory.eINSTANCE.createIndicatorDefinition();
+    // createCompositeIndicator.setIndicatorDefinition(createIndicatorDefinition);
+    // // ~
+    // // ~for getAnaDependency method
+    // createAnalysis.setResults(createAnalysisResult);
+    // createItem.setAnalysis(createAnalysis);
+    // anaProperty.setItem(createItem);
+    // createItem.setProperty(anaProperty);
+    //
+    // // staticMock PropertyHelper
+    // PowerMockito.mockStatic(PropertyHelper.class);
+    // Mockito.when(PropertyHelper.getModelElement(anaProperty)).thenReturn(createAnalysis);
+    // Mockito.when(PropertyHelper.getProperty(createCountsIndicator.getIndicatorDefinition())).thenReturn(
+    // countIndicatorProperty);
+    // Mockito.when(PropertyHelper.getProperty(createAnalysis)).thenReturn(anaProperty);
+    //
+    // // staticMock ModelElementHelper
+    // PowerMockito.mockStatic(ModelElementHelper.class);
+    // ModelElementMatcher modelElementMatcher = new ModelElementMatcher();
+    // Mockito.when(ModelElementHelper.compareUUID(Mockito.argThat(modelElementMatcher),
+    // Mockito.argThat(modelElementMatcher)))
+    // .thenReturn(modelElementMatcher.equals(modelElementMatcher));
+    //
+    // List<Property> clintDependency = DependenciesHandler.getInstance().getClintDependencyForExport(createAnalysis);
+    // Assert.assertEquals(1, clintDependency.size());
+    // Assert.assertEquals(countIndicatorProperty, clintDependency.get(0));
+    //
+    // }
 
-        Analysis createAnalysis = AnalysisFactory.eINSTANCE.createAnalysis();
-
-        // create analysisResult
-        AnalysisResult createAnalysisResult = AnalysisFactory.eINSTANCE.createAnalysisResult();
-        // for getAnaDependency method
-        CountsIndicator createCountsIndicator = IndicatorsFactory.eINSTANCE.createCountsIndicator();
-
-        BlankCountIndicator createBlankCountIndicator = IndicatorsFactory.eINSTANCE.createBlankCountIndicator();
-        IndicatorDefinition createIndicatorDefinition = DefinitionFactory.eINSTANCE.createIndicatorDefinition();
-        createCountsIndicator.setIndicatorDefinition(createIndicatorDefinition);
-        countIndicatorItem.setIndicatorDefinition(createIndicatorDefinition);
-        createBlankCountIndicator.setIndicatorDefinition(createIndicatorDefinition);
-        createCountsIndicator.getAllChildIndicators().add(createBlankCountIndicator);
-        createAnalysisResult.getIndicators().add(createCountsIndicator);
-
-        // two different Indicator use same IndicatorDefinition the second one will be filter out.
-        CompositeIndicator createCompositeIndicator = IndicatorsFactory.eINSTANCE.createTextIndicator();
-        createAnalysisResult.getIndicators().add(createCompositeIndicator);
-        createIndicatorDefinition = DefinitionFactory.eINSTANCE.createIndicatorDefinition();
-        createCompositeIndicator.setIndicatorDefinition(createIndicatorDefinition);
-        // ~
-        // ~for getAnaDependency method
-        createAnalysis.setResults(createAnalysisResult);
-        createItem.setAnalysis(createAnalysis);
-        anaProperty.setItem(createItem);
-        createItem.setProperty(anaProperty);
-
-        // staticMock PropertyHelper
-        PowerMockito.mockStatic(PropertyHelper.class);
-        Mockito.when(PropertyHelper.getModelElement(anaProperty)).thenReturn(createAnalysis);
-        Mockito.when(PropertyHelper.getProperty(createCountsIndicator.getIndicatorDefinition())).thenReturn(
-                countIndicatorProperty);
-        Mockito.when(PropertyHelper.getProperty(createAnalysis)).thenReturn(anaProperty);
-
-        // staticMock ModelElementHelper
-        PowerMockito.mockStatic(ModelElementHelper.class);
-        ModelElementMatcher modelElementMatcher = new ModelElementMatcher();
-        Mockito.when(ModelElementHelper.compareUUID(Mockito.argThat(modelElementMatcher), Mockito.argThat(modelElementMatcher)))
-                .thenReturn(modelElementMatcher.equals(modelElementMatcher));
-
-        List<Property> clintDependency = DependenciesHandler.getInstance().getClintDependencyForExport(createAnalysis);
-        Assert.assertEquals(1, clintDependency.size());
-        Assert.assertEquals(countIndicatorProperty, clintDependency.get(0));
-
-    }
-
-    /**
-     * Test method for {@link org.talend.cwm.dependencies.DependenciesHandler#getClintDependencyForExport(ModelElement)}
-     * .
-     * 
-     * case2 for report
-     */
-    @Test
-    public void testGetClintDependencyForExportModelElementCase2() {
-        // DependenciesHandler is a final class we can not mock it. so test this method need to call really
-        // getAnaDependency method that we must to create so many element
-        // countIndicator
-        Property reportProperty = org.talend.core.model.properties.PropertiesFactory.eINSTANCE.createProperty();
-        TDQReportItem reportItem = PropertiesFactory.eINSTANCE.createTDQReportItem();
-        reportProperty.setItem(reportItem);
-        TdReport tdqReport = ReportsFactory.eINSTANCE.createTdReport();
-        reportItem.setReport(tdqReport);
-
-        Property countIndicatorProperty = org.talend.core.model.properties.PropertiesFactory.eINSTANCE.createProperty();
-        TDQIndicatorDefinitionItem countIndicatorItem = PropertiesFactory.eINSTANCE.createTDQIndicatorDefinitionItem();
-        countIndicatorProperty.setItem(countIndicatorItem);
-        countIndicatorItem.setProperty(countIndicatorProperty);
-        // Analysis
-        Property anaProperty = org.talend.core.model.properties.PropertiesFactory.eINSTANCE.createProperty();
-        TDQAnalysisItem createItem = PropertiesFactory.eINSTANCE.createTDQAnalysisItem();
-
-        Analysis createAnalysis = AnalysisFactory.eINSTANCE.createAnalysis();
-        DependenciesHandler.getInstance().setDependencyOn(tdqReport, createAnalysis);
-
-        // create analysisResult
-        AnalysisResult createAnalysisResult = AnalysisFactory.eINSTANCE.createAnalysisResult();
-        // for getAnaDependency method
-        CountsIndicator createCountsIndicator = IndicatorsFactory.eINSTANCE.createCountsIndicator();
-
-        BlankCountIndicator createBlankCountIndicator = IndicatorsFactory.eINSTANCE.createBlankCountIndicator();
-        IndicatorDefinition createIndicatorDefinition = DefinitionFactory.eINSTANCE.createIndicatorDefinition();
-        createCountsIndicator.setIndicatorDefinition(createIndicatorDefinition);
-        countIndicatorItem.setIndicatorDefinition(createIndicatorDefinition);
-        createBlankCountIndicator.setIndicatorDefinition(createIndicatorDefinition);
-        createCountsIndicator.getAllChildIndicators().add(createBlankCountIndicator);
-        createAnalysisResult.getIndicators().add(createCountsIndicator);
-
-        // two different Indicator use same IndicatorDefinition the second one will be filter out.
-        CompositeIndicator createCompositeIndicator = IndicatorsFactory.eINSTANCE.createTextIndicator();
-        createAnalysisResult.getIndicators().add(createCompositeIndicator);
-        createIndicatorDefinition = DefinitionFactory.eINSTANCE.createIndicatorDefinition();
-        createCompositeIndicator.setIndicatorDefinition(createIndicatorDefinition);
-        // ~
-        // ~for getAnaDependency method
-        createAnalysis.setResults(createAnalysisResult);
-        createItem.setAnalysis(createAnalysis);
-        anaProperty.setItem(createItem);
-        createItem.setProperty(anaProperty);
-
-        // staticMock PropertyHelper
-        PowerMockito.mockStatic(PropertyHelper.class);
-        Mockito.when(PropertyHelper.getModelElement(anaProperty)).thenReturn(createAnalysis);
-        Mockito.when(PropertyHelper.getModelElement(reportProperty)).thenReturn(tdqReport);
-        Mockito.when(PropertyHelper.getProperty(createCountsIndicator.getIndicatorDefinition())).thenReturn(
-                countIndicatorProperty);
-        Mockito.when(PropertyHelper.getProperty(tdqReport)).thenReturn(reportProperty);
-        Mockito.when(PropertyHelper.getProperty(createAnalysis)).thenReturn(anaProperty);
-
-        // staticMock ModelElementHelper
-        PowerMockito.mockStatic(ModelElementHelper.class);
-        ModelElementMatcher modelElementMatcher = new ModelElementMatcher();
-        Mockito.when(ModelElementHelper.compareUUID(Mockito.argThat(modelElementMatcher), Mockito.argThat(modelElementMatcher)))
-                .thenReturn(modelElementMatcher.equals(modelElementMatcher));
-
-        List<Property> clintDependency = DependenciesHandler.getInstance().getClintDependencyForExport(tdqReport);
-        Assert.assertEquals(2, clintDependency.size());
-        Assert.assertEquals(anaProperty, clintDependency.get(0));
-        Assert.assertEquals(countIndicatorProperty, clintDependency.get(1));
-
-    }
+    // TODO need to move this test method into ItemRecordTest
+    // /**
+    // * Test method for {@link
+    // org.talend.cwm.dependencies.DependenciesHandler#getClintDependencyForExport(ModelElement)}
+    // * .
+    // *
+    // * case2 for report
+    // */
+    // @Test
+    // public void testGetClintDependencyForExportModelElementCase2() {
+    // // DependenciesHandler is a final class we can not mock it. so test this method need to call really
+    // // getAnaDependency method that we must to create so many element
+    // // countIndicator
+    // Property reportProperty = org.talend.core.model.properties.PropertiesFactory.eINSTANCE.createProperty();
+    // TDQReportItem reportItem = PropertiesFactory.eINSTANCE.createTDQReportItem();
+    // reportProperty.setItem(reportItem);
+    // TdReport tdqReport = ReportsFactory.eINSTANCE.createTdReport();
+    // reportItem.setReport(tdqReport);
+    //
+    // Property countIndicatorProperty = org.talend.core.model.properties.PropertiesFactory.eINSTANCE.createProperty();
+    // TDQIndicatorDefinitionItem countIndicatorItem = PropertiesFactory.eINSTANCE.createTDQIndicatorDefinitionItem();
+    // countIndicatorProperty.setItem(countIndicatorItem);
+    // countIndicatorItem.setProperty(countIndicatorProperty);
+    // // Analysis
+    // Property anaProperty = org.talend.core.model.properties.PropertiesFactory.eINSTANCE.createProperty();
+    // TDQAnalysisItem createItem = PropertiesFactory.eINSTANCE.createTDQAnalysisItem();
+    //
+    // Analysis createAnalysis = AnalysisFactory.eINSTANCE.createAnalysis();
+    // DependenciesHandler.getInstance().setDependencyOn(tdqReport, createAnalysis);
+    //
+    // // create analysisResult
+    // AnalysisResult createAnalysisResult = AnalysisFactory.eINSTANCE.createAnalysisResult();
+    // // for getAnaDependency method
+    // CountsIndicator createCountsIndicator = IndicatorsFactory.eINSTANCE.createCountsIndicator();
+    //
+    // BlankCountIndicator createBlankCountIndicator = IndicatorsFactory.eINSTANCE.createBlankCountIndicator();
+    // IndicatorDefinition createIndicatorDefinition = DefinitionFactory.eINSTANCE.createIndicatorDefinition();
+    // createCountsIndicator.setIndicatorDefinition(createIndicatorDefinition);
+    // countIndicatorItem.setIndicatorDefinition(createIndicatorDefinition);
+    // createBlankCountIndicator.setIndicatorDefinition(createIndicatorDefinition);
+    // createCountsIndicator.getAllChildIndicators().add(createBlankCountIndicator);
+    // createAnalysisResult.getIndicators().add(createCountsIndicator);
+    //
+    // // two different Indicator use same IndicatorDefinition the second one will be filter out.
+    // CompositeIndicator createCompositeIndicator = IndicatorsFactory.eINSTANCE.createTextIndicator();
+    // createAnalysisResult.getIndicators().add(createCompositeIndicator);
+    // createIndicatorDefinition = DefinitionFactory.eINSTANCE.createIndicatorDefinition();
+    // createCompositeIndicator.setIndicatorDefinition(createIndicatorDefinition);
+    // // ~
+    // // ~for getAnaDependency method
+    // createAnalysis.setResults(createAnalysisResult);
+    // createItem.setAnalysis(createAnalysis);
+    // anaProperty.setItem(createItem);
+    // createItem.setProperty(anaProperty);
+    //
+    // // staticMock PropertyHelper
+    // PowerMockito.mockStatic(PropertyHelper.class);
+    // Mockito.when(PropertyHelper.getModelElement(anaProperty)).thenReturn(createAnalysis);
+    // Mockito.when(PropertyHelper.getModelElement(reportProperty)).thenReturn(tdqReport);
+    // Mockito.when(PropertyHelper.getProperty(createCountsIndicator.getIndicatorDefinition())).thenReturn(
+    // countIndicatorProperty);
+    // Mockito.when(PropertyHelper.getProperty(tdqReport)).thenReturn(reportProperty);
+    // Mockito.when(PropertyHelper.getProperty(createAnalysis)).thenReturn(anaProperty);
+    //
+    // // staticMock ModelElementHelper
+    // PowerMockito.mockStatic(ModelElementHelper.class);
+    // ModelElementMatcher modelElementMatcher = new ModelElementMatcher();
+    // Mockito.when(ModelElementHelper.compareUUID(Mockito.argThat(modelElementMatcher),
+    // Mockito.argThat(modelElementMatcher)))
+    // .thenReturn(modelElementMatcher.equals(modelElementMatcher));
+    //
+    // List<Property> clintDependency = DependenciesHandler.getInstance().getClintDependencyForExport(tdqReport);
+    // Assert.assertEquals(2, clintDependency.size());
+    // Assert.assertEquals(anaProperty, clintDependency.get(0));
+    // Assert.assertEquals(countIndicatorProperty, clintDependency.get(1));
+    //
+    // }
 
     @Test
     /**

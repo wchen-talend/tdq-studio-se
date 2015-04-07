@@ -36,7 +36,6 @@ import org.talend.dataquality.domain.pattern.Pattern;
 import org.talend.dataquality.helpers.IndicatorHelper;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dataquality.indicators.definition.IndicatorDefinition;
-import org.talend.dataquality.indicators.sql.UserDefIndicator;
 import org.talend.dataquality.properties.TDQAnalysisItem;
 import org.talend.dataquality.properties.TDQFileItem;
 import org.talend.dataquality.properties.TDQSourceFileItem;
@@ -387,61 +386,6 @@ public final class DependenciesHandler {
     }
 
     /**
-     * @param object
-     * @return SupplierDependency
-     * 
-     * getClintDependency here will contain system indicators so only will be used by export case
-     */
-    public List<Property> getClintDependencyForExport(ModelElement object) {
-        List<Property> result = new ArrayList<Property>();
-        Property property = PropertyHelper.getProperty(object);
-        if (property != null) {
-            // IRepositoryViewObject repositoryViewObject = new RepositoryViewObject(property);
-            result = iterateClientDependencies(property);
-            // current object is analysis case
-            if (object instanceof Analysis) {
-                result.addAll(getSystemIndicaotrOfAnalysis(property));
-            } else {
-                // if object is report, then the analyses inside reports should be considered. The system indicators of
-                // analyses should be added into the result list too.
-                List<Property> tempList = new ArrayList<Property>();
-                tempList.addAll(result);
-                for (Property pro : tempList) {
-                    if (TDQAnalysisItem.class.isInstance(pro.getItem())) {
-                        result.addAll(getSystemIndicaotrOfAnalysis(pro));
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * @param object
-     * @return SupplierDependency
-     * 
-     * getClintDependency system indicators will not be contain at here.
-     */
-    public List<Property> getClintDependency(ModelElement object) {
-        List<Property> result = new ArrayList<Property>();
-        Property property = PropertyHelper.getProperty(object);
-        if (property != null) {
-            // IRepositoryViewObject repositoryViewObject = new RepositoryViewObject(property);
-            result = iterateClientDependencies(property);
-        }
-        return result;
-    }
-
-    private List<Property> iterateClientDependencies(Property property) {
-        List<Property> returnList = new ArrayList<Property>();
-        for (Property theProperty : getClintDependency(property)) {
-            returnList.addAll(iterateClientDependencies(theProperty));
-            returnList.add(theProperty);
-        }
-        return returnList;
-    }
-
-    /**
      * get Indicator Dependency.
      * 
      * @return get the list for analysis which use parameter to be a Indicator
@@ -487,52 +431,6 @@ public final class DependenciesHandler {
             Analysis anaElement = tdqAnaItem.getAnalysis();
             List<Indicator> indicators = IndicatorHelper.getIndicators(anaElement.getResults());
             for (Indicator indicator : indicators) {
-                boolean isContain = false;
-                IndicatorDefinition newIndicatorDefinition = indicator.getIndicatorDefinition();
-                // MOD qiongli 2012-5-11 TDQ-5256
-                if (newIndicatorDefinition == null) {
-                    continue;
-                }
-                for (Property containViewObject : listProperty) {
-                    Item item2 = containViewObject.getItem();
-                    if (item2 instanceof TDQIndicatorDefinitionItemImpl) {
-                        IndicatorDefinition oldIndicatorDefinition = ((TDQIndicatorDefinitionItemImpl) item2)
-                                .getIndicatorDefinition();
-                        if (ModelElementHelper.compareUUID(oldIndicatorDefinition, newIndicatorDefinition)) {
-                            isContain = true;
-                            break;
-                        }
-                    }
-                }
-                if (!isContain) {
-                    Property iniProperty = PropertyHelper.getProperty(indicator.getIndicatorDefinition());
-                    if (iniProperty != null) {
-                        listProperty.add(iniProperty);
-                    }
-                }
-            }
-        }
-        return listProperty;
-    }
-
-    /**
-     * get Analysis Dependency (for indicator only).
-     * 
-     * @return get the list of indicator which in use by the analysis
-     * 
-     */
-    private List<Property> getSystemIndicaotrOfAnalysis(Property property) {
-        Item item = property.getItem();
-        List<Property> listProperty = new ArrayList<Property>();
-        if (item instanceof TDQAnalysisItemImpl) {
-            TDQAnalysisItemImpl tdqAnaItem = (TDQAnalysisItemImpl) item;
-            Analysis anaElement = tdqAnaItem.getAnalysis();
-            List<Indicator> indicators = IndicatorHelper.getIndicators(anaElement.getResults());
-            for (Indicator indicator : indicators) {
-                if (indicator instanceof UserDefIndicator) {
-                    // whereRuleIndicator or UDIIndicator
-                    continue;
-                }
                 boolean isContain = false;
                 IndicatorDefinition newIndicatorDefinition = indicator.getIndicatorDefinition();
                 // MOD qiongli 2012-5-11 TDQ-5256

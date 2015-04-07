@@ -16,8 +16,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -25,6 +27,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -32,11 +35,10 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.talend.commons.emf.FactoriesUtil;
 import org.talend.commons.emf.FactoriesUtil.EElementEName;
-import org.talend.commons.utils.WorkspaceUtils;
 import org.talend.core.model.properties.PropertiesPackage;
 import org.talend.core.model.properties.Property;
 import org.talend.core.model.repository.IRepositoryViewObject;
-import org.talend.cwm.dependencies.DependenciesHandler;
+import org.talend.cwm.helper.ModelElementHelper;
 import org.talend.cwm.helper.TaggedValueHelper;
 import org.talend.cwm.management.i18n.InternationalizationUtil;
 import org.talend.dataprofiler.core.PluginConstant;
@@ -45,12 +47,15 @@ import org.talend.dataprofiler.core.ui.utils.UDIUtils;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.analysis.AnalysisType;
 import org.talend.dataquality.helpers.AnalysisHelper;
+import org.talend.dataquality.helpers.IndicatorHelper;
 import org.talend.dataquality.helpers.ReportHelper;
 import org.talend.dataquality.helpers.ReportHelper.ReportType;
+import org.talend.dataquality.indicators.Indicator;
 import org.talend.dataquality.indicators.columnset.RecordMatchingIndicator;
 import org.talend.dataquality.indicators.definition.DefinitionPackage;
 import org.talend.dataquality.indicators.definition.IndicatorDefinition;
 import org.talend.dataquality.indicators.definition.userdefine.UDIndicatorDefinition;
+import org.talend.dataquality.indicators.sql.UserDefIndicator;
 import org.talend.dataquality.record.linkage.constant.AttributeMatcherType;
 import org.talend.dataquality.record.linkage.utils.CustomAttributeMatcherClassNameConvert;
 import org.talend.dataquality.reports.AnalysisMap;
@@ -64,6 +69,7 @@ import org.talend.dq.helper.PropertyHelper;
 import org.talend.dq.helper.resourcehelper.RepResourceFileHelper;
 import org.talend.resource.EResourceConstant;
 import org.talend.resource.ResourceManager;
+import orgomg.cwm.objectmodel.core.Dependency;
 import orgomg.cwm.objectmodel.core.ModelElement;
 import orgomg.cwm.objectmodel.core.TaggedValue;
 
@@ -74,15 +80,27 @@ public class ItemRecord {
 
     private static Logger log = Logger.getLogger(ItemRecord.class);
 
-    private File file;
+    private static ResourceSet resourceSet;
 
-    private ModelElement element;
+    private static List<ItemRecord> allItemRecords;
+
+    private static Map<File, ModelElement> FILE_ELEMENT_MAP;
+
+    public static ModelElement getElement(File file) {
+        return FILE_ELEMENT_MAP.get(file);
+    }
+
+    private File file;
 
     private Property property;
 
+    private URI itemURI;
+
+    private URI propURI;
+
     private IRepositoryViewObject conflictObject;
 
-    private Map<File, ModelElement> dependencyMap = new HashMap<File, ModelElement>();
+    private Set<File> dependencySet = new HashSet<File>();
 
     private List<String> errors = new ArrayList<String>();
 
@@ -91,10 +109,6 @@ public class ItemRecord {
     private ItemRecord[] childern;
 
     private EElementEName elementEName;
-
-    private static ResourceSet resourceSet;
-
-    private static List<ItemRecord> allItemRecords;
 
     // when we do import action this folder is the Path of temp folder. when we do export action this folder is Empty so
     // we get rootFolder of current project
@@ -105,13 +119,10 @@ public class ItemRecord {
     }
 
     /**
-     * file the file which we want to import or export
-     * 
-     * rootFolder the location which file is come from
-     * 
+     * @param file the file which we want to import or export
+     * @param rootFolder the location which file is come from
      */
     public ItemRecord(File file, IPath rootFolder) {
-
         this.file = file;
         this.rootFolder = rootFolder;
 
@@ -121,6 +132,10 @@ public class ItemRecord {
 
         if (allItemRecords == null) {
             allItemRecords = new ArrayList<ItemRecord>();
+        }
+
+        if (FILE_ELEMENT_MAP == null) {
+            FILE_ELEMENT_MAP = new HashMap<File, ModelElement>();
         }
 
         try {
@@ -138,11 +153,13 @@ public class ItemRecord {
     private void initialize() {
         if (file != null && file.isFile()) {
             if (!isJarFile()) {
-                URI itemURI = URI.createFileURI(file.getAbsolutePath());
-                URI propURI = itemURI.trimFileExtension().appendFileExtension(FactoriesUtil.PROPERTIES_EXTENSION);
+                ModelElement element = null;
 
+                itemURI = URI.createFileURI(file.getAbsolutePath());
+                propURI = itemURI.trimFileExtension().appendFileExtension(FactoriesUtil.PROPERTIES_EXTENSION);
                 elementEName = EElementEName.findENameByExt(itemURI.fileExtension());
-                if (property == null && !file.getName().endsWith(PluginConstant.JASPER_STRING)) {
+
+                if (!file.getName().endsWith(PluginConstant.JASPER_STRING)) {
                     Resource resource = resourceSet.getResource(propURI, true);
                     property = (Property) EcoreUtil.getObjectByType(resource.getContents(),
                             PropertiesPackage.eINSTANCE.getProperty());
@@ -150,9 +167,10 @@ public class ItemRecord {
                     if (property != null) {
                         element = PropertyHelper.getModelElement(property);
                     }
+
                 }
 
-                computeDependencies();
+                computeDependencies(element);
             }
 
             allItemRecords.add(this);
@@ -165,7 +183,7 @@ public class ItemRecord {
      * @return
      */
     public ModelElement getElement() {
-        return element;
+        return property == null ? null : PropertyHelper.getModelElement(property);
     }
 
     /**
@@ -212,20 +230,14 @@ public class ItemRecord {
         return path;
     }
 
-    /**
-     * Getter for dependencyMap.
-     * 
-     * @return the dependencyMap
-     */
-    public Map<File, ModelElement> getDependencyMap() {
-        return this.dependencyMap;
+    public Set<File> getDependencySet() {
+        return this.dependencySet;
     }
 
     /**
      * DOC bZhou Comment method "computeDependencies".
      */
-    private void computeDependencies() {
-
+    private void computeDependencies(ModelElement mElement) {
         if (isJRXml()) {
             Collection<TdReport> allReports = (Collection<TdReport>) RepResourceFileHelper.getInstance().getAllElement();
             for (TdReport report : allReports) {
@@ -236,37 +248,36 @@ public class ItemRecord {
 
                 for (AnalysisMap anaMap : report.getAnalysisMap()) {
                     if (StringUtils.equals(path, anaMap.getJrxmlSource())) {
-                        dependencyMap.put(file, report);
+                        // TODO the File is jrxml, but the ModelElement is report ???
+                        // addIntoFileElementMap(file, report);
+                        this.dependencySet.add(file);
                     }
                 }
             }
-        } else if (element != null) {
-
-            List<Property> dependencyProperty = DependenciesHandler.getInstance().getClintDependencyForExport(element);
-            for (Property depElement : dependencyProperty) {
-                ModelElement modelElement = PropertyHelper.getModelElement(depElement);
-                URI uri = EObjectHelper.getURI(modelElement);
-
-                if (uri != null) {
-                    String uriString = WorkspaceUtils.toFile(uri);
-                    File depFile = new File(uriString);
-                    dependencyMap.put(depFile, modelElement);
-                }
-
-                // MOD sizhaoliu 2013-04-13 TDQ-7082
-                if (modelElement instanceof IndicatorDefinition) {
-                    if (modelElement instanceof UDIndicatorDefinition) {
-                        includeJUDIDependencies((IndicatorDefinition) modelElement);
-                    } else {
-                        for (IndicatorDefinition definition : ((IndicatorDefinition) modelElement).getAggregatedDefinitions()) {
-                            includeAggregatedDependencies(definition);
+        } else if (mElement != null) {
+            List<File> dependencyFile = getClintDependencyForExport(mElement);
+            for (File df : dependencyFile) {
+                ModelElement modelElement = getElement(df);
+                if (modelElement != null) {
+                    File depFile = EObjectHelper.modelElement2File(mElement);
+                    if (depFile != null) {
+                        this.dependencySet.add(depFile);
+                    }
+                    // MOD sizhaoliu 2013-04-13 TDQ-7082
+                    if (modelElement instanceof IndicatorDefinition) {
+                        if (modelElement instanceof UDIndicatorDefinition) {
+                            includeJUDIDependencies((IndicatorDefinition) modelElement);
+                        } else {
+                            for (IndicatorDefinition definition : ((IndicatorDefinition) modelElement).getAggregatedDefinitions()) {
+                                includeAggregatedDependencies(definition);
+                            }
                         }
                     }
                 }
             }
             // MOD yyi 2012-02-20 TDQ-4545 TDQ-4701: Map user define jrxm templates with report.
-            if (element instanceof TdReport) {
-                TdReport rep = (TdReport) element;
+            if (mElement instanceof TdReport) {
+                TdReport rep = (TdReport) mElement;
                 for (AnalysisMap anaMap : rep.getAnalysisMap()) {
                     ReportType reportType = ReportHelper.ReportType.getReportType(anaMap.getAnalysis(), anaMap.getReportType());
                     boolean isUserMade = ReportHelper.ReportType.USER_MADE.equals(reportType);
@@ -274,8 +285,8 @@ public class ItemRecord {
                         traverseFolderAndAddJrxmlDependencies(getJrxmlFolderFromReport(rep, ResourceManager.getJRXMLFolder()));
                     }
                 }
-            } else if (element instanceof IndicatorDefinition) { // MOD sizhaoliu 2013-04-13 TDQ-7082
-                IndicatorDefinition definition = (IndicatorDefinition) element;
+            } else if (mElement instanceof IndicatorDefinition) { // MOD sizhaoliu 2013-04-13 TDQ-7082
+                IndicatorDefinition definition = (IndicatorDefinition) mElement;
                 if (definition instanceof UDIndicatorDefinition) {
                     includeJUDIDependencies(definition);
                 } else {
@@ -285,22 +296,123 @@ public class ItemRecord {
                 }
                 // MatchRule and match Analysis come from different location so that we must recompute the path of jar
                 // folder
-                if (element instanceof MatchRuleDefinition) {
-                    includeCustomMatcherJarDependencies((MatchRuleDefinition) element);
+                if (mElement instanceof MatchRuleDefinition) {
+                    includeCustomMatcherJarDependencies((MatchRuleDefinition) mElement);
                 }
-
-            } else if (element instanceof Analysis
-                    && AnalysisType.MATCH_ANALYSIS == AnalysisHelper.getAnalysisType((Analysis) element)) {
-
-                includeCustomMatcherJarDependencies((Analysis) element);
+            } else if (mElement instanceof Analysis
+                    && AnalysisType.MATCH_ANALYSIS == AnalysisHelper.getAnalysisType((Analysis) mElement)) {
+                includeCustomMatcherJarDependencies((Analysis) mElement);
             }
         }
     }
 
     /**
+     * @param mElement
+     * @return SupplierDependency
+     * 
+     * getClintDependency here will contain system indicators so only will be used by export case
+     */
+    public List<File> getClintDependencyForExport(ModelElement mElement) {
+        List<File> result = new ArrayList<File>();
+        if (mElement != null) {
+            result = iterateClientDependencies(mElement);
+            // current object is analysis case
+            if (mElement instanceof Analysis) {
+                result.addAll(getSystemIndicaotrOfAnalysis(mElement));
+            } else {
+                // if object is report, then the analyses inside reports should be considered. The system indicators of
+                // analyses should be added into the result list too.
+                List<File> tempList = new ArrayList<File>();
+                tempList.addAll(result);
+                for (File tempFile : tempList) {
+                    ModelElement me = getElement(tempFile);
+                    if (me != null && me instanceof Analysis) {
+                        result.addAll(getSystemIndicaotrOfAnalysis(me));
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * get Analysis Dependency (for indicator only).
+     * 
+     * @return get the list of indicator which in use by the analysis
+     * 
+     */
+    private List<File> getSystemIndicaotrOfAnalysis(ModelElement mElement) {
+        List<File> listFile = new ArrayList<File>();
+        if (mElement instanceof Analysis) {
+            Analysis anaElement = (Analysis) mElement;
+            List<Indicator> indicators = IndicatorHelper.getIndicators(anaElement.getResults());
+            for (Indicator indicator : indicators) {
+                if (indicator instanceof UserDefIndicator) {
+                    // whereRuleIndicator or UDIIndicator
+                    continue;
+                }
+                boolean isContain = false;
+                IndicatorDefinition newIndicatorDefinition = indicator.getIndicatorDefinition();
+                // MOD qiongli 2012-5-11 TDQ-5256
+                if (newIndicatorDefinition == null) {
+                    continue;
+                }
+                for (File lf : listFile) {
+                    ModelElement me = getElement(lf);
+                    if (me != null && me instanceof IndicatorDefinition) {
+                        IndicatorDefinition oldIndicatorDefinition = (IndicatorDefinition) me;
+                        if (ModelElementHelper.compareUUID(oldIndicatorDefinition, newIndicatorDefinition)) {
+                            isContain = true;
+                            break;
+                        }
+                    }
+                }
+                if (!isContain) {
+                    File depFile = EObjectHelper.modelElement2File(newIndicatorDefinition);
+                    if (depFile != null) {
+                        FILE_ELEMENT_MAP.put(depFile, newIndicatorDefinition);
+                        listFile.add(depFile);
+                    }
+                }
+            }
+        }
+        return listFile;
+    }
+
+    public List<File> getClintDependency(ModelElement mElement) {
+        List<File> listFile = new ArrayList<File>();
+        if (mElement == null) {
+            return listFile;
+        }
+        EList<Dependency> clientDependency = mElement.getClientDependency();
+        for (Dependency clienter : clientDependency) {
+            for (ModelElement depencyModelElement : clienter.getSupplier()) {
+                File depFile = EObjectHelper.modelElement2File(depencyModelElement);
+                if (depFile != null) {
+                    FILE_ELEMENT_MAP.put(depFile, depencyModelElement);
+                    listFile.add(depFile);
+                }
+            }
+        }
+        return listFile;
+    }
+
+    private List<File> iterateClientDependencies(ModelElement mElement) {
+        List<File> returnList = new ArrayList<File>();
+        for (File depFile : getClintDependency(mElement)) {
+            ModelElement me = getElement(depFile);
+            if (me != null) {
+                returnList.addAll(iterateClientDependencies(me));
+            }
+            returnList.add(depFile);
+        }
+        return returnList;
+    }
+
+    /**
      * DOC zshen Comment method "includeCustomMatcherJarDependencies".
      * 
-     * @param element2
+     * @param matchRuleDef
      */
     private void includeCustomMatcherJarDependencies(MatchRuleDefinition matchRuleDef) {
         for (MatchRule matchRule : matchRuleDef.getMatchRules()) {
@@ -313,7 +425,7 @@ public class ItemRecord {
                             for (String str : CustomAttributeMatcherHelper.splitJarPath(matchKeyDefinition.getAlgorithm()
                                     .getAlgorithmParameters())) {
                                 if (udiJarFile.getName().equals(str)) {
-                                    dependencyMap.put(udiJarFile, null);
+                                    this.dependencySet.add(udiJarFile);
                                 }
                             }
                         }
@@ -321,10 +433,8 @@ public class ItemRecord {
                         log.error(libFolder + " does not exist. Dependent match rule is " + matchRuleDef.getLabel()); //$NON-NLS-1$
                     }
                 }
-
             }
         }
-
     }
 
     /**
@@ -342,7 +452,7 @@ public class ItemRecord {
     /**
      * DOC zshen Comment method "includeCustomMatcherJarDependencies".
      * 
-     * @param element2
+     * @param matchAnalysis
      */
     private void includeCustomMatcherJarDependencies(Analysis matchAnalysis) {
         RecordMatchingIndicator recordMatchIndicatorFromAna = AnalysisHelper.getRecordMatchIndicatorFromAna(matchAnalysis);
@@ -385,7 +495,8 @@ public class ItemRecord {
                 for (File udiJarFile : libJarFileList) {
                     for (String str : splitTagValues) {
                         if (udiJarFile.getName().equals(str)) {
-                            dependencyMap.put(udiJarFile, null);
+                            // addIntoFileElementMap(udiJarFile, null);
+                            this.dependencySet.add(udiJarFile);
                         }
                     }
                 }
@@ -403,7 +514,7 @@ public class ItemRecord {
                 if (dotIndex > 0) {
                     String ext = name.substring(dotIndex + 1);
                     if (FactoriesUtil.JRXML.equals(ext)) {
-                        dependencyMap.put(subFile, null);
+                        this.dependencySet.add(subFile);
                     }
                 }
             }
@@ -411,11 +522,10 @@ public class ItemRecord {
     }
 
     private void includeAggregatedDependencies(IndicatorDefinition definition) {
-        URI uri = EObjectHelper.getURI(definition);
-        if (uri != null) {
-            String uriString = WorkspaceUtils.toFile(uri);
-            File depFile = new File(uriString);
-            dependencyMap.put(depFile, definition);
+        File depFile = EObjectHelper.modelElement2File(definition);
+        if (depFile != null) {
+            FILE_ELEMENT_MAP.put(depFile, definition);
+            this.dependencySet.add(depFile);
         }
 
         for (IndicatorDefinition aggregatedDefinition : definition.getAggregatedDefinitions()) {
@@ -427,7 +537,6 @@ public class ItemRecord {
      * clear the resource set.
      */
     public static void clear() {
-
         if (resourceSet != null) {
             for (Resource resource : resourceSet.getResources()) {
                 resource.unload();
@@ -439,6 +548,11 @@ public class ItemRecord {
         if (allItemRecords != null) {
             allItemRecords.clear();
             allItemRecords = null;
+        }
+
+        if (FILE_ELEMENT_MAP != null) {
+            FILE_ELEMENT_MAP.clear();
+            FILE_ELEMENT_MAP = null;
         }
     }
 
@@ -485,16 +599,7 @@ public class ItemRecord {
      * @return the property
      */
     public Property getProperty() {
-        return this.property;
-    }
-
-    /**
-     * Getter for resourceSet.
-     * 
-     * @return the resourceSet
-     */
-    public ResourceSet getResourceSet() {
-        return resourceSet;
+        return property;
     }
 
     /**
@@ -544,52 +649,42 @@ public class ItemRecord {
      */
     public String getName() {
         if (property != null) {
-            return getDisplayName();
-        } else if (element != null) {
-            return element.getName();
+            // only internationalization name of SystemIndicator
+            ModelElement element = PropertyHelper.getModelElement(property);
+            if (element != null && DefinitionPackage.eINSTANCE.getIndicatorDefinition().equals(element.eClass())) {
+                return InternationalizationUtil.getDefinitionInternationalizationLabel(property.getLabel());
+            }
+            return property.getDisplayName();
         } else {
-            return file.getName();
+            return file == null ? StringUtils.EMPTY : file.getName();
         }
-    }
-
-    /**
-     * only internationalization name of SystemIndicator
-     * 
-     * @return
-     */
-    private String getDisplayName() {
-        // only internationalization SystemIndicator
-        if (element != null && DefinitionPackage.eINSTANCE.getIndicatorDefinition().equals(element.eClass())) {
-            return InternationalizationUtil.getDefinitionInternationalizationLabel(property.getLabel());
-        }
-        return property.getDisplayName();
     }
 
     /**
      * DOC bZhou Comment method "isValid".
      * 
-     * @param file
+     * @param f
      * @return
      */
-    private boolean isValid(File file) {
-        if (file.isDirectory()) {
-            return isValidDirectory(file);
+    private boolean isValid(File f) {
+        if (f.isDirectory()) {
+            return isValidDirectory(f);
         }
 
-        return isValidFile(file);
+        return isValidFile(f);
     }
 
     /**
      * DOC bZhou Comment method "isValidFile".
      * 
-     * @param file
+     * @param f
      * @return
      */
-    private boolean isValidFile(File file) {
-        IPath path = new Path(file.getAbsolutePath());
+    private boolean isValidFile(File f) {
+        IPath path = new Path(f.getAbsolutePath());
         IPath propPath = path.removeFileExtension().addFileExtension(FactoriesUtil.PROPERTIES_EXTENSION);
 
-        String fileName = file.getName();
+        String fileName = f.getName();
         // MOD qiongli 2012-5-14 TDQ-5259.".Talend.properties" exists on 401,need to filter it and ".Talend.definition".
         if ("jasper".equals(path.getFileExtension()) //$NON-NLS-1$
                 || (fileName != null && (fileName.equals(".Talend.definition") || fileName.equals(".Talend.properties")))) {//$NON-NLS-1$ //$NON-NLS-2$
@@ -602,13 +697,13 @@ public class ItemRecord {
     /**
      * DOC bZhou Comment method "isTOPFile".
      * 
-     * @param file
+     * @param f
      * @return
      */
-    private boolean isValidDirectory(File file) {
+    private boolean isValidDirectory(File f) {
         // filter the bin folder
-        if (!file.getName().startsWith(".") && !file.getName().equals("bin")) { //$NON-NLS-1$ //$NON-NLS-2$
-            IPath filePath = new Path(file.getAbsolutePath());
+        if (!f.getName().startsWith(".") && !f.getName().equals("bin")) { //$NON-NLS-1$ //$NON-NLS-2$
+            IPath filePath = new Path(f.getAbsolutePath());
             String pathStr = filePath.toPortableString();
 
             for (EResourceConstant constant : EResourceConstant.getTopConstants()) {
@@ -635,15 +730,6 @@ public class ItemRecord {
      */
     private boolean isJRXml() {
         return file.getName().endsWith(FactoriesUtil.JRXML);
-    }
-
-    /**
-     * DOC zshen Comment method "isSQL".
-     * 
-     * @return
-     */
-    private boolean isSQL() {
-        return file.getName().endsWith(FactoriesUtil.SQL);
     }
 
     private boolean isJarFile() {
