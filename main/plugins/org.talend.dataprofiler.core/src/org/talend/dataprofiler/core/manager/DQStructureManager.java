@@ -188,6 +188,11 @@ public final class DQStructureManager {
                     ProxyRepositoryFactory.getInstance().createFolder(ERepositoryObjectType.TDQ_DATA_PROFILING, Path.EMPTY,
                             EResourceConstant.REPORTS.getName());
                 }
+                // Added 20150421 TDQ-9605
+                if (!project.getFolder(EResourceConstant.HADOOP_CLUSTER.getPath()).exists()) {
+                    ProxyRepositoryFactory.getInstance().createFolder(ERepositoryObjectType.METADATA, Path.EMPTY,
+                            EResourceConstant.HADOOP_CLUSTER.getName());
+                }
             }
             if (!project.getFolder(EResourceConstant.PATTERNS.getPath()).exists()) {
                 ProxyRepositoryFactory.getInstance().createFolder(ERepositoryObjectType.TDQ_LIBRARIES, Path.EMPTY,

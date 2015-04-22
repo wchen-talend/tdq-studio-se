@@ -45,6 +45,7 @@ import org.talend.dq.nodes.DBConnectionFolderRepNode;
 import org.talend.dq.nodes.DBConnectionRepNode;
 import org.talend.dq.nodes.DFConnectionFolderRepNode;
 import org.talend.dq.nodes.DQRepositoryNode;
+import org.talend.dq.nodes.HadoopClusterFolderRepNode;
 import org.talend.dq.nodes.IndicatorFolderRepNode;
 import org.talend.dq.nodes.JrxmlTempFolderRepNode;
 import org.talend.dq.nodes.PatternFolderRepNode;
@@ -194,6 +195,11 @@ public final class RepositoryNodeBuilder {
             folder.setRepositoryNode(dfmFolder);
             parentNode.getChildren().add(dfmFolder);
             return dfmFolder;
+        case HADOOP_CLUSTER:
+            HadoopClusterFolderRepNode hcFolder = new HadoopClusterFolderRepNode(folder, parentNode, ENodeType.SYSTEM_FOLDER);
+            folder.setRepositoryNode(hcFolder);
+            parentNode.getChildren().add(hcFolder);
+            return hcFolder;
         case EXCHANGE:
             ExchangeFolderRepNode exchangeFolder = new ExchangeFolderRepNode(folder, parentNode, ENodeType.SYSTEM_FOLDER);
             folder.setRepositoryNode(exchangeFolder);

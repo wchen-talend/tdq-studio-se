@@ -362,6 +362,10 @@ public final class ResourceManager {
         return getOneFolder(EResourceConstant.MDM_CONNECTIONS);
     }
 
+    public static IFolder getHadoopClusterFolder() {
+        return getOneFolder(EResourceConstant.HADOOP_CLUSTER);
+    }
+
     /**
      * DOC bZhou Comment method "getExchangeFolder".
      * 

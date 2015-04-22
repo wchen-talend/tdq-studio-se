@@ -478,6 +478,12 @@ public final class WorkbenchUtils {
         if (dfNode != null) {
             CorePlugin.getDefault().refreshDQView(dfNode);
         }
+        // hadoop cluster connection node
+        IRepositoryNode hcNode = RepositoryNodeHelper.getMetadataFolderNode(EResourceConstant.HADOOP_CLUSTER);
+        if (dfNode != null) {
+            CorePlugin.getDefault().refreshDQView(hcNode);
+        }
+
     }
 
     /**

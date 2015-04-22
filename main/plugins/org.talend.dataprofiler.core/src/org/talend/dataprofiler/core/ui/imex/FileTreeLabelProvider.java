@@ -68,7 +68,9 @@ public class FileTreeLabelProvider extends LabelProvider {
                     case FILEDELIMITED:
                         image = ImageLib.getImage(ImageLib.FILE_DELIMITED);
                         break;
-
+                    case HADOOP_CLUSTER:
+                        image = ImageLib.getImage(ImageLib.HADOOP_CLUSTER);
+                        break;
                     default:
                         break;
                     }

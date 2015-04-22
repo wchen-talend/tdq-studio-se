@@ -282,6 +282,8 @@ public final class ImageLib {
 
     public static final String EXPORT_WIZARD = "export_wiz.gif"; //$NON-NLS-1$
 
+    public static final String HADOOP_CLUSTER = "hadoop-logo.png"; //$NON-NLS-1$
+
     /**
      * DOC bzhou ImageLib constructor comment.
      */
@@ -627,6 +629,8 @@ public final class ImageLib {
                 imageName = ImageLib.CONNECTION;
             } else if (label.equals(EResourceConstant.FILEDELIMITED.getName())) {
                 imageName = ImageLib.FILE_DELIMITED;
+            } else if (label.equals(EResourceConstant.HADOOP_CLUSTER.getName())) {
+                imageName = ImageLib.HADOOP_CLUSTER;
             } else if (label.equals(EResourceConstant.LIBRARIES.getName())) {
                 imageName = ImageLib.LIBRARIES;
             } else if (label.equals(EResourceConstant.EXCHANGE.getName())) {

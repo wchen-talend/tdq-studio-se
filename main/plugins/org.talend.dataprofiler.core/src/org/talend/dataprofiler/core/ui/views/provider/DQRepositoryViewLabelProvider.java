@@ -139,6 +139,8 @@ public class DQRepositoryViewLabelProvider extends AdapterFactoryLabelProvider i
                     image = ImageLib.getImage(ImageLib.CONNECTION);
                 } else if (label.equals(EResourceConstant.FILEDELIMITED.getName())) {
                     image = ImageLib.getImage(ImageLib.FILE_DELIMITED);
+                } else if (label.equals(EResourceConstant.HADOOP_CLUSTER.getName())) {
+                    image = ImageLib.getImage(ImageLib.HADOOP_CLUSTER);
                 } else if (label.equals(EResourceConstant.LIBRARIES.getName())) {
                     image = ImageLib.getImage(ImageLib.LIBRARIES);
                 } else if (label.equals(EResourceConstant.EXCHANGE.getName())) {

@@ -26,7 +26,8 @@ Require-Bundle: org.eclipse.ui,
  org.talend.repository.items.importexport,
  org.talend.libraries.mapdb,
  org.talend.dataprofiler.service,
- org.talend.libraries.csv
+ org.talend.libraries.csv,
+ org.talend.repository.hadoopcluster
 Bundle-Vendor: .Talend SA.
 Bundle-ClassPath: .,
  lib/advancedPersistentLookupLib-1.0.jar,

@@ -172,6 +172,7 @@ public class ResourceViewContentProvider extends WorkbenchContentProvider {
                 List<EResourceConstant> resContants = new ArrayList<EResourceConstant>();
                 resContants.add(EResourceConstant.DB_CONNECTIONS);
                 resContants.add(EResourceConstant.FILEDELIMITED);
+                resContants.add(EResourceConstant.HADOOP_CLUSTER);
                 instance.createRepositoryNodeSystemFolders(node, resContants);
             }
         }

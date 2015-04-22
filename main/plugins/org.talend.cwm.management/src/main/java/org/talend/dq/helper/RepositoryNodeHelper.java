@@ -145,6 +145,7 @@ import org.talend.dq.nodes.UserDefIndicatorFolderRepNode;
 import org.talend.dq.nodes.UserDefIndicatorSubFolderRepNode;
 import org.talend.dq.writer.EMFSharedResources;
 import org.talend.repository.ProjectManager;
+import org.talend.repository.hadoopcluster.node.model.HadoopClusterRepositoryNodeType;
 import org.talend.repository.model.IProxyRepositoryFactory;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.IRepositoryNode.ENodeType;
@@ -307,6 +308,8 @@ public final class RepositoryNodeHelper {
             return ERepositoryObjectType.METADATA_CONNECTIONS;
         } else if (EResourceConstant.FILEDELIMITED.getPath().equals(path)) {
             return ERepositoryObjectType.METADATA_FILE_DELIMITED;
+        } else if (EResourceConstant.HADOOP_CLUSTER.getPath().equals(path)) {
+            return HadoopClusterRepositoryNodeType.HADOOPCLUSTER;
         } else if (EResourceConstant.SYSTEM_INDICATORS_FRAUDDETECTION.getPath().equals(path)) {
             return ERepositoryObjectType.SYSTEM_INDICATORS_FRAUDDETECTION;
         }

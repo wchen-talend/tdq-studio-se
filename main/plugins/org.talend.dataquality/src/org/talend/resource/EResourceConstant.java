@@ -122,7 +122,9 @@ public enum EResourceConstant {
     DB_CONNECTIONS("connections", "metadata/connections", ResourceConstant.READONLY), //$NON-NLS-1$ $NON-NLS-2$
     MDM_CONNECTIONS("MDMconnections", "metadata/MDMconnections", ResourceConstant.READONLY), //$NON-NLS-1$ $NON-NLS-2$
     FILEDELIMITED("fileDelimited", "metadata/fileDelimited", ResourceConstant.READONLY), //$NON-NLS-1$ $NON-NLS-2$
-    REPORTING_DB("TDQ_reporting_db", "REPORTING_DB", ResourceConstant.READONLY);//$NON-NLS-1$ $NON-NLS-2$
+    REPORTING_DB("TDQ_reporting_db", "REPORTING_DB", ResourceConstant.READONLY), //$NON-NLS-1$ $NON-NLS-2$
+
+    HADOOP_CLUSTER("hadoopcluster", "metadata/hadoop/hadoopcluster", ResourceConstant.READONLY); //$NON-NLS-1$ $NON-NLS-2$
 
     private String name;
 
@@ -208,7 +210,7 @@ public enum EResourceConstant {
         constantList.add(ANALYSIS);
         constantList.add(REPORTS);
         constantList.add(DB_CONNECTIONS);
-        constantList.add(MDM_CONNECTIONS);
+        // constantList.add(MDM_CONNECTIONS);
         constantList.add(RULES_SQL);
         constantList.add(INDICATORS);
         constantList.add(JRXML_TEMPLATE);
