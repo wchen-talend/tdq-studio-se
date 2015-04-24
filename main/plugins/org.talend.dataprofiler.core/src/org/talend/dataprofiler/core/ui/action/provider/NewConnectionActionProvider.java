@@ -19,9 +19,11 @@ import org.talend.dataprofiler.core.service.AbstractSvnRepositoryService;
 import org.talend.dataprofiler.core.service.GlobalServiceRegister;
 import org.talend.dataprofiler.core.ui.action.actions.CreateDBConnectionAction;
 import org.talend.dataprofiler.core.ui.action.actions.CreateDFConnectionAction;
+import org.talend.dataprofiler.core.ui.action.actions.CreateHadoopClusterAction;
 import org.talend.dq.nodes.DBConnectionFolderRepNode;
 import org.talend.dq.nodes.DFConnectionFolderRepNode;
 import org.talend.dq.nodes.DFConnectionSubFolderRepNode;
+import org.talend.dq.nodes.hadoopcluster.HadoopClusterFolderRepNode;
 import org.talend.repository.model.RepositoryNode;
 
 /**
@@ -64,6 +66,8 @@ public class NewConnectionActionProvider extends AbstractCommonActionProvider {
                 action = new CreateDBConnectionAction(node);
             } else if (node instanceof DFConnectionFolderRepNode || node instanceof DFConnectionSubFolderRepNode) {
                 action = new CreateDFConnectionAction(node);
+            } else if (node instanceof HadoopClusterFolderRepNode) {
+                action = new CreateHadoopClusterAction(node);
             }
             if (action != null) {
                 menu.add(action);

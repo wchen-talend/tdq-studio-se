@@ -284,6 +284,10 @@ public final class ImageLib {
 
     public static final String HADOOP_CLUSTER = "hadoop-logo.png"; //$NON-NLS-1$
 
+    public static final String HIVE_LINK = "db_link.png"; //$NON-NLS-1$
+
+    public static final String HDFS = "HDFS_icon16.png"; //$NON-NLS-1$
+
     /**
      * DOC bzhou ImageLib constructor comment.
      */

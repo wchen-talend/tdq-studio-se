@@ -202,6 +202,9 @@
               <adapt
                     type="org.talend.dq.nodes.DFConnectionSubFolderRepNode">
               </adapt>
+              <adapt
+                    type="org.talend.dq.nodes.HadoopClusterFolderRepNode">
+              </adapt>
            </or>
 	         </enablement>
 		</actionProvider>
@@ -236,17 +239,6 @@
             <and>
 	            <instanceof value="org.talend.dq.nodes.AnalysisRepNode"/>
 	        </and>
-         </enablement>
-      </actionProvider> 
-      <actionProvider
-            class="org.talend.dataprofiler.core.ui.action.provider.DeleteResourceProvider"
-            id="org.talend.dataprofiler.core.ui.action.provider.DeleteResourceProvider">
-         <enablement>
-            <or>
-               <instanceof
-                     value="org.talend.repository.model.RepositoryNode">
-               </instanceof>
-            </or>
          </enablement>
       </actionProvider>
       <actionProvider
@@ -842,6 +834,32 @@
          </enablement>
       </actionProvider>
       <actionProvider
+            class="org.talend.dataprofiler.core.ui.action.provider.CreateHDFSActionProvider"
+            id="org.talend.dataprofiler.core.ui.action.provider.CreateHDFSActionProvider">
+            <enablement> 
+                    <or>
+                        <adapt type="org.talend.dq.nodes.hadoopcluster.HadoopClusterConnectionRepNode" />
+                        <adapt  type="org.talend.dq.nodes.hadoopcluster.HDFSOfHCFolderRepNode" />
+                        <adapt type="java.util.Collection"> 
+                            <count value="0" />
+                        </adapt>
+                    </or>
+             </enablement>
+      </actionProvider>
+      <actionProvider
+            class="org.talend.dataprofiler.core.ui.action.provider.CreateHiveOfHCActionProvider"
+            id="org.talend.dataprofiler.core.ui.action.provider.CreateHiveOfHCActionProvider">
+            <enablement> 
+                    <or>
+                        <adapt type="org.talend.dq.nodes.hadoopcluster.HadoopClusterConnectionRepNode" />
+                        <adapt  type="org.talend.dq.nodes.hadoopcluster.HiveOfHCFolderRepNode" />
+                        <adapt type="java.util.Collection"> 
+                            <count value="0" />
+                        </adapt>
+                    </or>
+             </enablement>
+      </actionProvider>
+      <actionProvider
             class="org.talend.dataprofiler.core.ui.action.provider.ImportItemsProvider"
             id="org.talend.dataprofiler.core.ui.action.provider.ImportItemsProvider">
          <enablement>
@@ -857,6 +875,17 @@
             <instanceof
                   value="org.talend.repository.model.RepositoryNode">
             </instanceof>
+         </enablement>
+      </actionProvider> 
+      <actionProvider
+            class="org.talend.dataprofiler.core.ui.action.provider.DeleteResourceProvider"
+            id="org.talend.dataprofiler.core.ui.action.provider.DeleteResourceProvider">
+         <enablement>
+            <or>
+               <instanceof
+                     value="org.talend.repository.model.RepositoryNode">
+               </instanceof>
+            </or>
          </enablement>
       </actionProvider>       
   </extension>
