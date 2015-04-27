@@ -12,11 +12,9 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.action.actions;
 
-import org.apache.commons.lang.math.NumberUtils;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.cheatsheets.ICheatSheetManager;
 import org.talend.dataprofiler.core.ImageLib;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.action.AbstractMetadataCreationAction;
@@ -33,34 +31,14 @@ import org.talend.resource.EResourceConstant;
  */
 public class CreateDBConnectionAction extends AbstractMetadataCreationAction {
 
-    private static final int MDM_CONNECTION_TYPE_VALUE = 1;
-
     public CreateDBConnectionAction(RepositoryNode node) {
         super(node);
     }
 
     public CreateDBConnectionAction() {
         // MOD by zshen for bug 15750 TODO 39(9) create connection exception by cheat sheet
-        RepositoryNode node = (RepositoryNode) RepositoryNodeHelper.getMetadataFolderNode(EResourceConstant.DB_CONNECTIONS);
-        super.node = node;
-    }
-
-    @Override
-    protected void initCheateSheetRun(String[] params, ICheatSheetManager manager) {
-        if (params == null || params.length == 0) {
-            return;
-        }
-        Integer connectionType = null;
-        if (NumberUtils.isNumber(params[0])) {
-            connectionType = NumberUtils.toInt(params[0]);
-        }
-        switch (connectionType) {
-        case MDM_CONNECTION_TYPE_VALUE:
-            // this.node = ResourceManager.getMDMConnectionFolder();
-            break;
-        default:
-            // this.node = ResourceManager.getConnectionFolder();
-        }
+        RepositoryNode node2 = (RepositoryNode) RepositoryNodeHelper.getMetadataFolderNode(EResourceConstant.DB_CONNECTIONS);
+        super.node = node2;
     }
 
     @Override

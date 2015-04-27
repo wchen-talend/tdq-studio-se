@@ -24,9 +24,9 @@ import org.talend.core.database.EDatabaseTypeName;
 import org.talend.core.database.conn.ConnParameterKeys;
 import org.talend.core.database.conn.template.EDatabaseConnTemplate;
 import org.talend.core.hadoop.version.custom.ECustomVersionGroup;
-import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.action.AbstractMetadataCreationAction;
+import org.talend.dq.helper.RepositoryNodeHelper;
 import org.talend.repository.hadoopcluster.util.HCRepositoryUtil;
 import org.talend.repository.model.RepositoryNode;
 import org.talend.repository.model.hadoopcluster.HadoopClusterConnection;
@@ -50,8 +50,8 @@ public class CreateHiveOfHCAction extends AbstractMetadataCreationAction {
      */
     @Override
     protected IWizard createWizard() {
-        RepositoryNode dbRootNode = (RepositoryNode) node.getRoot().getRootRepositoryNode(
-                ERepositoryObjectType.METADATA_CONNECTIONS);
+        RepositoryNode dbRootNode = RepositoryNodeHelper.getDBConnectionRootNode();
+
         HadoopClusterConnectionItem hcConnectionItem = HCRepositoryUtil.getHCConnectionItemFromRepositoryNode(node);
         Map<String, String> initMap = new HashMap<String, String>();
         initConnectionParameters(initMap, hcConnectionItem);

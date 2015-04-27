@@ -58,8 +58,8 @@ public class HadoopClusterConnectionRepNode extends ConnectionRepNode {
     public List<IRepositoryNode> getChildren() {
         List<IRepositoryNode> children = new ArrayList<IRepositoryNode>();
         // first : create two sub folders:
-        HDFSOfHCFolderRepNode hdfsFolder = new HDFSOfHCFolderRepNode(this.getObject(), this.getParent(), ENodeType.SIMPLE_FOLDER);
-        HiveOfHCFolderRepNode hiveFolder = new HiveOfHCFolderRepNode(this.getObject(), this.getParent(), ENodeType.SIMPLE_FOLDER);
+        HDFSOfHCFolderRepNode hdfsFolder = new HDFSOfHCFolderRepNode(this.getObject(), this, ENodeType.SIMPLE_FOLDER);
+        HiveOfHCFolderRepNode hiveFolder = new HiveOfHCFolderRepNode(this.getObject(), this, ENodeType.SIMPLE_FOLDER);
         addSubFolder(children, hdfsFolder);
         addSubFolder(children, hiveFolder);
 

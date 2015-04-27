@@ -3316,4 +3316,17 @@ public final class RepositoryNodeHelper {
 
     }
 
+    public static RepositoryNode getDBConnectionRootNode() {
+        RepositoryNode metaRootNode = RepositoryNodeHelper.getRootNode(ERepositoryObjectType.METADATA);
+        if (metaRootNode != null) {
+            List<IRepositoryNode> childrens = metaRootNode.getChildren();
+            for (IRepositoryNode subNode : childrens) {
+                if (subNode instanceof DBConnectionFolderRepNode) {
+                    return (RepositoryNode) subNode;
+                }
+            }
+        }
+        return null;
+    }
+
 }

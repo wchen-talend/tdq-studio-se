@@ -16,10 +16,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.talend.commons.exception.PersistenceException;
-import org.talend.commons.utils.data.container.Container;
 import org.talend.commons.utils.data.container.RootContainer;
-import org.talend.core.model.properties.Property;
-import org.talend.core.model.repository.Folder;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.cwm.management.i18n.Messages;
@@ -61,17 +58,18 @@ public class HadoopClusterFolderRepNode extends DQRepositoryNode {
                     .getTdqRepositoryViewObjects(HadoopClusterRepositoryNodeType.HADOOPCLUSTER,
                             RepositoryNodeHelper.getPath(this).toString());
             // sub folders
-            for (Container<String, IRepositoryViewObject> container : tdqViewObjects.getSubContainer()) {
-                Folder folder = new Folder((Property) container.getProperty(), HadoopClusterRepositoryNodeType.HADOOPCLUSTER);
-                if (!withDeleted && folder.isDeleted()) {
-                    continue;
-                }
-                HadoopClusterSubFolderRepNode childNodeFolder = new HadoopClusterSubFolderRepNode(folder, this,
-                        ENodeType.SIMPLE_FOLDER);
-                childNodeFolder.setProperties(EProperties.LABEL, HadoopClusterRepositoryNodeType.HADOOPCLUSTER);
-                childNodeFolder.setProperties(EProperties.CONTENT_TYPE, HadoopClusterRepositoryNodeType.HADOOPCLUSTER);
-                super.getChildren().add(childNodeFolder);
-            }
+            // for (Container<String, IRepositoryViewObject> container : tdqViewObjects.getSubContainer()) {
+            // Folder folder = new Folder((Property) container.getProperty(),
+            // HadoopClusterRepositoryNodeType.HADOOPCLUSTER);
+            // if (!withDeleted && folder.isDeleted()) {
+            // continue;
+            // }
+            // HadoopClusterSubFolderRepNode childNodeFolder = new HadoopClusterSubFolderRepNode(folder, this,
+            // ENodeType.SIMPLE_FOLDER);
+            // childNodeFolder.setProperties(EProperties.LABEL, HadoopClusterRepositoryNodeType.HADOOPCLUSTER);
+            // childNodeFolder.setProperties(EProperties.CONTENT_TYPE, HadoopClusterRepositoryNodeType.HADOOPCLUSTER);
+            // super.getChildren().add(childNodeFolder);
+            // }
             // connection files
             for (IRepositoryViewObject viewObject : tdqViewObjects.getMembers()) {
                 if (!withDeleted && viewObject.isDeleted()) {
