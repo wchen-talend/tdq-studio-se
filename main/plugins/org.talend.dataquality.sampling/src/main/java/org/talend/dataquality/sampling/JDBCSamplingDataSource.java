@@ -18,7 +18,7 @@ import java.sql.SQLException;
 import org.apache.log4j.Logger;
 
 /**
- * created by zhao Sampling datasource regarding jdbc connection. <br>
+ * created by zhao Sampling data source regarding jdbc connection. <br>
  * the parameter ResultSet should be closed by the caller who set it.
  *
  */

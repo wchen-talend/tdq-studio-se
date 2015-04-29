@@ -19,12 +19,12 @@ import java.util.List;
  * created by zhao<br>
  * Bridge from data source extraction to data sample API
  * <p>
- * The call sequencies for following methods must be comply with. <br>
+ * The call sequences for following methods must be comply with. <br>
  * 1. {{@link #prepareData()}<br>
  * 2. {{@link #hasNext()}<br>
  * 3. {{@link #getRecord()}<br>
  * 4. {{@link #finalizeDataSampling()}<br>
- * Step 2 and 3 can be exectued several times
+ * Step 2 and 3 can be executed several times
  *
  */
 public class DataSamplingBridge {
@@ -39,7 +39,7 @@ public class DataSamplingBridge {
 
     private SamplingDataSource<?> dataSource;
 
-    // The curcor of reservoir sampling records.
+    // The cursor of reservoir sampling records.
     private int recordCursor = 0;
 
     public DataSamplingBridge(SamplingDataSource<?> ds) {
@@ -107,10 +107,10 @@ public class DataSamplingBridge {
 
     /**
      * 
-     * Get one record from iterator of datasoure, note that this function is data-source type dependent such a case is
-     * that in JDBC connection, the interation is from ResultSet while in file connection it's from file delimiter API.<br>
+     * Get one record from iterator of data source, note that this function is data-source type dependent such a case is
+     * that in JDBC connection, the integration is from ResultSet while in file connection it's from file delimiter API.<br>
      * Before call this method, the method {{@link #hasNext()} should be called to check if there are data available
-     * from datasource.
+     * from data source.
      * 
      * @return true if success, false otherwise
      * @throws Exception occurs when there are unexpected exceptions.
@@ -138,7 +138,7 @@ public class DataSamplingBridge {
 
     /**
      * 
-     * DOC zhao Finallize the data sample , some operation need to be done here such as closing csv file stream.
+     * DOC zhao Finalize the data sample , some operation need to be done here such as closing csv file stream.
      * 
      * @return true if success, false otherwise.
      * @throws Exception When unexpected exception occurs

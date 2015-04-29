@@ -125,14 +125,14 @@ public class FileSamplingDataSource implements SamplingDataSource<File> {
     }
 
     /**
-     * DOC zhao create csv reader given file, field seperator , encoding and row seperator .
+     * DOC zhao create csv reader given file, field separator , encoding and row separator .
      * 
      * @param file
-     * @param fieldSeperator field seperator
+     * @param fieldSeperator field separator
      * @param encoding file encoding
-     * @param rowSep row seperator
-     * @param textEnclosure text encolosure
-     * @param escapeChar escapse charactor.
+     * @param rowSep row separator
+     * @param textEnclosure text enclosure
+     * @param escapeChar escape character.
      * @return CSVReader instance.
      * @throws FileNotFoundException
      * @throws UnsupportedEncodingException

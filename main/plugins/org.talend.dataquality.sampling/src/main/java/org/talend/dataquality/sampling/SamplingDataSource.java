@@ -20,7 +20,7 @@ public interface SamplingDataSource<DataSource> {
 
     /**
      * 
-     * DOC zhao set datasource.
+     * DOC zhao set data source.
      * 
      * @param ds
      */
@@ -30,7 +30,7 @@ public interface SamplingDataSource<DataSource> {
      * DOC zhao has next or not in the data source.
      * 
      * @return true if there are records still to be read, false otherwise
-     * @throws Exception thows when unexpected exception occurs.
+     * @throws Exception throws when unexpected exception occurs.
      */
     public boolean hasNext() throws Exception;
 
@@ -44,7 +44,7 @@ public interface SamplingDataSource<DataSource> {
 
     /**
      * 
-     * DOC zhao Finallize the data extraction from data source , some operation need to be done here such as closing csv
+     * DOC zhao Finalize the data extraction from data source , some operation need to be done here such as closing csv
      * stream.
      * 
      * @return true if success, false otherwise.

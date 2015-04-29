@@ -12,7 +12,7 @@
 // ============================================================================
 package org.talend.dataquality.duplicating;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

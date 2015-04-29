@@ -12,14 +12,14 @@
 // ============================================================================
 package org.talend.dataquality.sampling;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 
 import org.junit.Test;
 
 /**
- * created by zhao on 2015年4月27日 Detailled comment
+ * created by zhao on 2015年4月27日 Detailed comment
  *
  */
 public class FileSamplingDataSourceTest {

@@ -18,7 +18,7 @@ public class DataSamplingBridgeTest {
         // 2.1 set sampling option , by default top n if not set.
         samplingBridge.setSamplingOption(SamplingOption.Reservoir);
         // 2.2 set sampling size , by default 1000 if not set.
-        samplingBridge.setSampleSize(100);
+        samplingBridge.setSampleSize(4);
         // 2.3 prepare the data sampling data source.
         samplingBridge.prepareData();
         // 2.4 get data
@@ -26,7 +26,7 @@ public class DataSamplingBridgeTest {
             System.out.println(getString(samplingBridge.getRecord()));
         }
 
-        // 3. Finallize the sampling.
+        // 3. Finalize the sampling.
         samplingBridge.finalizeDataSampling();
     }
 
