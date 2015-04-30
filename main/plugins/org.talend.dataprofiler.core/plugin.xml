@@ -203,7 +203,7 @@
                     type="org.talend.dq.nodes.DFConnectionSubFolderRepNode">
               </adapt>
               <adapt
-                    type="org.talend.dq.nodes.HadoopClusterFolderRepNode">
+                    type="org.talend.dq.nodes.hadoopcluster.HadoopClusterFolderRepNode">
               </adapt>
            </or>
 	         </enablement>
@@ -853,6 +853,18 @@
                     <or>
                         <adapt type="org.talend.dq.nodes.hadoopcluster.HadoopClusterConnectionRepNode" />
                         <adapt  type="org.talend.dq.nodes.hadoopcluster.HiveOfHCFolderRepNode" />
+                        <adapt type="java.util.Collection"> 
+                            <count value="0" />
+                        </adapt>
+                    </or>
+             </enablement>
+      </actionProvider>
+      <actionProvider
+            class="org.talend.dataprofiler.core.ui.action.provider.CreateHiveTableActionProvider"
+            id="org.talend.dataprofiler.core.ui.action.provider.CreateHiveTableActionProvider">
+            <enablement> 
+                    <or>
+                        <adapt type="org.talend.dq.nodes.hadoopcluster.HDFSOfHCConnectionNode" />
                         <adapt type="java.util.Collection"> 
                             <count value="0" />
                         </adapt>

@@ -15,6 +15,7 @@ package org.talend.dq.nodes.hadoopcluster;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IPath;
 import org.talend.commons.exception.PersistenceException;
@@ -81,7 +82,7 @@ public class HiveOfHCFolderRepNode extends DBConnectionFolderRepNode {
                     DatabaseConnectionItem dbItem = (DatabaseConnectionItem) viewObject.getProperty().getItem();
                     DatabaseConnection dbConnection = (DatabaseConnection) dbItem.getConnection();
                     String hcId = dbConnection.getParameters().get(ConnParameterKeys.CONN_PARA_KEY_HADOOP_CLUSTER_ID);
-                    if (!clusterId.equals(hcId)) {
+                    if (!StringUtils.equals(clusterId, hcId)) {
                         continue;
                     }
                 }
