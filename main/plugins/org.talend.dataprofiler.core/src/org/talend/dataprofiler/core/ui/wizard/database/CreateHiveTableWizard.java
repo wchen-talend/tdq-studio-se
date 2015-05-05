@@ -12,16 +12,26 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.wizard.database;
 
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.ui.IWorkbench;
+import org.talend.core.model.metadata.IMetadataConnection;
+import org.talend.core.model.metadata.builder.ConvertionHelper;
 import org.talend.core.model.metadata.builder.connection.MetadataColumn;
-import org.talend.core.model.properties.Item;
+import org.talend.core.model.metadata.builder.connection.MetadataTable;
+import org.talend.core.model.metadata.types.TypesManager;
+import org.talend.core.model.properties.DatabaseConnectionItem;
+import org.talend.cwm.helper.ConnectionHelper;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
+import org.talend.dataprofiler.core.ui.action.actions.CreateHiveOfHCAction;
+import org.talend.designer.hdfsbrowse.model.EHadoopFileTypes;
 import org.talend.designer.hdfsbrowse.model.IHDFSNode;
+import org.talend.metadata.managment.connection.manager.HiveConnectionManager;
+import org.talend.metadata.managment.hive.handler.HiveConnectionHandler;
 import org.talend.repository.hdfs.ui.HDFSFileSelectorWizardPage;
 import org.talend.repository.hdfs.ui.HDFSSchemaWizard;
-import org.talend.repository.hdfs.ui.metadata.ExtractHDFSSchemaManager;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
 
@@ -39,9 +49,12 @@ public class CreateHiveTableWizard extends HDFSSchemaWizard {
 
     private RepositoryNode currentNode;
 
+    private String mappingId;
+
     public CreateHiveTableWizard(IWorkbench workbench, RepositoryNode repositoryNode, String[] existingNames) {
         super(workbench, true, repositoryNode.getObject(), null, existingNames, false);
         currentNode = repositoryNode;
+        this.setNeedsProgressMonitor(true);
     }
 
     @Override
@@ -71,39 +84,62 @@ public class CreateHiveTableWizard extends HDFSSchemaWizard {
     @Override
     public boolean performFinish() {
         IRepositoryNode selectedHive = step3Page.getSelectedHive();
+        DatabaseConnectionItem hiveConnectionItem = null;
         if (selectedHive == null) {
             // to open the wizard: create hive
-
+            CreateHiveOfHCAction createHive = new CreateHiveOfHCAction(currentNode.getParent().getParent());
+            createHive.run();
             // selectedHive = new one
+            hiveConnectionItem = (DatabaseConnectionItem) createHive.getConnectionItem();
+        } else {
+            hiveConnectionItem = (DatabaseConnectionItem) selectedHive.getObject().getProperty().getItem();
         }
-        // use the current hive to create the DDL:
+        // execute the DDL
+        IMetadataConnection metadataConnection = ConvertionHelper.convert(hiveConnectionItem.getConnection());
+        mappingId = metadataConnection.getMapping();
+        HiveConnectionHandler hiveConnHandler = HiveConnectionManager.getInstance().createHandler(metadataConnection);
 
         String createTableSql = getCreateTableSql();
+        java.sql.Statement stmt = null;
 
-        // execute the DDL
-        Item item = selectedHive.getObject().getProperty().getItem();
+        try {
+            java.sql.Connection hiveConnection = hiveConnHandler.createHiveConnection();
+            if (hiveConnection != null) {
+                stmt = hiveConnection.createStatement();
+                log.error("will execute:  " + createTableSql);
+                stmt.execute(createTableSql);
+            }
+            return true;
+        } catch (java.sql.SQLException e) {
+            showErrorOnPage(e);
+        } catch (ClassNotFoundException e) {
+            showErrorOnPage(e);
+        } catch (InstantiationException e) {
+            showErrorOnPage(e);
+        } catch (IllegalAccessException e) {
+            showErrorOnPage(e);
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    log.error(e, e);
+                }
+            }
+        }
 
-        // java.sql.Statement stmt = ((DatabaseConnectionItem)item).getConnection().createStatement();
-        // try {
-        // stmt.execute(createTableSql);
-        // } catch (java.sql.SQLException e) {
-        //
-        // } finally {
-        //
-        // stmt.close();
-        // }
-
-        return true;
+        return false;
     }
 
-    // private MetadataTable getSelectedMetadata() {
-    // List<MetadataTable> tables = ConnectionHelper.getTablesWithOrders(getTempHDFSConnection());
-    // if (tables != null && tables.size() > 0) {
-    // MetadataTable metadataTable2 = tables.get(0);
-    // return metadataTable2;
-    // }
-    // return null;
-    // }
+    /**
+     * DOC yyin Comment method "showErrorOnPage".
+     * 
+     * @param e
+     */
+    private void showErrorOnPage(Exception e) {
+        log.error(e, e);
+        step3Page.setErrorMessage(e.getLocalizedMessage());
+    }
 
     /**
      * "Create external table <filename>(<schema>)  row format delimited fields terminated by '\n' stored as textfile location '<path to hdfs file>'"
@@ -115,40 +151,73 @@ public class CreateHiveTableWizard extends HDFSSchemaWizard {
     private String getCreateTableSql() {
         StringBuilder createTableSQL = new StringBuilder();
 
-        createTableSQL.append("CREATE EXTERNAL TABLE ");
-        // createTableSQL.append(createIfNotExist?"IF NOT EXISTS":"");
-        String tableName = "";
-        createTableSQL.append(tableName);
-
         IHDFSNode selectedFile = this.step1Page.getSelectedFile();
+
+        createTableSQL.append("CREATE EXTERNAL TABLE "); //$NON-NLS-1$
+        // createTableSQL.append(createIfNotExist?"IF NOT EXISTS":"");
+        createTableSQL.append(checkTableName(selectedFile.getValue()));
+        createTableSQL.append(" ("); //$NON-NLS-1$
+
         try {
-            List<MetadataColumn> metadataColumns = ExtractHDFSSchemaManager.getInstance().extractColumns(getTempHDFSConnection(),
-                    selectedFile);
+            final Set<MetadataTable> tables = ConnectionHelper.getTables(getTempHDFSConnection());
+            for (MetadataTable t : tables) {
+                if ((metadataTable != null && t.getLabel().equals(metadataTable.getLabel())) || metadataTable == null) {
+                    this.metadataTable = t;
+                    break;
+                }
+            }
+            List<MetadataColumn> metadataColumns = metadataTable.getColumns();
+            // add columns
+            if (metadataColumns != null && metadataColumns.size() > 0) {
+                for (MetadataColumn column : metadataColumns) {
+                    // use the connection's mapping id and column's talend type, can get its db type
+                    String dbTypeFromTalendType = TypesManager.getDBTypeFromTalendType(mappingId, column.getTalendType());
+                    createTableSQL.append(column.getLabel());
+                    createTableSQL.append(" "); //$NON-NLS-1$
+                    createTableSQL.append(dbTypeFromTalendType);
+                    createTableSQL.append(","); //$NON-NLS-1$
+                }
+            }
+            createTableSQL.deleteCharAt(createTableSQL.length() - 1);
+            createTableSQL.append(")"); //$NON-NLS-1$
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            showErrorOnPage(e);
         }
 
-        // add columns
-        // if ((metadatas != null) && (metadatas.size() > 0)) {
-        // IMetadataTable metadata = metadatas.get(1);
-        // if (metadata != null) {
-        // List<IMetadataColumn> columnList = metadata.getListColumns();
-        // if (columnList != null && columnList.size() > 0) {
-        // createTableSQL.append(" PARTITIONED BY (");
-        // util.generateColumnsSQL(columnList, createTableSQL);
-        // createTableSQL.append(")");
-        // }
-        // }
-        // }
+        createTableSQL.append(" row format delimited fields terminated by '\\n' stored as textfile"); //$NON-NLS-1$
 
-        createTableSQL.append("row format delimited fields terminated by '\\n' stored as textfile");
-
-        String location = "";
-        createTableSQL.append(" LOCATION '");
-        createTableSQL.append(location);
-        createTableSQL.append(" + \"'");
+        createTableSQL.append(" LOCATION '"); //$NON-NLS-1$
+        createTableSQL.append(getlocation(selectedFile));
+        createTableSQL.append("'"); //$NON-NLS-1$
 
         return createTableSQL.toString();
+    }
+
+    /**
+     * get the location of selected file ( end with a folder , but not a file name)
+     * 
+     * @param selectedFile
+     * @return like "/tmp/test"
+     */
+    private Object getlocation(IHDFSNode selectedFile) {
+        String folderPath = selectedFile.getPath();
+        EHadoopFileTypes type = selectedFile.getType();
+        if (EHadoopFileTypes.FILE.equals(type)) {
+            folderPath = selectedFile.getParent().getPath();
+        }
+        return folderPath;
+    }
+
+    /**
+     * check the table name . if it contains "-", change it to"_"
+     * 
+     * @param name
+     * @return the corrected table name
+     */
+    private String checkTableName(String name) {
+        if (name != null && name.indexOf("-") > 0) { //$NON-NLS-1$
+            name = name.replaceAll("-", "_"); //$NON-NLS-1$ //$NON-NLS-2$
+        }
+        return name;
     }
 }

@@ -29,7 +29,8 @@ import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
 
 /**
- * created by yyin on 2015年4月28日 Detailled comment
+ * The third page of Creating hive table wizard, to let the user select an existed hive, or create a new one, on which
+ * to create the hive table.
  *
  */
 public class CreateHiveTableStep3Page extends AbstractWizardPage {
@@ -58,8 +59,8 @@ public class CreateHiveTableStep3Page extends AbstractWizardPage {
      * 
      * @see org.eclipse.jface.dialogs.IDialogPage#createControl(org.eclipse.swt.widgets.Composite)
      */
-    public void createControl(Composite parent) {
-        Composite container = new Composite(parent, SWT.NONE);
+    public void createControl(Composite parent2) {
+        Composite container = new Composite(parent2, SWT.NONE);
         GridLayout gdLayout = new GridLayout(2, false);
         container.setLayout(gdLayout);
 
@@ -75,6 +76,7 @@ public class CreateHiveTableStep3Page extends AbstractWizardPage {
         hiveListCombo.setEditable(false);
         hiveListCombo.setItems(getAllHiveConnection());
         hiveListCombo.setLayoutData(gd);
+        hiveListCombo.select(0);// default to select the first
 
         createOne = new Button(container, SWT.RADIO);
         createOne.setText(DefaultMessagesImpl.getString("CreateHiveTableStep3Page.createHive")); //$NON-NLS-1$
@@ -83,7 +85,7 @@ public class CreateHiveTableStep3Page extends AbstractWizardPage {
     }
 
     /**
-     * DOC yyin Comment method "getAllHiveConnection".
+     * find all existed hive connections of the current parent: hadoop cluster
      * 
      * @return
      */
