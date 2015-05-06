@@ -12,21 +12,14 @@
 // ============================================================================
 package org.talend.dataquality.duplicating;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.codec.language.RefinedSoundex;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.search.TopDocs;
-import org.talend.dataquality.standardization.index.SynonymIndexSearcher;
 
 public class FieldModifier {
 
@@ -61,7 +54,7 @@ public class FieldModifier {
 
     private Map<Character, Set<Character>> inverseSoundexMap;
 
-    private Map<String, SynonymIndexSearcher> synonymSearcherMap;
+    // private Map<String, SynonymIndexSearcher> synonymSearcherMap;
 
     private DateChanger dateChanger = new DateChanger();
 
@@ -85,12 +78,12 @@ public class FieldModifier {
         return inverseSoundexMap;
     }
 
-    private Map<String, SynonymIndexSearcher> getSynonymSearcherMap() {
-        if (synonymSearcherMap == null) {
-            synonymSearcherMap = new HashMap<String, SynonymIndexSearcher>();
-        }
-        return synonymSearcherMap;
-    }
+    // private Map<String, SynonymIndexSearcher> getSynonymSearcherMap() {
+    // if (synonymSearcherMap == null) {
+    // synonymSearcherMap = new HashMap<String, SynonymIndexSearcher>();
+    // }
+    // return synonymSearcherMap;
+    // }
 
     public Date generateDuplicate(Date date, Function function, int modifCount, String extraParameter) {
         Date newDate = (date == null) ? null : new Date(date.getTime());
@@ -213,40 +206,41 @@ public class FieldModifier {
             }
             break;
         case SYNONYM_REPLACE:
-            if (str.length() > 0) {
-                SynonymIndexSearcher searcher = getSynonymSearcherMap().get(extraParameter);
-                if (searcher == null) {
-                    searcher = new SynonymIndexSearcher(extraParameter);
-                    synonymSearcherMap.put(extraParameter, searcher);
-                }
-                try {
-                    TopDocs docs = searcher.searchDocumentBySynonym(str);
-                    if (docs.totalHits > 0) {
-                        Document doc = searcher.getDocument(docs.scoreDocs[0].doc);
-                        List<String> replaceList = new ArrayList<String>();
-                        String word = doc.getValues(SynonymIndexSearcher.F_WORD)[0];
-                        if (!word.equalsIgnoreCase(str)) {
-                            replaceList.add(word);
-                        }
-                        String[] synonyms = doc.getValues(SynonymIndexSearcher.F_SYN);
-                        for (String syn : synonyms) {
-                            if (!syn.equalsIgnoreCase(str)) {
-                                replaceList.add(syn);
-                            }
-                        }
-                        if (replaceList.isEmpty()) {
-                            return str;
-                        } else {
-                            return replaceList.get(random.nextInt(replaceList.size()));
-                        }
-                    }
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            break;
+            // if (str.length() > 0) {
+            // SynonymIndexSearcher searcher = getSynonymSearcherMap().get(extraParameter);
+            // if (searcher == null) {
+            // searcher = new SynonymIndexSearcher(extraParameter);
+            // synonymSearcherMap.put(extraParameter, searcher);
+            // }
+            // try {
+            // TopDocs docs = searcher.searchDocumentBySynonym(str);
+            // if (docs.totalHits > 0) {
+            // Document doc = searcher.getDocument(docs.scoreDocs[0].doc);
+            // List<String> replaceList = new ArrayList<String>();
+            // String word = doc.getValues(SynonymIndexSearcher.F_WORD)[0];
+            // if (!word.equalsIgnoreCase(str)) {
+            // replaceList.add(word);
+            // }
+            // String[] synonyms = doc.getValues(SynonymIndexSearcher.F_SYN);
+            // for (String syn : synonyms) {
+            // if (!syn.equalsIgnoreCase(str)) {
+            // replaceList.add(syn);
+            // }
+            // }
+            // if (replaceList.isEmpty()) {
+            // return str;
+            // } else {
+            // return replaceList.get(random.nextInt(replaceList.size()));
+            // }
+            // }
+            // } catch (ParseException e) {
+            // e.printStackTrace();
+            // } catch (IOException e) {
+            // e.printStackTrace();
+            // }
+            // }
+            // break;
+            return str;
         default:
             return str;
         }
@@ -276,11 +270,11 @@ public class FieldModifier {
 
     @Override
     public void finalize() {
-        if (synonymSearcherMap != null) {
-            for (SynonymIndexSearcher searcher : synonymSearcherMap.values()) {
-                searcher.close();
-            }
-        }
+        // if (synonymSearcherMap != null) {
+        // for (SynonymIndexSearcher searcher : synonymSearcherMap.values()) {
+        // searcher.close();
+        // }
+        // }
     }
 
 }

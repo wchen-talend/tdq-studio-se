@@ -6,7 +6,6 @@ Bundle-Version: 6.0.0.qualifier
 Bundle-Vendor: .Talend SA.
 Require-Bundle: org.apache.log4j,
  org.apache.commons.lang,
- org.talend.dataquality.standardization,
  org.talend.libraries.apache.lucene,
  org.talend.libraries.apache.common,
  org.talend.libraries.csv,
