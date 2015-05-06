@@ -24,6 +24,7 @@ import org.talend.core.database.EDatabaseTypeName;
 import org.talend.core.database.conn.ConnParameterKeys;
 import org.talend.core.database.conn.template.EDatabaseConnTemplate;
 import org.talend.core.hadoop.version.custom.ECustomVersionGroup;
+import org.talend.core.model.properties.ConnectionItem;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.action.AbstractMetadataCreationAction;
 import org.talend.dq.helper.RepositoryNodeHelper;
@@ -82,6 +83,21 @@ public class CreateHiveOfHCAction extends AbstractMetadataCreationAction {
     @Override
     protected String getActionLabel() {
         return DefaultMessagesImpl.getString("CreateHiveOfHCAction.create"); //$NON-NLS-1$
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.core.ui.action.AbstractMetadataCreationAction#getConnectionItem()
+     */
+    @Override
+    public ConnectionItem getConnectionItem() {
+
+        ConnectionItem newconnectionItem = super.getConnectionItem();
+        if (newconnectionItem.getProperty() == null || (newconnectionItem.getProperty().getId() == null)) {
+            return null;
+        }
+        return newconnectionItem;
     }
 
     /*

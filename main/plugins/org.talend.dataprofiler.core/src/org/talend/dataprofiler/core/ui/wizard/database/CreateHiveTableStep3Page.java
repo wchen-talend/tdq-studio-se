@@ -74,13 +74,16 @@ public class CreateHiveTableStep3Page extends AbstractWizardPage {
 
         hiveListCombo = new CCombo(container, SWT.BORDER);
         hiveListCombo.setEditable(false);
-        hiveListCombo.setItems(getAllHiveConnection());
         hiveListCombo.setLayoutData(gd);
-        hiveListCombo.select(0);// default to select the first
 
         createOne = new Button(container, SWT.RADIO);
         createOne.setText(DefaultMessagesImpl.getString("CreateHiveTableStep3Page.createHive")); //$NON-NLS-1$
 
+        String[] allHiveConnection = getAllHiveConnection();
+        hiveListCombo.setItems(allHiveConnection);
+        if (allHiveConnection.length > 0) {
+            hiveListCombo.select(0);// default to select the first
+        }
         setControl(container);
     }
 
@@ -102,6 +105,7 @@ public class CreateHiveTableStep3Page extends AbstractWizardPage {
         }
         if (allHives.size() == 0) {// if no hives, make the choice of creating a new hive as default
             createOne.setSelection(true);
+            selectOne.setSelection(false);
         }
 
         return allHives.toArray(new String[allHives.size()]);

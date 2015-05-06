@@ -103,6 +103,9 @@ public class CreateHiveTableWizard extends HDFSSchemaWizard {
         HiveConnectionHandler hiveConnHandler = HiveConnectionManager.getInstance().createHandler(metadataConnection);
 
         String createTableSql = getCreateTableSql();
+        if (createTableSql == null) {
+            return false;
+        }
         java.sql.Statement stmt = null;
 
         try {
@@ -140,7 +143,11 @@ public class CreateHiveTableWizard extends HDFSSchemaWizard {
      */
     private void showErrorOnPage(Exception e) {
         log.error(e, e);
-        step3Page.setErrorMessage(e.getLocalizedMessage());
+        String errorMessage = e.getMessage();
+        if (e.getCause() != null) {
+            errorMessage = e.getCause().getMessage();
+        }
+        step3Page.setErrorMessage(errorMessage);
     }
 
     /**
@@ -157,7 +164,7 @@ public class CreateHiveTableWizard extends HDFSSchemaWizard {
 
         createTableSQL.append("CREATE EXTERNAL TABLE "); //$NON-NLS-1$
         // createTableSQL.append(createIfNotExist?"IF NOT EXISTS":"");
-        createTableSQL.append(checkTableName(selectedFile.getValue()));
+        createTableSQL.append(checkTableName(selectedFile));
         createTableSQL.append(" ("); //$NON-NLS-1$
 
         try {
@@ -179,6 +186,9 @@ public class CreateHiveTableWizard extends HDFSSchemaWizard {
                     createTableSQL.append(dbTypeFromTalendType);
                     createTableSQL.append(","); //$NON-NLS-1$
                 }
+            } else {
+                step3Page.setErrorMessage("No columns existed in this table.");
+                return null;
             }
             createTableSQL.deleteCharAt(createTableSQL.length() - 1);
             createTableSQL.append(")"); //$NON-NLS-1$
@@ -213,10 +223,17 @@ public class CreateHiveTableWizard extends HDFSSchemaWizard {
     /**
      * check the table name . if it contains "-", change it to"_"
      * 
-     * @param name
+     * @param selectedFile
      * @return the corrected table name
      */
-    private String checkTableName(String name) {
+    private String checkTableName(IHDFSNode selectedFile) {
+        EHadoopFileTypes type = selectedFile.getType();
+        // when the selected is a folder, use the name by: getValue
+        String name = selectedFile.getValue();
+        // when the selected is a file, use the name by: getTable.getName
+        if (EHadoopFileTypes.FILE.equals(type)) {
+            name = selectedFile.getTable().getName();
+        }
         if (name != null && name.indexOf("-") > 0) { //$NON-NLS-1$
             name = name.replaceAll("-", "_"); //$NON-NLS-1$ //$NON-NLS-2$
         }
