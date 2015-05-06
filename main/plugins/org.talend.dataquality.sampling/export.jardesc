@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <jardesc>
-    <jar path="org.talend.dataquality.sampling/dist/org.talend.dataquality.sampling.jar"/>
-    <options buildIfNeeded="true" compress="true" descriptionLocation="/org.talend.dataquality.sampling/export.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="false" storeRefactorings="false" useSourceFolders="false"/>
+    <jar path="/home/jgonzalez/Documents/STUDIO/Talend-Studio-20141207_1530-V5.6.1/plugins/org.talend.dataquality.sampling_5.6.1.20141207_1530/dist/org.talend.dataquality.sampling.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/org.talend.dataquality.sampling/export.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
     <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
     <selectedProjects/>
     <manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">

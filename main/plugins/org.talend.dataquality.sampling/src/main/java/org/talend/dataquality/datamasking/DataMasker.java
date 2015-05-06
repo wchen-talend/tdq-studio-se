@@ -2,21 +2,19 @@ package org.talend.dataquality.datamasking;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-import org.apache.log4j.Logger;
 import org.talend.dataquality.duplicating.RandomWrapper;
 
 public abstract class DataMasker<TIn, TOut> {
 
-    private long seed;
+    private static RandomWrapper rnd = null;
 
-    private RandomWrapper rnd;
-
-    private static Logger log = Logger.getLogger(DataMasker.class);
+    public DataMasker() {
+        setRnd(new RandomWrapper());
+    }
 
     public DataMasker(long seed) {
-        this.seed = seed;
+        setRnd(new RandomWrapper(seed));
     }
 
     protected abstract TOut generateOutput(TIn v, boolean isOriginal);
@@ -30,15 +28,11 @@ public abstract class DataMasker<TIn, TOut> {
         return reslutList;
     }
 
-    public Random getRandom() {
-        if (rnd == null) {
-            rnd = new RandomWrapper(seed);
-
-            if (log.isInfoEnabled()) {
-                log.info("Seed is set to " + seed);
-            }
-        }
-
+    public static RandomWrapper getRnd() {
         return rnd;
+    }
+
+    public static void setRnd(RandomWrapper rnd) {
+        DataMasker.rnd = rnd;
     }
 }

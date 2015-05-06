@@ -23,8 +23,12 @@ import java.util.Random;
  * 2. switch the day and month value. if the day value is greater than 12, then use day%12 as month value.
  * <p>
  * 3. replace with a random date.
+ * <p>
+ * 4. modifies the date forward or backward according to the int parameter.
  */
-class DateChanger {
+public class DateChanger {
+
+    private static final Long nb_ms_per_day = 86400000L;
 
     private static final Random random = new Random();
 
@@ -33,7 +37,7 @@ class DateChanger {
      * 
      * @param seed
      */
-    void setSeed(long seed) {
+    public void setSeed(long seed) {
         random.setSeed(seed);
     }
 
@@ -67,11 +71,19 @@ class DateChanger {
 
     @SuppressWarnings("deprecation")
     Date replaceWithRandomDate(Date date) {
-
         date.setYear(random.nextInt(100));
         date.setMonth(random.nextInt(12));
         date.setDate(random.nextInt(31));
         return date;
     }
 
+    public Date dateVariance(Date date, Integer rate) {
+        int variation = 0;
+        do {
+            variation = random.nextInt(2 * rate) - rate;
+        } while (variation == 0);
+        Long originalDate = date.getTime();
+        date.setTime(originalDate + variation * nb_ms_per_day);
+        return date;
+    }
 }

@@ -9,7 +9,8 @@ Require-Bundle: org.apache.log4j,
  org.talend.dataquality.standardization,
  org.talend.libraries.apache.lucene,
  org.talend.libraries.apache.common,
- org.talend.libraries.csv
+ org.talend.libraries.csv,
+ org.talend.libraries.google.libphonumber
 Export-Package: org.talend.dataquality.duplicating,
  org.talend.dataquality.sampling
 Bundle-ClassPath: .,
