@@ -58,19 +58,6 @@ public class HadoopClusterFolderRepNode extends DQRepositoryNode {
                     .getTdqRepositoryViewObjects(HadoopClusterRepositoryNodeType.HADOOPCLUSTER,
                             RepositoryNodeHelper.getPath(this).toString());
             // sub folders
-            // for (Container<String, IRepositoryViewObject> container : tdqViewObjects.getSubContainer()) {
-            // Folder folder = new Folder((Property) container.getProperty(),
-            // HadoopClusterRepositoryNodeType.HADOOPCLUSTER);
-            // if (!withDeleted && folder.isDeleted()) {
-            // continue;
-            // }
-            // HadoopClusterSubFolderRepNode childNodeFolder = new HadoopClusterSubFolderRepNode(folder, this,
-            // ENodeType.SIMPLE_FOLDER);
-            // childNodeFolder.setProperties(EProperties.LABEL, HadoopClusterRepositoryNodeType.HADOOPCLUSTER);
-            // childNodeFolder.setProperties(EProperties.CONTENT_TYPE, HadoopClusterRepositoryNodeType.HADOOPCLUSTER);
-            // super.getChildren().add(childNodeFolder);
-            // }
-            // connection files
             for (IRepositoryViewObject viewObject : tdqViewObjects.getMembers()) {
                 if (!withDeleted && viewObject.isDeleted()) {
                     continue;

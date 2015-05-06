@@ -91,6 +91,9 @@ public class CreateHiveTableWizard extends HDFSSchemaWizard {
             createHive.run();
             // selectedHive = new one
             hiveConnectionItem = (DatabaseConnectionItem) createHive.getConnectionItem();
+            if (hiveConnectionItem == null) {
+                return false;
+            }
         } else {
             hiveConnectionItem = (DatabaseConnectionItem) selectedHive.getObject().getProperty().getItem();
         }
@@ -106,7 +109,6 @@ public class CreateHiveTableWizard extends HDFSSchemaWizard {
             java.sql.Connection hiveConnection = hiveConnHandler.createHiveConnection();
             if (hiveConnection != null) {
                 stmt = hiveConnection.createStatement();
-                log.error("will execute:  " + createTableSql);
                 stmt.execute(createTableSql);
             }
             return true;

@@ -53,11 +53,11 @@
          point="org.eclipse.ui.navigator.viewer">
        <viewerContentBinding 
              viewerId="org.talend.dataprofiler.core.ui.views.DQRespositoryView">
-          <includes>	       	      
-	         <contentExtension pattern="org.talend.dataprofiler.core.DQContent.*"/>
-	         <contentExtension pattern="org.eclipse.ui.navigator.resources.filters.startsWithDot"/>
-	         <contentExtension pattern="org.eclipse.ui.navigator.resources.filters.htmlFolder"/>	         
-	         <contentExtension pattern="org.eclipse.ui.navigator.resources.linkHelper" />
+          <includes>                  
+             <contentExtension pattern="org.talend.dataprofiler.core.DQContent.*"/>
+             <contentExtension pattern="org.eclipse.ui.navigator.resources.filters.startsWithDot"/>
+             <contentExtension pattern="org.eclipse.ui.navigator.resources.filters.htmlFolder"/>             
+             <contentExtension pattern="org.eclipse.ui.navigator.resources.linkHelper" />
           <contentExtension
                 pattern="org.talend.dataprofiler.core.ui.editor.DQEditorLinkHelper">
           </contentExtension>
@@ -116,7 +116,7 @@
         </viewer>
              
    </extension>
-    	<extension
+        <extension
          point="org.eclipse.ui.perspectives">
       <perspective
             class="org.talend.dataprofiler.core.ui.perspective.DataProfilingPerspective"
@@ -142,8 +142,8 @@
             name="%navigatorContent.name.DQResource"
             priority="high"
             activeByDefault="true"
-			            contentProvider="org.talend.dataprofiler.core.ui.views.provider.ResourceViewContentProvider"
-            			labelProvider="org.talend.dataprofiler.core.ui.views.provider.DQRepositoryViewLabelProvider"			
+                        contentProvider="org.talend.dataprofiler.core.ui.views.provider.ResourceViewContentProvider"
+                        labelProvider="org.talend.dataprofiler.core.ui.views.provider.DQRepositoryViewLabelProvider"            
             id="org.talend.dataprofiler.core.DQContent.resourceContent">
          <enablement>
             <or>
@@ -163,7 +163,7 @@
               id="org.talend.dataprofiler.core.ui.views.resources.ResourceDropAdapterAssistant">
            <possibleDropTargets> 
             <and>
-	            <instanceof value="org.eclipse.core.resources.IResource"/>
+                <instanceof value="org.eclipse.core.resources.IResource"/>
              <instanceof
                    value="org.talend.repository.model.IRepositoryNode">
              </instanceof>
@@ -180,10 +180,10 @@
         </dropAssistant>   
      </navigatorContent>
       <actionProvider
-            	class="org.talend.dataprofiler.core.ui.action.provider.NewConnectionActionProvider"
-            	id="org.talend.dataprofiler.core.ui.action.provider.NewConnectionActionProvider"> 
-        	<enablement> 
-        			<or>
+                class="org.talend.dataprofiler.core.ui.action.provider.NewConnectionActionProvider"
+                id="org.talend.dataprofiler.core.ui.action.provider.NewConnectionActionProvider"> 
+            <enablement> 
+                    <or>
               <adapt
                     type="org.talend.dq.nodes.DBConnectionFolderRepNode">
               </adapt>
@@ -203,42 +203,42 @@
                     type="org.talend.dq.nodes.DFConnectionSubFolderRepNode">
               </adapt>
               <adapt
-                    type="org.talend.dq.nodes.HadoopClusterFolderRepNode">
+                    type="org.talend.dq.nodes.hadoopcluster.HadoopClusterFolderRepNode">
               </adapt>
            </or>
-	         </enablement>
-		</actionProvider>
+             </enablement>
+        </actionProvider>
       <actionProvider
             class="org.talend.dataprofiler.core.ui.action.provider.NewAnalysisActionProvider"
             id="org.talend.dataprofiler.core.ui.action.provider.NewAnalysisActionProvider">
             <enablement> 
-        			<or>
-						<adapt type="org.talend.dq.nodes.AnalysisFolderRepNode" />
+                    <or>
+                        <adapt type="org.talend.dq.nodes.AnalysisFolderRepNode" />
       <adapt
             type="org.talend.dq.nodes.AnalysisSubFolderRepNode">
-      </adapt>	 
-						<adapt type="java.util.Collection"> 
-							<count value="0" />
-						</adapt>
-					</or>
-	         </enablement>
+      </adapt>   
+                        <adapt type="java.util.Collection"> 
+                            <count value="0" />
+                        </adapt>
+                    </or>
+             </enablement>
       </actionProvider>
       <actionProvider 
-      			id="org.talend.dataprofiler.core.ui.action.provider.OpenResourceProvider"
-				class="org.talend.dataprofiler.core.ui.action.provider.OpenResourceProvider">
-			<enablement>
+                id="org.talend.dataprofiler.core.ui.action.provider.OpenResourceProvider"
+                class="org.talend.dataprofiler.core.ui.action.provider.OpenResourceProvider">
+            <enablement>
     <instanceof
           value="org.talend.repository.model.IRepositoryNode">
     </instanceof>
-			</enablement>
-		</actionProvider>      
+            </enablement>
+        </actionProvider>      
       <actionProvider
             class="org.talend.dataprofiler.core.ui.action.provider.RunAnalysisActionProvider"
             id="org.talend.dataprofiler.core.ui.action.provider.RunAnalysisActionProvider">
          <enablement>
             <and>
-	            <instanceof value="org.talend.dq.nodes.AnalysisRepNode"/>
-	        </and>
+                <instanceof value="org.talend.dq.nodes.AnalysisRepNode"/>
+            </and>
          </enablement>
       </actionProvider>
       <actionProvider
@@ -272,8 +272,8 @@
             id="org.talend.dataprofiler.core.ui.action.provider.AnalyzeColumnCorrelationProvider">
          <enablement>
             <and>
-	            <instanceof value="org.talend.dq.nodes.DBColumnRepNode"/>           
-	        </and>
+                <instanceof value="org.talend.dq.nodes.DBColumnRepNode"/>           
+            </and>
          </enablement>
       </actionProvider> 
       
@@ -333,7 +333,7 @@
                <instanceof
                      value="org.talend.dq.nodes.DBConnectionRepNode">
                </instanceof>
-	        </or>
+            </or>
          </enablement>
       </actionProvider>       
       <actionProvider
@@ -341,8 +341,8 @@
             id="org.talend.dataprofiler.core.ui.action.provider.RemoveAnalysisActionProvider">
          <enablement>
             <and>
-	            <instanceof value="org.talend.dq.nodes.ReportAnalysisRepNode"/>
-	        </and>
+                <instanceof value="org.talend.dq.nodes.ReportAnalysisRepNode"/>
+            </and>
          </enablement>
       </actionProvider>
       <actionProvider
@@ -859,6 +859,18 @@
                     </or>
              </enablement>
       </actionProvider>
+       <actionProvider
+            class="org.talend.dataprofiler.core.ui.action.provider.CreateHiveTableActionProvider"
+            id="org.talend.dataprofiler.core.ui.action.provider.CreateHiveTableActionProvider">
+            <enablement> 
+                    <or>
+                        <adapt type="org.talend.dq.nodes.hadoopcluster.HDFSOfHCConnectionNode" />
+                        <adapt type="java.util.Collection"> 
+                            <count value="0" />
+                        </adapt>
+                    </or>
+             </enablement>
+      </actionProvider>
       <actionProvider
             class="org.talend.dataprofiler.core.ui.action.provider.ImportItemsProvider"
             id="org.talend.dataprofiler.core.ui.action.provider.ImportItemsProvider">
@@ -896,8 +908,8 @@
    
  <extension point="org.eclipse.ui.perspectiveExtensions">
   <perspectiveExtension
-	targetID="org.talend.dataprofiler.DataProfilingPerspective">
-	    <view
+    targetID="org.talend.dataprofiler.DataProfilingPerspective">
+        <view
               id="org.eclipse.ui.cheatsheets.views.CheatSheetView"
               ratio="0.25"
               relationship="left"
@@ -905,12 +917,12 @@
               standalone="false"
               visible="true">
         </view>
-    	<view
+        <view
            id="org.talend.dataprofiler.core.ui.views.DQRespositoryView"
            ratio="0.33"
            relationship="left"
            relative="org.eclipse.ui.editorss"> 
-    	</view>
+        </view>
        <!-- <view id="org.talend.dataprofiler.core.ui.views.GraphsView"
              relative="org.eclipse.ui.editorss"
              relationship="bottom"
@@ -1168,18 +1180,18 @@
    
    <extension
          point="org.eclipse.ui.contexts">
-	<context
-		name="%context.name.DQViewScope"
-		description="%context.description.contextDQRespositoryView"
-		id="org.talend.dataprofiler.core.ui.views.DQRespositoryView.viewScope"
-		parentId="org.eclipse.ui.contexts.window">
-	</context>
-	<context
-		name="%context.name.PatternTestViewScope"
-		description="%context.description.contextPatternTestView"
-		id="org.talend.dataprofiler.core.ui.views.PatternTestView.viewScope"
-		parentId="org.eclipse.ui.contexts.window">
-	</context>
+    <context
+        name="%context.name.DQViewScope"
+        description="%context.description.contextDQRespositoryView"
+        id="org.talend.dataprofiler.core.ui.views.DQRespositoryView.viewScope"
+        parentId="org.eclipse.ui.contexts.window">
+    </context>
+    <context
+        name="%context.name.PatternTestViewScope"
+        description="%context.description.contextPatternTestView"
+        id="org.talend.dataprofiler.core.ui.views.PatternTestView.viewScope"
+        parentId="org.eclipse.ui.contexts.window">
+    </context>
   </extension>  
   
   <extension
@@ -1910,3 +1922,4 @@
     </extension>
 
 </plugin>
+
