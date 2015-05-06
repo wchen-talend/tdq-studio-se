@@ -16,6 +16,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 import org.talend.dataprofiler.core.ui.action.actions.predefined.SuggestAnalysisAction;
+import org.talend.dataprofiler.core.ui.utils.RepNodeUtils;
 import org.talend.dq.nodes.ColumnSetRepNode;
 import org.talend.dq.nodes.DBTableRepNode;
 
@@ -51,12 +52,15 @@ public class SuggestAnalysisActionProvider extends AbstractCommonActionProvider 
         }
 
         TreeSelection currentSelection = ((TreeSelection) this.getContext().getSelection());
-
+        if (!RepNodeUtils.isValidSelectionFromSameTable(currentSelection.toList())) {
+            return;
+        }
         Object firstElement = currentSelection.getFirstElement();
         if (firstElement instanceof DBTableRepNode) {
             DBTableRepNode node = (DBTableRepNode) firstElement;
             suggestAnalysisAction = new SuggestAnalysisAction(node.getTdTable());
         } else {
+            // TODO here should be the second case some columns from same table
             return;
         }
 

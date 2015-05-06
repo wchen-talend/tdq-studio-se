@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Display;
 import org.talend.core.model.metadata.builder.connection.MetadataTable;
 import org.talend.dataprofiler.core.CorePlugin;
 import org.talend.dataprofiler.core.ImageLib;
+import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.service.ISemanticStudioService;
 import org.talend.dq.helper.RepositoryNodeHelper;
 import org.talend.repository.model.IRepositoryNode;
@@ -42,10 +43,8 @@ public class SuggestAnalysisAction extends Action {
     }
 
     public SuggestAnalysisAction() {
-        super("Suggest Analysis"); // TODO externalize
-        setImageDescriptor(ImageLib.getImageDescriptor(ImageLib.EXPLORE_IMAGE)); // TODO
-        // change
-        // icon
+        super(DefaultMessagesImpl.getString("SuggestAnalysisActionProvider.suggestAnalysis")); // TODO externalize //$NON-NLS-1$
+        setImageDescriptor(ImageLib.getImageDescriptor(ImageLib.ACTION_NEW_ANALYSIS));
     }
 
     /*
