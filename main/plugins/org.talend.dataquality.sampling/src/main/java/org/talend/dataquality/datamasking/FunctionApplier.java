@@ -31,10 +31,16 @@ public class FunctionApplier {
         GENERATE_ACCOUNT_NUMBER,
         GENERATE_ACCOUNT_NUMBER_FORMAT,
         GENERATE_PHONE_NUMBER,
-        GENERATE_PHONE_NUMBER_FORMAT
+        GENERATE_PHONE_NUMBER_FORMAT,
+        REPLACE_ALL,
+        REPLACE_NUMERIC,
+        REPLACE_CHARACTERS,
+        REPLACE_SSN
     };
 
     private DateChanger dateChanger = new DateChanger();
+
+    private String EMPTY_STRING = ""; //$NON-NLS-1$
 
     private RandomWrapper rnd = new RandomWrapper();
 
@@ -88,7 +94,7 @@ public class FunctionApplier {
         if (function == Function.SET_TO_NULL) {
             return null;
         }
-        StringBuilder sb = new StringBuilder(""); //$NON-NLS-1$
+        StringBuilder sb = new StringBuilder(EMPTY_STRING);
         switch (function) {
         case GENERATE_CREDIT_CARD:
             CreditCardGenerator ccg = new CreditCardGenerator(rnd);
@@ -104,15 +110,15 @@ public class FunctionApplier {
                 break;
             } else if (str != null) {
                 try {
-                    cct_format = ccgf.getCreditCardType(Long.parseLong(str.replaceAll("\\s+", ""))); //$NON-NLS-1$ //$NON-NLS-2$
+                    cct_format = ccgf.getCreditCardType(Long.parseLong(str.replaceAll("\\s+", EMPTY_STRING))); //$NON-NLS-1$ 
                 } catch (NumberFormatException e) {
                     cct_format = ccgf.chooseCreditCardType();
                     sb = new StringBuilder(ccgf.generateCreditCard(cct_format).toString());
                     break;
                 }
                 if (cct_format != null) {
-                    sb = new StringBuilder(ccgf
-                            .generateCreditCardFormat(cct_format, Long.parseLong(str.replaceAll("\\s+", ""))).toString()); //$NON-NLS-1$ //$NON-NLS-2$
+                    sb = new StringBuilder(ccgf.generateCreditCardFormat(cct_format,
+                            Long.parseLong(str.replaceAll("\\s+", EMPTY_STRING))).toString()); //$NON-NLS-1$ 
                     break;
                 } else {
                     cct_format = ccgf.chooseCreditCardType();
@@ -127,7 +133,7 @@ public class FunctionApplier {
             break;
         case GENERATE_ACCOUNT_NUMBER_FORMAT:
             AccountNumberGenerator angf = new AccountNumberGenerator(rnd);
-            String accountNumberFormat = ""; //$NON-NLS-1$
+            String accountNumberFormat = EMPTY_STRING;
             if (str != null) {
                 try {
                     accountNumberFormat = angf.generateIban(str);
@@ -146,7 +152,7 @@ public class FunctionApplier {
             break;
         case GENERATE_PHONE_NUMBER_FORMAT:
             PhoneNumberGenerator pngf = new PhoneNumberGenerator(rnd);
-            String phoneNumberFormat = ""; //$NON-NLS-1$
+            String phoneNumberFormat = EMPTY_STRING;
             int extraParam = 0;
             try {
                 extraParam = Integer.parseInt(extraParameter);
@@ -155,13 +161,51 @@ public class FunctionApplier {
                 sb = new StringBuilder(phoneNumberFormat);
             }
             if (str == null || extraParam <= 0
-                    || !(str.replaceAll("\\s+", "").matches("^(\\+)?[0-9]+(-[0-9]+)+$|^(\\+)?[0-9]+$")) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    || !(str.replaceAll("\\s+", EMPTY_STRING).matches("^(\\+)?[0-9]+(-[0-9]+)+$|^(\\+)?[0-9]+$")) //$NON-NLS-1$ //$NON-NLS-2$ 
                     || extraParam >= str.length()) {
                 phoneNumberFormat = pngf.generatePhoneNumber();
             } else {
                 phoneNumberFormat = pngf.generatePhoneNumber(str, extraParam);
             }
             sb = new StringBuilder(phoneNumberFormat);
+            break;
+        case REPLACE_ALL:
+            if (str == null || extraParameter == null || !extraParameter.matches("[0-9]|[a-zA-Z]")) { //$NON-NLS-1$
+                sb = new StringBuilder(EMPTY_STRING);
+            } else {
+                sb = new StringBuilder(str.replaceAll(".", extraParameter)); //$NON-NLS-1$
+            }
+            break;
+        case REPLACE_NUMERIC:
+            if (str == null || extraParameter == null || !extraParameter.matches("[0-9]|[a-zA-Z]")) { //$NON-NLS-1$
+                sb = new StringBuilder(EMPTY_STRING);
+            } else {
+                sb = new StringBuilder(str.replaceAll("\\d", extraParameter)); //$NON-NLS-1$
+            }
+            break;
+        case REPLACE_CHARACTERS:
+            if (str == null || extraParameter == null || !extraParameter.matches("[0-9]|[a-zA-Z]")) { //$NON-NLS-1$
+                sb = new StringBuilder(EMPTY_STRING);
+            } else {
+                sb = new StringBuilder(str.replaceAll("[a-zA-Z]", extraParameter)); //$NON-NLS-1$
+            }
+            break;
+        case REPLACE_SSN:
+            if (str == null || extraParameter == null || !extraParameter.matches("[0-9]|[a-zA-Z]")) { //$NON-NLS-1$
+                sb = new StringBuilder(EMPTY_STRING);
+            } else {
+                int digits_to_keep = 0;
+                String str_nospaces = str.replaceAll("\\s+", EMPTY_STRING); //$NON-NLS-1$
+                if (str_nospaces.replaceAll("\\D", EMPTY_STRING).length() == 9) {//$NON-NLS-1$
+                    digits_to_keep = 4;
+                } else if (str_nospaces.replaceAll("\\D", EMPTY_STRING).length() == 15) { //$NON-NLS-1$
+                    digits_to_keep = 5;
+                }
+                String res = str_nospaces.substring(0, str_nospaces.length() - digits_to_keep)
+                        .replaceAll("[0-9]", extraParameter); //$NON-NLS-1$ 
+                res = res + str_nospaces.substring(str_nospaces.length() - digits_to_keep, str_nospaces.length());
+                sb = new StringBuilder(res);
+            }
             break;
         default:
             break;
@@ -179,13 +223,16 @@ public class FunctionApplier {
      */
 
     public Double generateDuplicate(Double valueIn, Function function, String extraParameter) {
-        if (valueIn == null || function == Function.SET_TO_NULL) {
+        if (function == Function.SET_TO_NULL) {
             return null;
         }
+        if (valueIn == null) {
+            return 0.0;
+        }
         Double finalValue = null;
+        Integer extraParam = null;
         switch (function) {
         case NUMERIC_VARIANCE:
-            Integer extraParam;
             try {
                 extraParam = Integer.parseInt(extraParameter);
             } catch (NumberFormatException e) {
@@ -201,6 +248,19 @@ public class FunctionApplier {
             Float value = Float.parseFloat(valueIn.toString());
             value *= ((float) rate + 100) / 100;
             finalValue = new Double(value);
+            break;
+        case REPLACE_NUMERIC:
+            try {
+                extraParam = Integer.parseInt(extraParameter);
+            } catch (NumberFormatException e) {
+                extraParam = 0;
+            }
+            if (extraParam < 0) {
+                extraParam = 0;
+            }
+            String str = valueIn.toString();
+            str.replaceAll("\\d", extraParam.toString()); //$NON-NLS-1$
+            finalValue = Double.valueOf(str);
             break;
         default:
             return valueIn;
@@ -218,8 +278,11 @@ public class FunctionApplier {
      */
 
     public Float generateDuplicate(Float valueIn, Function function, String extraParameter) {
-        if (valueIn == null || function == Function.SET_TO_NULL) {
+        if (function == Function.SET_TO_NULL) {
             return null;
+        }
+        if (valueIn == null) {
+            return 0.0f;
         }
         Float finalValue = null;
         switch (function) {
@@ -240,6 +303,19 @@ public class FunctionApplier {
             Float value = Float.parseFloat(valueIn.toString());
             value *= ((float) rate + 100) / 100;
             finalValue = new Float(value);
+            break;
+        case REPLACE_NUMERIC:
+            try {
+                extraParam = Integer.parseInt(extraParameter);
+            } catch (NumberFormatException e) {
+                extraParam = 0;
+            }
+            if (extraParam < 0) {
+                extraParam = 0;
+            }
+            String str = valueIn.toString();
+            str.replaceAll("\\d", extraParam.toString()); //$NON-NLS-1$
+            finalValue = Float.valueOf(str);
             break;
         default:
             return valueIn;
@@ -264,7 +340,7 @@ public class FunctionApplier {
         switch (function) {
         case NUMERIC_VARIANCE:
             if (valueIn == null) {
-                return null;
+                return 0L;
             }
             Integer extraParam;
             try {
@@ -305,6 +381,22 @@ public class FunctionApplier {
                 finalValue = ccgf.generateCreditCardFormat(cct_format, valueIn);
             }
             break;
+        case REPLACE_NUMERIC:
+            if (valueIn == null) {
+                return 0L;
+            }
+            try {
+                extraParam = Integer.parseInt(extraParameter);
+            } catch (NumberFormatException e) {
+                extraParam = 0;
+            }
+            if (extraParam < 0) {
+                extraParam = 0;
+            }
+            String str = valueIn.toString();
+            str.replaceAll("\\d", extraParam.toString()); //$NON-NLS-1$
+            finalValue = Long.valueOf(str);
+            break;
         default:
             return valueIn;
         }
@@ -321,8 +413,11 @@ public class FunctionApplier {
      */
 
     public Integer generateDuplicate(Integer valueIn, Function function, String extraParameter) {
-        if (valueIn == null || function == Function.SET_TO_NULL) {
+        if (function == Function.SET_TO_NULL) {
             return null;
+        }
+        if (valueIn == null) {
+            return 0;
         }
         Integer finalValue = null;
         switch (function) {
@@ -343,6 +438,19 @@ public class FunctionApplier {
             Float value = Float.parseFloat(valueIn.toString());
             value *= ((float) rate + 100) / 100;
             finalValue = new Integer(Math.round(value));
+            break;
+        case REPLACE_NUMERIC:
+            try {
+                extraParam = Integer.parseInt(extraParameter);
+            } catch (NumberFormatException e) {
+                extraParam = 0;
+            }
+            if (extraParam < 0) {
+                extraParam = 0;
+            }
+            String str = valueIn.toString();
+            str.replaceAll("\\d", extraParam.toString()); //$NON-NLS-1$
+            finalValue = Integer.valueOf(str);
             break;
         default:
             return valueIn;
