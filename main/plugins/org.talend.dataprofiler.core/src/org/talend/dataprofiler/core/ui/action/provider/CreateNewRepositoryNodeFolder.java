@@ -19,6 +19,8 @@ import org.talend.dataprofiler.core.ui.action.actions.CreateRepositoryNodeAction
 import org.talend.dataprofiler.core.ui.exchange.ExchangeFolderRepNode;
 import org.talend.dataprofiler.core.ui.utils.WorkbenchUtils;
 import org.talend.dq.nodes.ReportSubFolderRepNode;
+import org.talend.dq.nodes.hadoopcluster.HDFSOfHCFolderRepNode;
+import org.talend.dq.nodes.hadoopcluster.HiveOfHCFolderRepNode;
 import org.talend.repository.model.IRepositoryNode.ENodeType;
 import org.talend.repository.model.RepositoryNode;
 import org.talend.resource.ResourceManager;
@@ -34,6 +36,7 @@ public class CreateNewRepositoryNodeFolder extends AbstractCommonActionProvider 
     /**
      * Adds a submenu to the given menu with the name "New Component".
      */
+    @Override
     public void fillContextMenu(IMenuManager menu) {
         if (!isShowMenu()) {
             return;
@@ -48,7 +51,8 @@ public class CreateNewRepositoryNodeFolder extends AbstractCommonActionProvider 
                         && !ResourceManager.getPatternFolder().equals(folder)
                         && !ResourceManager.getIndicatorFolder().equals(folder)
                         && !ResourceService.isSubFolder(ResourceManager.getSystemIndicatorFolder(), folder)
-                        && (ENodeType.SYSTEM_FOLDER.equals(node.getType()) || ENodeType.SIMPLE_FOLDER.equals(node.getType()))) {
+                        && (ENodeType.SYSTEM_FOLDER.equals(node.getType()) || ENodeType.SIMPLE_FOLDER.equals(node.getType()))
+                        && !(node instanceof HDFSOfHCFolderRepNode || node instanceof HiveOfHCFolderRepNode)) {
                     // MOD qiongli 2011-1-20 don't add it for recycle bin elements
                     if (node.getObject() != null && !node.getObject().getProperty().getItem().getState().isDeleted()) {
                         currentSelection = WorkbenchUtils.getFolder(node);

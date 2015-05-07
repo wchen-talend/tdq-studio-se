@@ -63,26 +63,31 @@ public class CreateHiveTableWizard extends HDFSSchemaWizard {
         step1Page.setTitle(DefaultMessagesImpl.getString(
                 "HDFSSchemaWizardPage.titleCreate", connectionItem.getProperty().getLabel())); //$NON-NLS-1$
         step1Page.setDescription(DefaultMessagesImpl.getString("CreateHiveTableStep2page.descriptionCreate")); //$NON-NLS-1$
-        step1Page.setPageComplete(true);
+        step1Page.setPageComplete(false);
         addPage(step1Page);
 
         step2page = new CreateHiveTableStep2page(connectionItem, getTempHDFSConnection());
         step2page.setTitle(DefaultMessagesImpl.getString("CreateHiveTableStep2page.titleCreate", connectionItem.getProperty() //$NON-NLS-1$
                 .getLabel()));
         step2page.setDescription(DefaultMessagesImpl.getString("CreateHiveTableStep2page.descriptionCreate")); //$NON-NLS-1$
-        step2page.setPageComplete(true);
+        step2page.setPageComplete(false);
         addPage(step2page);
 
         // add step 3 page:
         step3Page = new CreateHiveTableStep3Page(currentNode);
-        step3Page.setTitle("Where to create the table:"); //$NON-NLS-1$
-        step3Page.setDescription("create a table on the selected hive connection"); //$NON-NLS-1$
+        step3Page.setTitle(DefaultMessagesImpl.getString("CreateHiveTableStep3Page.title")); //$NON-NLS-1$
+        step3Page.setDescription(DefaultMessagesImpl.getString("CreateHiveTableStep3Page.description")); //$NON-NLS-1$
         step3Page.setPageComplete(true);
         addPage(step3Page);
     }
 
     @Override
     public boolean performFinish() {
+        if (step1Page.getSelectedFile() == null) {
+            step3Page.setErrorMessage(DefaultMessagesImpl.getString("CreateHiveTableStep3Page.nofileselected")); //$NON-NLS-1$
+            return false;
+        }
+
         IRepositoryNode selectedHive = step3Page.getSelectedHive();
         DatabaseConnectionItem hiveConnectionItem = null;
         if (selectedHive == null) {
@@ -163,7 +168,6 @@ public class CreateHiveTableWizard extends HDFSSchemaWizard {
         IHDFSNode selectedFile = this.step1Page.getSelectedFile();
 
         createTableSQL.append("CREATE EXTERNAL TABLE "); //$NON-NLS-1$
-        // createTableSQL.append(createIfNotExist?"IF NOT EXISTS":"");
         createTableSQL.append(checkTableName(selectedFile));
         createTableSQL.append(" ("); //$NON-NLS-1$
 
@@ -187,7 +191,7 @@ public class CreateHiveTableWizard extends HDFSSchemaWizard {
                     createTableSQL.append(","); //$NON-NLS-1$
                 }
             } else {
-                step3Page.setErrorMessage("No columns existed in this table.");
+                step3Page.setErrorMessage("No columns existed in this table."); //$NON-NLS-1$
                 return null;
             }
             createTableSQL.deleteCharAt(createTableSQL.length() - 1);

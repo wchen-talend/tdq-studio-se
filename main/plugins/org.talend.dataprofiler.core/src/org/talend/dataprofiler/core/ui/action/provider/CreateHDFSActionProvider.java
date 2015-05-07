@@ -17,6 +17,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.talend.dataprofiler.core.service.AbstractSvnRepositoryService;
 import org.talend.dataprofiler.core.service.GlobalServiceRegister;
 import org.talend.dataprofiler.core.ui.action.actions.CreateHDFSAction;
+import org.talend.dq.nodes.hadoopcluster.HDFSOfHCFolderRepNode;
 import org.talend.dq.nodes.hadoopcluster.HadoopClusterConnectionRepNode;
 import org.talend.repository.model.RepositoryNode;
 
@@ -45,7 +46,7 @@ public class CreateHDFSActionProvider extends AbstractCommonActionProvider {
         if (node != null) {
             // ~20051
             IAction action = null;
-            if (node instanceof HadoopClusterConnectionRepNode) {
+            if (node instanceof HadoopClusterConnectionRepNode || node instanceof HDFSOfHCFolderRepNode) {
                 action = new CreateHDFSAction(node);
                 menu.add(action);
             }

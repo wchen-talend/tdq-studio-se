@@ -102,4 +102,8 @@ public class HDFSOfHCFolderRepNode extends DBConnectionFolderRepNode {
         return path;
     }
 
+    @Override
+    public boolean isSupportCreateDBMenu() {
+        return false;
+    }
 }

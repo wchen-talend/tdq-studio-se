@@ -43,10 +43,11 @@ public class CreateHiveTableStep2page extends WizardPage {
         AbstractForm.ICheckListener listener = new AbstractForm.ICheckListener() {
 
             public void checkPerformed(final AbstractForm source) {
-                CreateHiveTableStep2page.this.setPageComplete(true);
                 if (source.isStatusOnError()) {
+                    setPageComplete(false);
                     setErrorMessage(source.getStatus());
                 } else {
+                    setPageComplete(true);
                     CreateHiveTableStep2page.this.schemaForm.setButtonsVisibility(true);
                     setErrorMessage(null);
                     setMessage(source.getStatus(), source.getStatusLevel());

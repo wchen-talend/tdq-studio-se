@@ -164,4 +164,8 @@ public class DBConnectionFolderRepNode extends DQRepositoryNode {
     public void setUseNodeCache(Boolean isUseCache) {
         this.useNodeCache = isUseCache;
     }
+
+    public boolean isSupportCreateDBMenu() {
+        return true;
+    }
 }

@@ -19,13 +19,11 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IPath;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.commons.utils.data.container.RootContainer;
-import org.talend.core.database.conn.ConnParameterKeys;
-import org.talend.core.model.metadata.builder.connection.DatabaseConnection;
-import org.talend.core.model.properties.DatabaseConnectionItem;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
+import org.talend.cwm.db.connection.ConnectionUtils;
 import org.talend.cwm.management.i18n.Messages;
 import org.talend.dq.helper.RepositoryNodeHelper;
 import org.talend.dq.nodes.DBConnectionFolderRepNode;
@@ -78,9 +76,7 @@ public class HiveOfHCFolderRepNode extends DBConnectionFolderRepNode {
                 HiveOfHCConnectionNode repNode = null;
                 // check if ConnParameterKeys.CONN_PARA_KEY_HADOOP_CLUSTER_ID = current hadoop cluster's id
                 if (viewObject != null && viewObject.getProperty() != null) {
-                    DatabaseConnectionItem dbItem = (DatabaseConnectionItem) viewObject.getProperty().getItem();
-                    DatabaseConnection dbConnection = (DatabaseConnection) dbItem.getConnection();
-                    String hcId = dbConnection.getParameters().get(ConnParameterKeys.CONN_PARA_KEY_HADOOP_CLUSTER_ID);
+                    String hcId = ConnectionUtils.getHadoopClusterIDOfHive(viewObject);
                     if (!clusterId.equals(hcId)) {
                         continue;
                     }
@@ -109,4 +105,8 @@ public class HiveOfHCFolderRepNode extends DBConnectionFolderRepNode {
         return Messages.getString("HiveOfHCFolderRepNode.displayText"); //$NON-NLS-1$
     }
 
+    @Override
+    public boolean isSupportCreateDBMenu() {
+        return false;
+    }
 }

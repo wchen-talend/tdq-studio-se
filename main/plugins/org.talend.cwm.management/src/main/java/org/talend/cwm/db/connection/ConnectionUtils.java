@@ -38,6 +38,7 @@ import org.talend.commons.exception.PersistenceException;
 import org.talend.commons.utils.io.FilesUtils;
 import org.talend.core.IRepositoryContextService;
 import org.talend.core.database.EDatabaseTypeName;
+import org.talend.core.database.conn.ConnParameterKeys;
 import org.talend.core.database.conn.version.EDatabaseVersion4Drivers;
 import org.talend.core.model.metadata.IMetadataConnection;
 import org.talend.core.model.metadata.builder.ConvertionHelper;
@@ -51,8 +52,10 @@ import org.talend.core.model.metadata.builder.database.JavaSqlFactory;
 import org.talend.core.model.metadata.builder.database.PluginConstant;
 import org.talend.core.model.metadata.builder.database.dburl.SupportDBUrlType;
 import org.talend.core.model.metadata.connection.hive.HiveConnVersionInfo;
+import org.talend.core.model.properties.DatabaseConnectionItem;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.Property;
+import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.model.utils.CloneConnectionUtils;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.core.runtime.CoreRuntimePlugin;
@@ -1251,6 +1254,18 @@ public final class ConnectionUtils {
         }
 
         return version;
+    }
+
+    /**
+     * get the hadoop cluster ID .
+     * 
+     * @param viewObject
+     * @return
+     */
+    public static String getHadoopClusterIDOfHive(IRepositoryViewObject viewObject) {
+        DatabaseConnectionItem dbItem = (DatabaseConnectionItem) viewObject.getProperty().getItem();
+        DatabaseConnection dbConnection = (DatabaseConnection) dbItem.getConnection();
+        return dbConnection.getParameters().get(ConnParameterKeys.CONN_PARA_KEY_HADOOP_CLUSTER_ID);
     }
 
 }

@@ -63,7 +63,9 @@ public class NewConnectionActionProvider extends AbstractCommonActionProvider {
             // ~20051
             IAction action = null;
             if (node instanceof DBConnectionFolderRepNode) {
-                action = new CreateDBConnectionAction(node);
+                if (((DBConnectionFolderRepNode) node).isSupportCreateDBMenu()) {
+                    action = new CreateDBConnectionAction(node);
+                }
             } else if (node instanceof DFConnectionFolderRepNode || node instanceof DFConnectionSubFolderRepNode) {
                 action = new CreateDFConnectionAction(node);
             } else if (node instanceof HadoopClusterFolderRepNode) {

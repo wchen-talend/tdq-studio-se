@@ -20,6 +20,7 @@ import org.talend.dataprofiler.core.service.AbstractSvnRepositoryService;
 import org.talend.dataprofiler.core.service.GlobalServiceRegister;
 import org.talend.dataprofiler.core.ui.action.actions.CreateHiveOfHCAction;
 import org.talend.dq.nodes.hadoopcluster.HadoopClusterConnectionRepNode;
+import org.talend.dq.nodes.hadoopcluster.HiveOfHCFolderRepNode;
 import org.talend.repository.hadoopcluster.util.HCRepositoryUtil;
 import org.talend.repository.model.RepositoryNode;
 import org.talend.repository.model.hadoopcluster.HadoopClusterConnection;
@@ -54,7 +55,7 @@ public class CreateHiveOfHCActionProvider extends AbstractCommonActionProvider {
 
             // ~20051
             IAction action = null;
-            if (node instanceof HadoopClusterConnectionRepNode) {
+            if (node instanceof HadoopClusterConnectionRepNode || node instanceof HiveOfHCFolderRepNode) {
                 action = new CreateHiveOfHCAction(node);
                 menu.add(action);
             }
