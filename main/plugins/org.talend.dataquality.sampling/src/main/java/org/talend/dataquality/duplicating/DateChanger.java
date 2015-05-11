@@ -12,6 +12,8 @@
 // ============================================================================
 package org.talend.dataquality.duplicating;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
@@ -83,7 +85,31 @@ public class DateChanger {
             variation = random.nextInt(2 * rate) - rate;
         } while (variation == 0);
         Long originalDate = date.getTime();
-        date.setTime(originalDate + variation * nb_ms_per_day);
-        return date;
+        Date newDate = new Date(originalDate + variation * nb_ms_per_day);
+        return newDate;
+    }
+
+    public Date generateDateBetween(String minString, String maxString, RandomWrapper rnd) {
+        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy"); //$NON-NLS-1$
+        Date minDate = null;
+        Date maxDate = null;
+        try {
+            minDate = df.parse(minString);
+            maxDate = df.parse(maxString);
+        } catch (ParseException e) {
+            return null;
+        }
+        if (minDate.after(maxDate)) {
+            Date tmp = minDate;
+            minDate = maxDate;
+            maxDate = tmp;
+        } else if (minDate.equals(maxDate)) {
+            return minDate;
+        }
+        long min = minDate.getTime();
+        long max = maxDate.getTime();
+        long number = min + ((long) (rnd.nextDouble() * (max - min)));
+        Date newDate = new Date(number);
+        return newDate;
     }
 }

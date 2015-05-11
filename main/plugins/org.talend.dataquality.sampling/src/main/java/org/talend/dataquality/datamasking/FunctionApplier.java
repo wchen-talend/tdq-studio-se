@@ -1,6 +1,11 @@
 package org.talend.dataquality.datamasking;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Scanner;
 
 import org.talend.dataquality.datamasking.CreditCardGenerator.CreditCardType;
 import org.talend.dataquality.duplicating.DateChanger;
@@ -32,10 +37,17 @@ public class FunctionApplier {
         GENERATE_ACCOUNT_NUMBER_FORMAT,
         GENERATE_PHONE_NUMBER,
         GENERATE_PHONE_NUMBER_FORMAT,
+        GENERATE_BETWEEN,
+        GENERATE_FROM_LIST,
+        GENERATE_FROM_FILE,
         REPLACE_ALL,
         REPLACE_NUMERIC,
         REPLACE_CHARACTERS,
-        REPLACE_SSN
+        REPLACE_SSN,
+        REMOVE_FIRST_CHARS,
+        REMOVE_LAST_CHARS,
+        REPLACE_FIRST_CHARS,
+        REPLACE_LAST_CHARS
     };
 
     private DateChanger dateChanger = new DateChanger();
@@ -58,10 +70,10 @@ public class FunctionApplier {
      * @return This method returns a Date after the application of the parameter function.
      */
     public Date generateDuplicate(Date date, Function function, String extraParameter) {
-        if (date == null || function == Function.SET_TO_NULL) {
+        if (function == Function.SET_TO_NULL) {
             return null;
         }
-        Date newDate = new Date(date.getTime());
+        Date newDate = new Date(System.currentTimeMillis());
         switch (function) {
         case DATE_VARIANCE:
             Integer extraParam;
@@ -73,12 +85,20 @@ public class FunctionApplier {
             if (extraParam <= 0) {
                 extraParam *= -1;
             }
-            dateChanger.dateVariance(newDate, extraParam);
-            return newDate;
-        default:
+            newDate = dateChanger.dateVariance(date, extraParam);
             break;
+        case GENERATE_BETWEEN:
+            String[] parameters = extraParameter.split(","); //$NON-NLS-1$
+            if (parameters.length != 2) {
+                return new Date(System.currentTimeMillis());
+            } else {
+                newDate = dateChanger.generateDateBetween(parameters[0], parameters[1], rnd);
+            }
+            break;
+        default:
+            return new Date(System.currentTimeMillis());
         }
-        return date;
+        return newDate;
     }
 
     /**
@@ -207,6 +227,132 @@ public class FunctionApplier {
                 sb = new StringBuilder(res);
             }
             break;
+        case GENERATE_BETWEEN:
+            String[] parameters = extraParameter.split(","); //$NON-NLS-1$
+            if (parameters.length != 2) {
+                sb = new StringBuilder(EMPTY_STRING);
+            } else {
+                int a = 0;
+                int b = 0;
+                try {
+                    a = Integer.valueOf(parameters[0].trim());
+                    b = Integer.valueOf(parameters[1].trim());
+                } catch (NumberFormatException e) {
+                    sb = new StringBuilder(EMPTY_STRING);
+                    break;
+                }
+                int min = (a < b) ? a : b;
+                int max = (a < b) ? b : a;
+                sb = new StringBuilder(rnd.nextInt((max - min) + 1) + min);
+            }
+            break;
+        case GENERATE_FROM_LIST:
+            String[] parameterss = extraParameter.split(","); //$NON-NLS-1$
+            if (parameterss.length > 0) {
+                for (int i = 0; i < parameterss.length; ++i) {
+                    String tmp = parameterss[i].trim();
+                    parameterss[i] = tmp;
+                }
+                sb = new StringBuilder(parameterss[rnd.nextInt(parameterss.length)]);
+            } else {
+                sb = new StringBuilder(EMPTY_STRING);
+            }
+            break;
+        case GENERATE_FROM_FILE:
+            try {
+                @SuppressWarnings("resource")
+                Scanner in = new Scanner(new FileReader(extraParameter));
+                List<String> tokens = new ArrayList<String>();
+                while (in.hasNext()) {
+                    tokens.add(in.next());
+                }
+                sb = new StringBuilder(tokens.get(rnd.nextInt(tokens.size())));
+            } catch (FileNotFoundException e) {
+                sb = new StringBuilder(EMPTY_STRING);
+            }
+            break;
+        case REMOVE_FIRST_CHARS:
+            Integer extra = null;
+            try {
+                extra = Integer.parseInt(extraParameter);
+            } catch (NumberFormatException e) {
+                sb = new StringBuilder(EMPTY_STRING);
+                break;
+            }
+            if (extra >= str.length()) {
+                sb = new StringBuilder(EMPTY_STRING);
+                break;
+            }
+            if (extra < 1) {
+                sb = new StringBuilder(str);
+                break;
+            }
+            sb = new StringBuilder(str.substring(extra));
+            break;
+        case REMOVE_LAST_CHARS:
+            Integer extraP = null;
+            try {
+                extraP = Integer.parseInt(extraParameter);
+            } catch (NumberFormatException e) {
+                sb = new StringBuilder(EMPTY_STRING);
+                break;
+            }
+            if (extraP >= str.length()) {
+                sb = new StringBuilder(EMPTY_STRING);
+                break;
+            }
+            if (extraP < 1) {
+                sb = new StringBuilder(str);
+                break;
+            }
+            sb = new StringBuilder(str.substring(0, str.length() - extraP));
+            break;
+        case REPLACE_FIRST_CHARS:
+            Integer extraPa = null;
+            try {
+                extraPa = Integer.parseInt(extraParameter);
+            } catch (NumberFormatException e) {
+                sb = new StringBuilder(EMPTY_STRING);
+                break;
+            }
+            if (extraPa < 1) {
+                sb = new StringBuilder(str);
+                break;
+            }
+            if (extraPa >= str.length()) {
+                sb = new StringBuilder(EMPTY_STRING);
+                break;
+            }
+            sb = new StringBuilder(str);
+            StringBuilder repl = new StringBuilder(EMPTY_STRING);
+            for (int i = 0; i < extraPa; ++i) {
+                repl.append((char) (rnd.nextInt(26) + 'A'));
+            }
+            sb.replace(0, extraPa, repl.toString());
+            break;
+        case REPLACE_LAST_CHARS:
+            Integer extraPar = null;
+            try {
+                extraPar = Integer.parseInt(extraParameter);
+            } catch (NumberFormatException e) {
+                sb = new StringBuilder(EMPTY_STRING);
+                break;
+            }
+            if (extraPar < 1) {
+                sb = new StringBuilder(str);
+                break;
+            }
+            if (extraPar >= str.length()) {
+                sb = new StringBuilder(EMPTY_STRING);
+                break;
+            }
+            sb = new StringBuilder(str);
+            StringBuilder repla = new StringBuilder(EMPTY_STRING);
+            for (int i = 0; i < extraPar; ++i) {
+                repla.append((char) (rnd.nextInt(26) + 'A'));
+            }
+            sb.replace(str.length() - extraPar, str.length(), repla.toString());
+            break;
         default:
             break;
         }
@@ -261,6 +407,25 @@ public class FunctionApplier {
             String str = valueIn.toString();
             str.replaceAll("\\d", extraParam.toString()); //$NON-NLS-1$
             finalValue = Double.valueOf(str);
+            break;
+        case GENERATE_BETWEEN:
+            String[] parameters = extraParameter.split(","); //$NON-NLS-1$
+            if (parameters.length != 2) {
+                finalValue = 0.0;
+            } else {
+                int a = 0;
+                int b = 0;
+                try {
+                    a = Integer.valueOf(parameters[0].trim());
+                    b = Integer.valueOf(parameters[1].trim());
+                } catch (NumberFormatException e) {
+                    finalValue = 0.0;
+                    break;
+                }
+                int min = (a < b) ? a : b;
+                int max = (a < b) ? b : a;
+                finalValue = (double) rnd.nextInt((max - min) + 1) + min;
+            }
             break;
         default:
             return valueIn;
@@ -317,8 +482,27 @@ public class FunctionApplier {
             str.replaceAll("\\d", extraParam.toString()); //$NON-NLS-1$
             finalValue = Float.valueOf(str);
             break;
+        case GENERATE_BETWEEN:
+            String[] parameters = extraParameter.split(","); //$NON-NLS-1$
+            if (parameters.length != 2) {
+                finalValue = 0f;
+            } else {
+                int a = 0;
+                int b = 0;
+                try {
+                    a = Integer.valueOf(parameters[0].trim());
+                    b = Integer.valueOf(parameters[1].trim());
+                } catch (NumberFormatException e) {
+                    finalValue = 0f;
+                    break;
+                }
+                int min = (a < b) ? a : b;
+                int max = (a < b) ? b : a;
+                finalValue = (float) rnd.nextInt((max - min) + 1) + min;
+            }
+            break;
         default:
-            return valueIn;
+            finalValue = 0f;
         }
         return finalValue;
     }
@@ -397,8 +581,27 @@ public class FunctionApplier {
             str.replaceAll("\\d", extraParam.toString()); //$NON-NLS-1$
             finalValue = Long.valueOf(str);
             break;
+        case GENERATE_BETWEEN:
+            String[] parameters = extraParameter.split(","); //$NON-NLS-1$
+            if (parameters.length != 2) {
+                finalValue = 0L;
+            } else {
+                int a = 0;
+                int b = 0;
+                try {
+                    a = Integer.valueOf(parameters[0].trim());
+                    b = Integer.valueOf(parameters[1].trim());
+                } catch (NumberFormatException e) {
+                    finalValue = 0L;
+                    break;
+                }
+                int min = (a < b) ? a : b;
+                int max = (a < b) ? b : a;
+                finalValue = (long) rnd.nextInt((max - min) + 1) + min;
+            }
+            break;
         default:
-            return valueIn;
+            finalValue = 0L;
         }
         return finalValue;
     }
@@ -452,8 +655,27 @@ public class FunctionApplier {
             str.replaceAll("\\d", extraParam.toString()); //$NON-NLS-1$
             finalValue = Integer.valueOf(str);
             break;
+        case GENERATE_BETWEEN:
+            String[] parameters = extraParameter.split(","); //$NON-NLS-1$
+            if (parameters.length != 2) {
+                finalValue = 0;
+            } else {
+                int a = 0;
+                int b = 0;
+                try {
+                    a = Integer.valueOf(parameters[0].trim());
+                    b = Integer.valueOf(parameters[1].trim());
+                } catch (NumberFormatException e) {
+                    finalValue = 0;
+                    break;
+                }
+                int min = (a < b) ? a : b;
+                int max = (a < b) ? b : a;
+                finalValue = rnd.nextInt((max - min) + 1) + min;
+            }
+            break;
         default:
-            return valueIn;
+            finalValue = 0;
         }
         return finalValue;
     }
