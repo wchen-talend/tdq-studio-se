@@ -405,13 +405,6 @@
          unpack="false"/>
 
    <plugin
-         id="org.apache.commons.logging"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.eclipse.core.filesystem"
          download-size="0"
          install-size="0"
@@ -496,13 +489,6 @@
          unpack="false"/>
 
    <plugin
-         id="org.apache.commons.httpclient"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.apache.xerces"
          download-size="0"
          install-size="0"
@@ -511,13 +497,6 @@
 
    <plugin
          id="javax.mail"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.apache.commons.codec"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -616,13 +595,6 @@
 
    <plugin
          id="org.talend.libraries.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.apache.commons.lang"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -1258,6 +1230,19 @@
          download-size="0"
          install-size="0"
          version="0.0.0"/>
+         
+   <plugin
+         id="org.talend.libraries.mdm"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+         
+   <plugin
+         id="org.talend.libraries.nattable"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
    <plugin
          id="org.eclipse.nebula.widgets.pagination"
