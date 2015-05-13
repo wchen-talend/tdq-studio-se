@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -54,12 +55,14 @@ import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.core.repository.ui.actions.DeleteAction;
 import org.talend.core.repository.ui.actions.DeleteActionCache;
+import org.talend.cwm.db.connection.ConnectionUtils;
 import org.talend.dataprofiler.core.CorePlugin;
 import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.helper.WorkspaceResourceHelper;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.dialog.message.DeleteModelElementConfirmDialog;
 import org.talend.dataprofiler.core.ui.utils.RepNodeUtils;
+import org.talend.dataprofiler.core.ui.utils.WorkbenchUtils;
 import org.talend.dataprofiler.core.ui.views.DQRespositoryView;
 import org.talend.dataprofiler.core.ui.views.resources.IRepositoryObjectCRUDAction;
 import org.talend.dataquality.properties.TDQReportItem;
@@ -104,6 +107,8 @@ public class DQDeleteAction extends DeleteAction {
     private Object[] deleteElements = null;
 
     private boolean showFilteredOutWarning = true;
+
+    private boolean needRefreshHadoopCluster = false;
 
     /**
      * Getter for showFilteredOutWarning.
@@ -290,6 +295,9 @@ public class DQDeleteAction extends DeleteAction {
     protected void refreshWorkspaceAndRecycleBenNode() {
         CorePlugin.getDefault().refreshWorkSpace();
         CorePlugin.getDefault().refreshDQView(RepositoryNodeHelper.getRecycleBinRepNode());
+        if (this.needRefreshHadoopCluster) {
+            WorkbenchUtils.refreshMetadataNode();
+        }
     }
 
     /**
@@ -312,6 +320,7 @@ public class DQDeleteAction extends DeleteAction {
             } else if (node.getType() == ENodeType.SIMPLE_FOLDER) {
                 folders.add(node);
             } else {
+                checkIsHiveConnectionUnderHC(node);
                 files.add(node);
             }
         }
@@ -346,6 +355,24 @@ public class DQDeleteAction extends DeleteAction {
             return ERepositoryObjectType.TDQ_REPORT_ELEMENT.equals(node.getObject().getRepositoryObjectType());
         }
         return false;
+    }
+
+    /**
+     * judge if the deleted hive connection is created from a Hadoop Cluster
+     * 
+     * @param node
+     * @return true- if is a hive and created from a Hadoop cluster
+     */
+    private void checkIsHiveConnectionUnderHC(IRepositoryNode node) {
+        if (node.getObject() != null) {
+            boolean isHive = ERepositoryObjectType.METADATA_CONNECTIONS.equals(node.getObject().getRepositoryObjectType());
+            if (isHive) {
+                String hcId = ConnectionUtils.getHadoopClusterIDOfHive(node.getObject());
+                if (!StringUtils.isBlank(hcId)) {
+                    needRefreshHadoopCluster = true;
+                }
+            }
+        }
     }
 
     /**
@@ -465,6 +492,7 @@ public class DQDeleteAction extends DeleteAction {
                 }
                 continue;
             }
+            this.checkIsHiveConnectionUnderHC(node);
         }
 
         RepositoryNode parent = selectedNodes.get(0).getParent();
