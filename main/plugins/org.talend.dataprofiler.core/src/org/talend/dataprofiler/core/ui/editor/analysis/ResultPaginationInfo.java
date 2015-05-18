@@ -205,6 +205,7 @@ public class ResultPaginationInfo extends IndicatorPaginationInfo {
         TableWithData chartData = new TableWithData(chartType, tableTypeState.getDataEntity());
         TableViewer tableviewer = tableTypeState.getTableForm(composite);
         tableviewer.setInput(chartData);
+        tableviewer.getTable().pack();
         dyModel.setTableViewer(tableviewer);
 
         DataExplorer dataExplorer = tableTypeState.getDataExplorer();
