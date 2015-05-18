@@ -577,8 +577,9 @@ public class MatchMasterDetailsPage extends AbstractAnalysisMetadataPage impleme
         Button selectDataBtn = toolkit.createButton(dataSelectionComp,
                 DefaultMessagesImpl.getString("MatchMasterDetailsPage.SelectDataButton"), SWT.NONE);//$NON-NLS-1$
         GridDataFactory.fillDefaults().align(SWT.LEFT, SWT.TOP).applyTo(selectDataBtn);
-        Button suggestBtn = toolkit.createButton(dataSelectionComp, "Suggest", SWT.NONE);//$NON-NLS-1$
-        GridDataFactory.fillDefaults().align(SWT.LEFT, SWT.TOP).applyTo(suggestBtn);
+
+        //Button suggestBtn = toolkit.createButton(dataSelectionComp, "Suggest", SWT.NONE);//$NON-NLS-1$
+        // GridDataFactory.fillDefaults().align(SWT.LEFT, SWT.TOP).applyTo(suggestBtn);
 
         createConnectionBtn.addMouseListener(new MouseAdapter() {
 
@@ -601,21 +602,23 @@ public class MatchMasterDetailsPage extends AbstractAnalysisMetadataPage impleme
             }
 
         });
-        suggestBtn.addMouseListener(new MouseListener() {
 
-            public void mouseDoubleClick(MouseEvent e) {
-                // no need to implement
-            }
+        // suggestBtn.addMouseListener(new MouseListener() {
+        //
+        // public void mouseDoubleClick(MouseEvent e) {
+        // // no need to implement
+        // }
+        //
+        // public void mouseDown(MouseEvent e) {
+        // // no need to give the current connection, the called method will find the current selected nodes auto
+        // suggestConfiguration();
+        // }
+        //
+        // public void mouseUp(MouseEvent e) {
+        // // no need to implement
+        // }
+        // });
 
-            public void mouseDown(MouseEvent e) {
-                // no need to give the current connection, the called method will find the current selected nodes auto
-                suggestConfiguration();
-            }
-
-            public void mouseUp(MouseEvent e) {
-                // no need to implement
-            }
-        });
         registerEvents(dataSampleparentComposite);
     }
 
