@@ -56,6 +56,9 @@ public class PhoneNumberGenerator {
         int length = nb_digits(new_number);
         int start_index = 0;
         int digits_to_skip = digits_to_save;
+        if (digits_to_skip > number.length()) {
+            return generatePhoneNumber();
+        }
         if (new_number.charAt(0) == '+') {
             length++;
             digits_to_skip++;
