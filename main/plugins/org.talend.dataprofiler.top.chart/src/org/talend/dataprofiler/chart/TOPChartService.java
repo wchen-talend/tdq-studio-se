@@ -12,6 +12,8 @@
 // ============================================================================
 package org.talend.dataprofiler.chart;
 
+import java.awt.Color;
+import java.awt.GradientPaint;
 import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -40,6 +42,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
 import org.jfree.chart.annotations.CategoryTextAnnotation;
 import org.jfree.chart.axis.CategoryAnchor;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.entity.XYItemEntity;
@@ -47,6 +50,7 @@ import org.jfree.chart.labels.CategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.category.CategoryDataset;
@@ -72,6 +76,7 @@ import org.talend.dataprofiler.chart.preview.RowColumPair;
 import org.talend.dataprofiler.chart.util.ChartDatasetUtils;
 import org.talend.dataprofiler.chart.util.ChartUtils;
 import org.talend.dataprofiler.chart.util.HideSeriesChartDialog;
+import org.talend.dataprofiler.chart.util.PluginConstant;
 import org.talend.dataprofiler.chart.util.TalendChartComposite;
 import org.talend.dataprofiler.chart.util.TopChartFactory;
 import org.talend.dataprofiler.service.ITOPChartService;
@@ -407,6 +412,80 @@ public class TOPChartService implements ITOPChartService {
     @Override
     public Object createDefaultCategoryDataset() {
         return new DefaultCategoryDataset();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createDefaultCategoryDataset(java.util.List)
+     */
+    @Override
+    public Object createDefaultCategoryDataset(List<String[]> inputData) {
+
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        for (String[] dataArray : inputData) {
+            dataset.addValue(Integer.valueOf(dataArray[0]), dataArray[1], dataArray[2]);
+        }
+        // dataset.addValue(23192, "S1", "GNU General Public Licence");
+        // dataset.addValue(3157, "S1", "GNU Lesser General Public Licence");
+        // dataset.addValue(1506, "S1", "BSD Licence (Original)");
+        // dataset.addValue(1283, "S1", "BSD Licence (Revised)");
+        // dataset.addValue(738, "S1", "MIT/X Consortium Licence");
+        // dataset.addValue(630, "S1", "Artistic Licence");
+        // dataset.addValue(585, "S1", "Public Domain");
+        // dataset.addValue(349, "S1", "Apache Licence 2.0");
+        // dataset.addValue(317, "S1", "Apache Licence");
+        // dataset.addValue(309, "S1", "Mozilla Public Licence");
+        // dataset.addValue(918, "S1", "Other");
+
+        return dataset;
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.dataprofiler.service.ITOPChartService#createConceptsChart(java.lang.String,java.lang.Object)
+     */
+    @Override
+    public Object createConceptsChart(String title, Object dataset) {
+        // TODO some parameter should be get out
+        // create the chart...
+        JFreeChart chart = ChartFactory.createBarChart(title, // chart title
+                PluginConstant.EMPTY_STRING, // domain axis label
+                PluginConstant.EMPTY_STRING, // range axis label
+                (CategoryDataset) dataset, // data
+                PlotOrientation.HORIZONTAL, // orientation
+                false, // include legend
+                true, // tooltips?
+                false // URLs?
+                );
+
+        // NOW DO SOME OPTIONAL CUSTOMISATION OF THE CHART...
+
+        // set the background color for the chart...
+        chart.setBackgroundPaint(Color.white);
+        // get a reference to the plot for further customisation...
+        CategoryPlot plot = (CategoryPlot) chart.getPlot();
+        plot.setBackgroundPaint(Color.lightGray);
+        plot.setDomainGridlinePaint(Color.white);
+        plot.setDomainGridlinesVisible(true);
+        plot.setRangeGridlinePaint(Color.white);
+
+        plot.getDomainAxis().setMaximumCategoryLabelWidthRatio(0.4f);
+        // set the range axis to display integers only...
+        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+
+        // disable bar outlines...
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        renderer.setDrawBarOutline(false);
+
+        // set up gradient paints for series...
+        GradientPaint gp0 = new GradientPaint(0.0f, 0.0f, Color.blue, 0.0f, 0.0f, new Color(0, 0, 64));
+        renderer.setSeriesPaint(0, gp0);
+
+        return chart;
     }
 
     /*

@@ -12,3 +12,4 @@ Require-Bundle: org.eclipse.equinox.util,
  org.talend.dataquality
 Export-Package: org.talend.dataprofiler.service,
  org.talend.dataprofiler.service.semantic
+Import-Package: org.jfree.data.category

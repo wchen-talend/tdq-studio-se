@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2013 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2015 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -15,6 +15,7 @@ package org.talend.dataprofiler.core.ui.action.actions.predefined;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.talend.core.model.metadata.builder.connection.MetadataTable;
 import org.talend.dataprofiler.core.CorePlugin;
@@ -57,7 +58,11 @@ public class SuggestAnalysisAction extends Action {
         ISemanticStudioService service = CorePlugin.getDefault().getSemanticStudioService();
 
         if (service != null) {
-            boolean success = service.suggestAnalysis(this.metadataTable);
+            int wizardReturnCode = service.openSemanticDiscoveryWizard(metadataTable);
+            boolean success =false;
+            if(SWT.OK==wizardReturnCode){
+                success = service.suggestAnalysis(this.metadataTable);
+            }
             if (success) {
                 IRepositoryNode node = RepositoryNodeHelper.getDataProfilingFolderNode(EResourceConstant.ANALYSIS);
                 CorePlugin.getDefault().refreshDQView(node);

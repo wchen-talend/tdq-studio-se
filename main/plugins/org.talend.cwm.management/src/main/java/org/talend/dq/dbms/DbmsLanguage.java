@@ -26,6 +26,7 @@ import org.eclipse.emf.common.util.EList;
 import org.talend.core.IRepositoryContextService;
 import org.talend.core.database.EDatabaseTypeName;
 import org.talend.core.model.metadata.builder.connection.DatabaseConnection;
+import org.talend.core.model.metadata.builder.connection.MetadataTable;
 import org.talend.core.model.metadata.builder.database.dburl.SupportDBUrlType;
 import org.talend.core.runtime.CoreRuntimePlugin;
 import org.talend.cwm.db.connection.ConnectionUtils;
@@ -764,6 +765,31 @@ public class DbmsLanguage {
     /**
      * 
      * Get the query Expression for one table of column
+     * 
+     * @param column
+     * @param where
+     * @return
+     */
+    public Expression getTableQueryExpression(MetadataTable metadataTable, String where) {
+        Schema parentSchema = SchemaHelper.getParentSchema(metadataTable);
+        Catalog parentCatalog = CatalogHelper.getParentCatalog(metadataTable);
+        if (parentSchema != null) {
+            parentCatalog = CatalogHelper.getParentCatalog(parentSchema);
+        }
+        String schemaName = parentSchema == null ? null : parentSchema.getName();
+        String catalogName = parentCatalog == null ? null : parentCatalog.getName();
+        String qualifiedName = this.toQualifiedName(catalogName, schemaName, metadataTable.getName());
+        Expression queryExpression = CoreFactory.eINSTANCE.createExpression();
+        String expressionBody = getQuerySql(ASTERISK, qualifiedName, where);
+        queryExpression.setBody(expressionBody);
+        queryExpression.setLanguage(this.getDbmsName());
+        return queryExpression;
+
+    }
+
+    /**
+     * 
+     * Get the query Expression for one table
      * 
      * @param column
      * @param where

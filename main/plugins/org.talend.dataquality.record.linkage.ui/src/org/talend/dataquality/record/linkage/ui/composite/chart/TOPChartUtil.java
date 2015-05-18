@@ -49,6 +49,20 @@ public class TOPChartUtil extends AbstractOSGIServiceUtils {
         return null;
     }
 
+    public Object createConceptsChart(String title, Object dataset) {
+        if (isTOPChartInstalled()) {
+            return chartService.createConceptsChart(title, dataset);
+        }
+        return null;
+    }
+
+    public Object createDefaultCategoryDataset(List<String[]> inputData) {
+        if (isTOPChartInstalled()) {
+            return chartService.createDefaultCategoryDataset(inputData);
+        }
+        return null;
+    }
+
     public Object createChartCompositeWithoutGrid(Object composite, int style, Object chart, boolean useBuffer) {
         if (isTOPChartInstalled()) {
             return chartService.createChartCompositeWithoutGrid(composite, style, chart, useBuffer);

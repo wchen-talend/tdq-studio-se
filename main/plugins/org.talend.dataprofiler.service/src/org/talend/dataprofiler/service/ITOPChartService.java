@@ -46,6 +46,15 @@ public interface ITOPChartService {
 
     Object createBarChart(Object dataset);
 
+    /**
+     * 
+     * The parameter dataset must be CategoryDataset
+     * 
+     * @param dataset
+     * @return It should be JFreeChart
+     */
+    Object createConceptsChart(String title, Object dataset);
+
     Object createBarChart(String title, Object dataset);
 
     Object createPieChart(String title, Object dataset, boolean showLegend, boolean toolTips, boolean urls);
@@ -86,6 +95,8 @@ public interface ITOPChartService {
     Object createHistogramDataset(double[] valueArray, double maxValue, int bins);
 
     Object createDefaultCategoryDataset();
+
+    Object createDefaultCategoryDataset(List<String[]> inputData);
 
     Object createPieDataset(Map<String, Double> valueMap);
 

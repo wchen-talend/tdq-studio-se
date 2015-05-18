@@ -30,8 +30,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.talend.core.model.metadata.IMetadataConnection;
-import org.talend.core.model.metadata.builder.ConvertionHelper;
-import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.DelimitedFileConnection;
 import org.talend.core.model.metadata.builder.connection.Escape;
 import org.talend.core.model.metadata.builder.connection.MetadataColumn;
@@ -41,8 +39,8 @@ import org.talend.cwm.db.connection.talendResultSet.FileCSVResultSet;
 import org.talend.cwm.db.connection.talendResultSet.FileDelimitedResultSet;
 import org.talend.cwm.db.connection.talendResultSet.ITalendResultSet;
 import org.talend.cwm.helper.ColumnHelper;
-import org.talend.cwm.relational.TdColumn;
 import org.talend.dataprofiler.core.helper.ModelElementIndicatorHelper;
+import org.talend.dataprofiler.core.helper.ResultSetHelper;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.model.ColumnIndicator;
 import org.talend.dataprofiler.core.model.DelimitedFileIndicator;
@@ -52,14 +50,11 @@ import org.talend.dataprofiler.core.ui.grid.utils.TDQObserver;
 import org.talend.dataprofiler.core.ui.grid.utils.events.ObserverEvent;
 import org.talend.dataprofiler.core.ui.grid.utils.events.ObserverEventEnum;
 import org.talend.dataquality.PluginConstant;
-import org.talend.dq.dbms.DbmsLanguage;
-import org.talend.dq.dbms.DbmsLanguageFactory;
 import org.talend.dq.helper.AnalysisExecutorHelper;
 import org.talend.dq.helper.FileUtils;
 import org.talend.fileprocess.FileInputDelimited;
 import org.talend.metadata.managment.utils.MetadataConnectionUtils;
 import org.talend.utils.sugars.TypedReturnCode;
-import orgomg.cwm.objectmodel.core.Expression;
 import orgomg.cwm.objectmodel.core.ModelElement;
 
 import com.talend.csv.CSVReader;
@@ -218,16 +213,25 @@ public class ColumnPreviewGrid extends AbstractIndicatorSelectGrid implements TD
      */
     private ITalendResultSet getResultSet(ColumnIndicator columnIndicator) throws SQLException {
         ResultSet rs = null;
-        // connection
-        Connection tdDataProvider = ModelElementIndicatorHelper.getTdDataProvider(columnIndicator);
-        TdColumn tdColumn = columnIndicator.getTdColumn();
-        DbmsLanguage dbmsLanguage = DbmsLanguageFactory.createDbmsLanguage(tdDataProvider);
-        Expression columnQueryExpression = dbmsLanguage.getTableQueryExpression(tdColumn, _dialog.getWhereExpression());
-        IMetadataConnection metadataBean = ConvertionHelper.convert(tdDataProvider);
+        // // connection
+        // Connection tdDataProvider = ModelElementIndicatorHelper.getTdDataProvider(columnIndicator);
+        // TdColumn tdColumn = columnIndicator.getTdColumn();
+        // DbmsLanguage dbmsLanguage = DbmsLanguageFactory.createDbmsLanguage(tdDataProvider);
+        // Expression columnQueryExpression = dbmsLanguage.getTableQueryExpression(tdColumn,
+        // _dialog.getWhereExpression());
+        // IMetadataConnection metadataBean = ConvertionHelper.convert(tdDataProvider);
 
-        createStatement = initStatement(metadataBean);
-        rs = createStatement.executeQuery(columnQueryExpression.getBody());
-        return new DatabaseResultSet(rs);
+        // createStatement = initStatement(metadataBean);
+        // rs = createStatement.executeQuery(columnQueryExpression.getBody());
+        if (createStatement == null) {
+            rs = ResultSetHelper.getResultSet(columnIndicator, _dialog.getWhereExpression());
+            createStatement = rs.getStatement();
+            sqlConn = createStatement.getConnection();
+            return new DatabaseResultSet(rs);
+        } else {
+            rs = ResultSetHelper.getResultSet(columnIndicator, _dialog.getWhereExpression(), createStatement);
+            return new DatabaseResultSet(rs);
+        }
     }
 
     /**
@@ -279,7 +283,6 @@ public class ColumnPreviewGrid extends AbstractIndicatorSelectGrid implements TD
 
         return null;
     }
-
 
     /**
      * DOC talend Comment method "getColumnValue".

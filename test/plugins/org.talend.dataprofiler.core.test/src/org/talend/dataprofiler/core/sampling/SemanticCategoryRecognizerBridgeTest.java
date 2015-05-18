@@ -36,7 +36,7 @@ public class SemanticCategoryRecognizerBridgeTest {
         SamplingDataSource<File> fileDatasource = new FileSamplingDataSource();
         fileDatasource
                 .setDataSource(new File(
-                        "/home/zhao/Talend/codebase/GIT/tdq-studio-se/test/plugins/org.talend.dataprofiler.core.test/src/org/talend/dataprofiler/core/sampling/employee.csv")); //$NON-NLS-1$
+                        "D:/code/g5/tdq-studio-se/test/plugins/org.talend.dataprofiler.core.test/src/org/talend/dataprofiler/core/sampling/employee.csv")); //$NON-NLS-1$
         // 2. create a sampling bridge instance.
         DataSamplingBridge samplingBridge = new DataSamplingBridge(fileDatasource);
         // 2.1 set sampling option , by default top n if not set.
