@@ -84,6 +84,8 @@ public interface ITOPChartService {
 
     void addMouseListenerForChart(Object chartComposite, Map<String, Object> menuMap, boolean useRowFirst);
 
+    void addMouseListenerForConceptChart(Object chartComposite, Map<String, Object> menuMap);
+
     void addListenerToChartComp(Object chartComp, final String referenceLink, final String menuText);
 
     void refrechChart(Object chartComp, Object chart);

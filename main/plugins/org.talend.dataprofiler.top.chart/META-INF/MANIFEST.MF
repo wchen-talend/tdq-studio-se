@@ -11,7 +11,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.osgi.services,
  org.talend.dataprofiler.service,
  org.eclipse.equinox.ds,
- org.eclipse.equinox.util
+ org.eclipse.equinox.util,
+ org.apache.log4j
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: .Talend SA.
 Export-Package: org.talend.dataprofiler.chart

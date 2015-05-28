@@ -193,6 +193,12 @@ public class TOPChartUtils extends AbstractOSGIServiceUtils {
         }
     }
 
+    public void addMouseListenerForConceptChart(Object chartComposite, final Map<String, Object> menuMap) {
+        if (isTOPChartInstalled()) {
+            chartService.addMouseListenerForConceptChart(chartComposite, menuMap);
+        }
+    }
+
     public Object createPieChart(String title, Object dataset, boolean showLegend, boolean toolTips, boolean urls) {
         if (isTOPChartInstalled()) {
             return chartService.createPieChart(title, dataset, showLegend, toolTips, urls);

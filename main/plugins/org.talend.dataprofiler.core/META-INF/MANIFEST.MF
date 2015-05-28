@@ -49,7 +49,8 @@ Require-Bundle: org.eclipse.nebula.widgets.tablecombo,
  org.talend.repository.hadoopcluster,
  org.talend.repository.hdfs,
  org.talend.designer.hdfsbrowse,
- org.talend.dataquality.sampling
+ org.talend.dataquality.sampling,
+ org.eclipse.nebula.widgets.nattable.core
 Bundle-ActivationPolicy: lazy
 Export-Package: org.talend.dataprofiler.core,
  org.talend.dataprofiler.core.exception,

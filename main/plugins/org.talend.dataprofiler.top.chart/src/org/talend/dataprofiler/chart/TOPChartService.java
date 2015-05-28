@@ -15,6 +15,8 @@ package org.talend.dataprofiler.chart;
 import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.event.MouseEvent;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -23,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -90,6 +93,8 @@ public class TOPChartService implements ITOPChartService {
     public static final int CHART_STANDARD_WIDHT = 600;
 
     public static final int CHART_STANDARD_HEIGHT = 275;
+
+    public static final Logger log = Logger.getLogger(TOPChartService.class);
 
     @Override
     public Object getDatasetFromChart(Object chart, int datasetIndex) {
@@ -247,6 +252,85 @@ public class TOPChartService implements ITOPChartService {
                 menu = menuMap.get(secondKey);
                 if (menu != null) {
                     return (Menu) menu;
+                }
+                return null;
+            }
+
+            @Override
+            public void chartMouseMoved(ChartMouseEvent event) {
+                // no action here
+
+            }
+
+        });
+        chartComp.addDisposeListener(new DisposeListener() {
+
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                chartComp.dispose();
+
+            }
+
+        });
+    }
+
+    @Override
+    public void addMouseListenerForConceptChart(Object chartComposite, final Map<String, Object> actionMap) {
+        final ChartComposite chartComp = (ChartComposite) chartComposite;
+        chartComp.addChartMouseListener(new ChartMouseListener() {
+
+            @Override
+            public void chartMouseClicked(ChartMouseEvent event) {
+                boolean flag = event.getTrigger().getButton() == MouseEvent.BUTTON1;
+                chartComp.setDomainZoomable(flag);
+                chartComp.setRangeZoomable(flag);
+                if (!flag) {
+                    return;
+                }
+
+                ChartEntity chartEntity = event.getEntity();
+                if (chartEntity != null && chartEntity instanceof CategoryItemEntity) {
+                    CategoryItemEntity cateEntity = (CategoryItemEntity) chartEntity;
+
+                    Object action = getCurrentAction(cateEntity);
+                    Class<? extends Object> actionClass = action.getClass();
+                    try {
+                        Method actionRunMethod = actionClass.getDeclaredMethod("run");
+                        actionRunMethod.invoke(action);
+                    } catch (NoSuchMethodException e) {
+                        log.error(e, e);
+                    } catch (SecurityException e) {
+                        log.error(e, e);
+                    } catch (IllegalAccessException e) {
+                        log.error(e, e);
+                    } catch (IllegalArgumentException e) {
+                        log.error(e, e);
+                    } catch (InvocationTargetException e) {
+                        log.error(e, e);
+                    }
+
+                }
+            }
+
+            private Object getCurrentAction(CategoryItemEntity cateEntity) {
+                return findCurrentAction(cateEntity.getColumnKey(), cateEntity.getRowKey());
+            }
+
+            /**
+             * Find current action
+             * 
+             * @param firstKey
+             * @param secondKey
+             * @return
+             */
+            private Object findCurrentAction(final Object firstKey, Object secondKey) {
+                Object action = actionMap.get(firstKey);
+                if (action != null) {
+                    return action;
+                }
+                action = actionMap.get(secondKey);
+                if (action != null) {
+                    return action;
                 }
                 return null;
             }
